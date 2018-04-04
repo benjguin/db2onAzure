@@ -1,8 +1,14 @@
-#!/bin/bash
+# DB2 setup
 
-# please execute private.sh before this script in order to setup variables
+NB: this was not translated to a proper bash script yet.
+For now, you have to copy and paste this code to your terminal.
 
+please execute `private.sh` before this script in order to setup variables
+
+```bash
+# then connect to d1:
 ssh rhel@$jumpbox
+ssh 192.168.1.20
 sudo su
 #format data disk and mount it
 
@@ -46,11 +52,48 @@ default via 0.0.0.0 dev eth1 table eth1-rt
 EOF
 
 systemctl restart network
+# TODO routes need to be checked
 
-dhclient
+dhclient # TODO this has to be executed at startup time
 
+# cf https://www.ibm.com/support/knowledgecenter/en/SSEPGG_11.1.0/com.ibm.db2.luw.qb.server.doc/doc/t0055342.html?pos=3
 cat >> /etc/ssh/sshd_config << EOF
 
 PermitRootLogin yes
 PasswordAuthentication no
 EOF
+
+ssh-keygen -t dsa -f /root/.ssh/id_dsa -q -N ""
+cp /root/.ssh/id_dsa.pub /home/rhel/root_id_dsa.pub
+
+#back to the jumbox
+exit # exit from sudo su
+exit # exit from 192.168.1.20
+
+scp rhel@192.168.1.20:/home/rhel/root_id_dsa.pub .
+scp root_id_dsa.pub rhel@192.168.1.21:/home/rhel/
+ssh 192.168.1.21
+sudo su
+cat /home/rhel/root_id_dsa.pub >> /root/.ssh/authorized_keys
+cat >> /etc/ssh/sshd_config << EOF
+
+PermitRootLogin yes
+PasswordAuthentication no
+EOF
+dhclient
+
+exit
+exit
+# back to jumpbox
+
+ssh 192.168.1.20
+sudo su
+ssh -o StrictHostKeyChecking=no 192.168.1.21
+# could connect from d1 to d2 as root
+exit
+exit
+exit
+# back to jumpbox
+
+
+```

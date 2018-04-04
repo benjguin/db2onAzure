@@ -40,6 +40,8 @@ echo "Create Jumpbox.."
 az network public-ip create -g gluster-iscsi -n jumpbox-pubip --allocation-method Static --dns-name jumpboxgluster
 az network nic create --resource-group gluster-iscsi --name jumpbox --vnet-name gluster --subnet client --network-security-group gluster-nsg --private-ip-address 192.168.1.5 --public-ip-address jumpbox-pubip
 az vm create --resource-group gluster-iscsi --name jumpbox --image RedHat:RHEL:7-RAW-CI:latest --size Standard_DS2_v2 --admin-username rhel --nics jumpbox --no-wait
+# TODO: test the following line
+az vm user update -g gluster-iscsi --name jumpbox --username rhel --ssh-key-value $pubKeyPath
 
 echo "adding db2cluster subnet..."
 az network vnet subnet create \
@@ -65,3 +67,21 @@ az vm create --resource-group gluster-iscsi --name d3 --image RedHat:RHEL:7-RAW-
 az vm create --resource-group gluster-iscsi --name d4 --image RedHat:RHEL:7-RAW-CI:latest --size Standard_DS3_v2_Promo --admin-username rhel --nics d4-client d4-cluster --data-disk-sizes-gb 10 --no-wait
 az vm create --resource-group gluster-iscsi --name cf1 --image RedHat:RHEL:7-RAW-CI:latest --size Standard_DS3_v2_Promo --admin-username rhel --nics cf1-client cf1-cluster --data-disk-sizes-gb 10 --no-wait
 az vm create --resource-group gluster-iscsi --name cf2 --image RedHat:RHEL:7-RAW-CI:latest --size Standard_DS3_v2_Promo --admin-username rhel --nics cf2-client cf2-cluster --data-disk-sizes-gb 10 --no-wait
+
+# TODO: generate keypair on the jumpboxn get the public key and update the public keys on all VMs 
+# so that the jumpbox can connect to all VMs
+# TODO test
+ssh rhel@$jumpbox -t -t << EOF
+ssh-keygen -t rsa -f /root/.ssh/id_rsa -q -N ""
+EOF
+
+scp rhel@$jumpbox:/home/rhel/.ssh/id_rsa.pub jumbox_id_rsa.pub
+az vm user update -g gluster-iscsi --name g1 --username rhel --ssh-key-value jumbox_id_rsa.pub
+az vm user update -g gluster-iscsi --name g2 --username rhel --ssh-key-value jumbox_id_rsa.pub
+az vm user update -g gluster-iscsi --name g3 --username rhel --ssh-key-value jumbox_id_rsa.pub
+az vm user update -g gluster-iscsi --name d1 --username rhel --ssh-key-value jumbox_id_rsa.pub
+az vm user update -g gluster-iscsi --name d2 --username rhel --ssh-key-value jumbox_id_rsa.pub
+az vm user update -g gluster-iscsi --name d3 --username rhel --ssh-key-value jumbox_id_rsa.pub
+az vm user update -g gluster-iscsi --name d4 --username rhel --ssh-key-value jumbox_id_rsa.pub
+az vm user update -g gluster-iscsi --name cf1 --username rhel --ssh-key-value jumbox_id_rsa.pub
+az vm user update -g gluster-iscsi --name cf2 --username rhel --ssh-key-value jumbox_id_rsa.pub
