@@ -85,3 +85,17 @@ az vm user update -g gluster-iscsi --name d3 --username rhel --ssh-key-value jum
 az vm user update -g gluster-iscsi --name d4 --username rhel --ssh-key-value jumbox_id_rsa.pub
 az vm user update -g gluster-iscsi --name cf1 --username rhel --ssh-key-value jumbox_id_rsa.pub
 az vm user update -g gluster-iscsi --name cf2 --username rhel --ssh-key-value jumbox_id_rsa.pub
+
+
+# Add Windows iSCSI targets (non clustered) to test also with this option
+#az network nsg rule create --nsg-name gluster-nsg -g gluster-iscsi --name allow-winRM --description "WinRM" --protocol tcp --priority 102 --destination-port-range "5986"
+az network nsg rule create --nsg-name gluster-nsg -g gluster-iscsi --name allow-RDP --description "WinRDP" --protocol tcp --priority 103 --destination-port-range "3389"
+az network public-ip create -g gluster-iscsi -n w1-pubip --allocation-method Dynamic --dns-name db2w1
+az network nic create --resource-group gluster-iscsi --name w1-client --vnet-name gluster --subnet client --network-security-group gluster-nsg --private-ip-address 192.168.1.30 --public-ip-address w1-pubip
+az vm create --resource-group gluster-iscsi --name w1 \
+    --image MicrosoftWindowsServer:WindowsServer:2016-Datacenter:latest \
+    --size Standard_DS3_v2_Promo --nics w1-client \
+    --data-disk-sizes-gb 10 10 \
+    --admin-username adwin --admin-password "$adwinPassword" \
+    --no-wait
+

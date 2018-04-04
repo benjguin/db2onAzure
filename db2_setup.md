@@ -75,6 +75,71 @@ sed -i s/SELINUX=enforcing/SELINUX=disabled/ /etc/selinux/config
 
 reboot
 # back to jumpbox
+sleep 60s
+ssh $nodeip
+sudo su
+
+yum install -y iscsi-initiator-utils device-mapper-multipath.x86_64
+
+# setup multipath.conf 
+cat << EOF >> /etc/multipath.conf 
+defaults { 
+    user_friendly_names no 
+    max_fds max
+    flush_on_last_del yes 
+    queue_without_daemon no 
+    dev_loss_tmo infinity
+    fast_io_fail_tmo 5 
+} 
+blacklist { 
+    wwid "SAdaptec*" 
+    devnode "^hd[a-z]" 
+    devnode "^(ram|raw|loop|fd|md|dm-|sr|scd|st)[0-9]*" 
+    devnode "^cciss.*" 
+} 
+devices { 
+    device { 
+        vendor "NETAPP" 
+        product "LUN" 
+        path_grouping_policy group_by_prio 
+        features "3 queue_if_no_path pg_init_retries 50" 
+        prio "alua" 
+        path_checker tur 
+        failback immediate
+        path_selector "round-robin 0" 
+        hardware_handler "1 alua" 
+        rr_weight uniform 
+        rr_min_io 128 
+    }
+}
+EOF
+
+modprobe dm-multipath 
+service multipathd start 
+chkconfig multipathd on
+
+multipath -l
+
+
+iscsiadm -m discovery -t sendtargets -p 192.168.1.30
+iscsiadm -m session 
+multipath -l
+
+fdisk -l | grep /dev/mapper/3
+
+# TODO: extract those 2 variables from 
+# Disk /dev/mapper/360003ff44dc75adc882c5583a561aa53: 9999 MB, 9999220736 bytes, 19529728 sectors
+# Disk /dev/mapper/360003ff44dc75adcbdecfe2f0b22c7c6: 9999 MB, 9999220736 bytes, 19529728 sectors
+disk0=/dev/mapper/360003ff44dc75adc882c5583a561aa53
+disk1=/dev/mapper/360003ff44dc75adcbdecfe2f0b22c7c6
+mkfs.ext4 $disk0
+mkfs.ext4 $disk1
+mkdir /mnt/iscsidisk0
+mkdir /mnt/iscsidisk1
+mount $disk0 /mnt/iscsidisk0
+mount $disk1 /mnt/iscsidisk1
+#TODO: update fstab
+
 # }all_db2_nodes}
 
 
