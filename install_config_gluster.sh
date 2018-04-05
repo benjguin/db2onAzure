@@ -72,3 +72,20 @@ mkdir -p /db2/quorum
 #create gluster volumes
 gluster volume create db2data replica 3 g1b:/bricks/db2data/db2data g2b:/bricks/db2data/db2data g3b:/bricks/db2data/db2data
 gluster volume create db2quorum replica 3 g1b:/bricks/db2quorum/db2quorum g2b:/bricks/db2quorum/db2quorum g3b:/bricks/db2quorum/db2quorum
+
+gluster volume start db2data
+gluster volume start db2quorum
+
+#gluster block
+
+yum -y install http://cbs.centos.org/kojifiles/packages/tcmu-runner/1.3.0/0.2rc4.el7/x86_64/libtcmu-1.3.0-0.2rc4.el7.x86_64.rpm
+yum -y install http://cbs.centos.org/kojifiles/packages/tcmu-runner/1.3.0/0.2rc4.el7/x86_64/tcmu-runner-1.3.0-0.2rc4.el7.x86_64.rpm
+yum -y install http://cbs.centos.org/kojifiles/packages/tcmu-runner/1.3.0/0.2rc4.el7/x86_64/tcmu-runner-handler-glfs-1.3.0-0.2rc4.el7.x86_64.rpm
+yum -y install http://cbs.centos.org/kojifiles/packages/gluster-block/0.3/2.el7/x86_64/gluster-block-0.3-2.el7.x86_64.rpm
+
+systemctl start gluster-blockd
+systemctl enable gluster-blockd
+systemctl status gluster-blockd
+
+#create gluster-block device file
+gluster-block create sampleVol/elasticBlock ha 3 10.70.35.109,10.70.35.104,10.70.35.51 40GiB
