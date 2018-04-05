@@ -33,6 +33,10 @@ az network nsg create \
  --resource-group $rg \
  --name gluster-nsg
 az network nsg rule create --nsg-name gluster-nsg -g $rg --name allow-ssh --description "SSHDB2" --protocol tcp --priority 101 --destination-port-range "22"
+az network nsg rule create --nsg-name gluster-nsg -g $rg --name allow-ssh --description "iSCSI" --protocol tcp --priority 101 --destination-port-range "3260"
+az network nsg rule create --nsg-name gluster-nsg -g $rg --name allow-ssh --description "Gluster-bricks" --protocol tcp --priority 101 --destination-port-range "49152-49160"
+az network nsg rule create --nsg-name gluster-nsg -g $rg --name allow-ssh --description "Gluster-daemon" --protocol tcp --priority 101 --destination-port-range "24007-24008"
+
 
 echo "Creating 2 Nics per Gluster VM..."
 az network nic create --resource-group $rg --name g1-client --vnet-name gluster --subnet client --network-security-group gluster-nsg --private-ip-address 192.168.1.10 --accelerated-networking true
