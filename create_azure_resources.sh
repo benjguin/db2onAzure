@@ -6,7 +6,7 @@ az login
 az account set -s "$subscription"
 
 echo "Creating Resource group..."
-az group create -n gluster-iscsi
+az group create -n gluster-iscsi --location westeurope
 echo "Creating VNET and two subnets..."
 az network vnet create \
  --resource-group gluster-iscsi \
