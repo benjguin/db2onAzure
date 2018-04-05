@@ -19,10 +19,9 @@ printf "\n" | mkfs -t ext4 /dev/sdc1
 # answer <default>
 
 mkdir /data1
-mount /dev/sdc1 /data1 # TODO: have to make that persistent
+mount /dev/sdc1 /data1
 cat >> /etc/fstab << EOF
-
-/dev/sdc1   /data1  auto    defaults,nofail 0   2
+/dev/sdc1   /data1  auto    defaults,nofail 0   0
 EOF
 
 cd /data1
@@ -60,7 +59,6 @@ cat /home/rhel/root_id_dsa.pub >> /root/.ssh/authorized_keys
 cat >> /etc/ssh/sshd_config << EOF
 
 PermitRootLogin yes
-PasswordAuthentication no
 EOF
 dhclient
 
@@ -95,22 +93,10 @@ blacklist {
     wwid "SAdaptec*" 
     devnode "^hd[a-z]" 
     devnode "^(ram|raw|loop|fd|md|dm-|sr|scd|st)[0-9]*" 
+    devnode "^sdc[0-9]*" 
     devnode "^cciss.*" 
 } 
 devices { 
-    device { 
-        vendor "NETAPP" 
-        product "LUN" 
-        path_grouping_policy group_by_prio 
-        features "3 queue_if_no_path pg_init_retries 50" 
-        prio "alua" 
-        path_checker tur 
-        failback immediate
-        path_selector "round-robin 0" 
-        hardware_handler "1 alua" 
-        rr_weight uniform 
-        rr_min_io 128 
-    }
 }
 EOF
 
@@ -130,17 +116,19 @@ fdisk -l | grep /dev/mapper/3
 # TODO: extract those 2 variables from 
 # Disk /dev/mapper/360003ff44dc75adc882c5583a561aa53: 9999 MB, 9999220736 bytes, 19529728 sectors
 # Disk /dev/mapper/360003ff44dc75adcbdecfe2f0b22c7c6: 9999 MB, 9999220736 bytes, 19529728 sectors
-disk0=/dev/mapper/360003ff44dc75adc882c5583a561aa53
-disk1=/dev/mapper/360003ff44dc75adcbdecfe2f0b22c7c6
-mkfs.ext4 $disk0
-mkfs.ext4 $disk1
-mkdir /mnt/iscsidisk0
-mkdir /mnt/iscsidisk1
-mount $disk0 /mnt/iscsidisk0
-mount $disk1 /mnt/iscsidisk1
-#TODO: update fstab
 
+exit
+exit
+# back to the jumpbox
 # }all_db2_nodes}
+
+ssh 192.168.1.20
+sudo su
+
+# db2_install help : https://www.ibm.com/support/knowledgecenter/en/SSEPGG_11.1.0/com.ibm.db2.luw.admin.cmd.doc/doc/r0023669.html
+/data1/db2bits/server_t/db2_install -y -b /opt/IBM/db2 -p SERVER -f PURESCALE -t /tmp/db2_install.trc -l /tmp/db2_install.log
 
 
 ```
+
+

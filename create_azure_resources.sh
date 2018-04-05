@@ -49,9 +49,19 @@ az network vnet subnet create \
  --vnet-name gluster \
  --name db2cluster \
  --address-prefix 192.168.3.0/24
+echo "adding db2client subnet..."
+az network vnet subnet create \
+ --resource-group gluster-iscsi \
+ --vnet-name gluster \
+ --name db2client \
+ --address-prefix 192.168.4.0/24
 echo "Creating 2 Nics per VM..."
-az network nic create --resource-group gluster-iscsi --name cf1-cluster --vnet-name gluster --subnet db2cluster --network-security-group gluster-nsg --private-ip-address 192.168.3.10
-az network nic create --resource-group gluster-iscsi --name cf2-cluster --vnet-name gluster --subnet db2cluster --network-security-group gluster-nsg --private-ip-address 192.168.3.11
+az network nic create --resource-group gluster-iscsi --name cf1-client --vnet-name gluster --subnet client --network-security-group gluster-nsg --private-ip-address 192.168.1.40
+az network nic create --resource-group gluster-iscsi --name cf2-client --vnet-name gluster --subnet client --network-security-group gluster-nsg --private-ip-address 192.168.1.41
+az network nic create --resource-group gluster-iscsi --name cf1-cluster --vnet-name gluster --subnet db2cluster --network-security-group gluster-nsg --private-ip-address 192.168.3.40
+az network nic create --resource-group gluster-iscsi --name cf2-cluster --vnet-name gluster --subnet db2cluster --network-security-group gluster-nsg --private-ip-address 192.168.3.41
+az network nic create --resource-group gluster-iscsi --name cf1-db2client --vnet-name gluster --subnet db2client --network-security-group gluster-nsg --private-ip-address 192.168.4.40
+az network nic create --resource-group gluster-iscsi --name cf2-db2client --vnet-name gluster --subnet db2client --network-security-group gluster-nsg --private-ip-address 192.168.4.41
 az network nic create --resource-group gluster-iscsi --name d1-cluster --vnet-name gluster --subnet db2cluster --network-security-group gluster-nsg --private-ip-address 192.168.3.20
 az network nic create --resource-group gluster-iscsi --name d1-client  --vnet-name gluster --subnet client     --network-security-group gluster-nsg --private-ip-address 192.168.1.20
 az network nic create --resource-group gluster-iscsi --name d2-cluster --vnet-name gluster --subnet db2cluster --network-security-group gluster-nsg --private-ip-address 192.168.3.21
@@ -63,10 +73,10 @@ az network nic create --resource-group gluster-iscsi --name d4-client  --vnet-na
 echo "Create VM's..."
 az vm create --resource-group gluster-iscsi --name d1 --image RedHat:RHEL:7-RAW-CI:latest --size Standard_DS3_v2_Promo --admin-username rhel --nics d1-client d1-cluster --data-disk-sizes-gb 10 --no-wait
 az vm create --resource-group gluster-iscsi --name d2 --image RedHat:RHEL:7-RAW-CI:latest --size Standard_DS3_v2_Promo --admin-username rhel --nics d2-client d2-cluster --data-disk-sizes-gb 10 --no-wait
-az vm create --resource-group gluster-iscsi --name d3 --image RedHat:RHEL:7-RAW-CI:latest --size Standard_DS3_v2_Promo --admin-username rhel --nics d3-client d3-cluster --data-disk-sizes-gb 10 --no-wait
-az vm create --resource-group gluster-iscsi --name d4 --image RedHat:RHEL:7-RAW-CI:latest --size Standard_DS3_v2_Promo --admin-username rhel --nics d4-client d4-cluster --data-disk-sizes-gb 10 --no-wait
-az vm create --resource-group gluster-iscsi --name cf1 --image RedHat:RHEL:7-RAW-CI:latest --size Standard_DS3_v2_Promo --admin-username rhel --nics cf1-client cf1-cluster --data-disk-sizes-gb 10 --no-wait
-az vm create --resource-group gluster-iscsi --name cf2 --image RedHat:RHEL:7-RAW-CI:latest --size Standard_DS3_v2_Promo --admin-username rhel --nics cf2-client cf2-cluster --data-disk-sizes-gb 10 --no-wait
+#az vm create --resource-group gluster-iscsi --name d3 --image RedHat:RHEL:7-RAW-CI:latest --size Standard_DS3_v2_Promo --admin-username rhel --nics d3-client d3-cluster --data-disk-sizes-gb 10 --no-wait
+#az vm create --resource-group gluster-iscsi --name d4 --image RedHat:RHEL:7-RAW-CI:latest --size Standard_DS3_v2_Promo --admin-username rhel --nics d4-client d4-cluster --data-disk-sizes-gb 10 --no-wait
+az vm create --resource-group gluster-iscsi --name cf1 --image RedHat:RHEL:7-RAW-CI:latest --size Standard_DS3_v2_Promo --admin-username rhel --nics cf1-client cf1-cluster cf1-db2client --data-disk-sizes-gb 10 --no-wait
+az vm create --resource-group gluster-iscsi --name cf2 --image RedHat:RHEL:7-RAW-CI:latest --size Standard_DS3_v2_Promo --admin-username rhel --nics cf2-client cf2-cluster cf2-db2client --data-disk-sizes-gb 10 --no-wait
 
 # TODO: generate keypair on the jumpboxn get the public key and update the public keys on all VMs 
 # so that the jumpbox can connect to all VMs
@@ -81,8 +91,8 @@ az vm user update -g gluster-iscsi --name g2 --username rhel --ssh-key-value jum
 az vm user update -g gluster-iscsi --name g3 --username rhel --ssh-key-value jumbox_id_rsa.pub
 az vm user update -g gluster-iscsi --name d1 --username rhel --ssh-key-value jumbox_id_rsa.pub
 az vm user update -g gluster-iscsi --name d2 --username rhel --ssh-key-value jumbox_id_rsa.pub
-az vm user update -g gluster-iscsi --name d3 --username rhel --ssh-key-value jumbox_id_rsa.pub
-az vm user update -g gluster-iscsi --name d4 --username rhel --ssh-key-value jumbox_id_rsa.pub
+#az vm user update -g gluster-iscsi --name d3 --username rhel --ssh-key-value jumbox_id_rsa.pub
+#az vm user update -g gluster-iscsi --name d4 --username rhel --ssh-key-value jumbox_id_rsa.pub
 az vm user update -g gluster-iscsi --name cf1 --username rhel --ssh-key-value jumbox_id_rsa.pub
 az vm user update -g gluster-iscsi --name cf2 --username rhel --ssh-key-value jumbox_id_rsa.pub
 
@@ -98,4 +108,5 @@ az vm create --resource-group gluster-iscsi --name w1 \
     --data-disk-sizes-gb 10 10 \
     --admin-username adwin --admin-password "$adwinPassword" \
     --no-wait
+
 
