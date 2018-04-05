@@ -43,6 +43,9 @@ mkdir -p /bricks/db2quorum
 mount /dev/vg_gluster/brick1 /bricks/db2data/
 mount /dev/vg_gluster/brick2 /bricks/db2quorum/
 
+mkdir -p /bricks/db2data/db2data
+mkdir -p /bricks/db2quorum/db2quorum
+
 cat >> /etc/fstab <<EOF
 /dev/vg_gluster/brick1  /bricks/db2data    xfs     defaults    0 0
 /dev/vg_gluster/brick2  /bricks/db2quorum    xfs     defaults    0 0
@@ -56,3 +59,16 @@ firewall-cmd --reload
 #start gluster
 systemctl enable glusterd
 systemctl start glusterd
+
+gluster peer probe g1b
+gluster peer probe g2b
+gluster peer probe g3b
+
+gluster pool list
+
+mkdir -p /db2/data
+mkdir -p /db2/quorum
+
+#create gluster volumes
+gluster volume create db2data replica 3 g1b:/bricks/db2data/db2data g2b:/bricks/db2data/db2data g3b:/bricks/db2data/db2data
+gluster volume create db2quorum replica 3 g1b:/bricks/db2quorum/db2quorum g2b:/bricks/db2quorum/db2quorum g3b:/bricks/db2quorum/db2quorum

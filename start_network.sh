@@ -28,8 +28,8 @@ default via 0.0.0.0 dev eth0 table eth0-rt
 EOF
 
 cat > /etc/sysconfig/network-scripts/rule-eth1 << EOF
-from 192.168.3.$lastip/32 table eth1-rt
-to 192.168.3.$lastip/32 table eth1-rt
+from 192.168.2.$lastip/32 table eth1-rt
+to 192.168.2.$lastip/32 table eth1-rt
 EOF
 
 cat > /etc/sysconfig/network-scripts/route-eth1 << EOF
