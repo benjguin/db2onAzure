@@ -35,17 +35,17 @@ az network nsg create \
 az network nsg rule create --nsg-name gluster-nsg -g $rg --name allow-ssh --description "SSHDB2" --protocol tcp --priority 101 --destination-port-range "22"
 
 echo "Creating 2 Nics per Gluster VM..."
-az network nic create --resource-group $rg --name g1-client --vnet-name gluster --subnet client --network-security-group gluster-nsg --private-ip-address 192.168.1.10
-az network nic create --resource-group $rg --name g1-backend --vnet-name gluster --subnet backend --network-security-group gluster-nsg --private-ip-address 192.168.2.10
-az network nic create --resource-group $rg --name g2-client --vnet-name gluster --subnet client --network-security-group gluster-nsg --private-ip-address 192.168.1.11
-az network nic create --resource-group $rg --name g2-backend --vnet-name gluster --subnet backend --network-security-group gluster-nsg --private-ip-address 192.168.2.11
-az network nic create --resource-group $rg --name g3-client --vnet-name gluster --subnet client --network-security-group gluster-nsg --private-ip-address 192.168.1.12
-az network nic create --resource-group $rg --name g3-backend --vnet-name gluster --subnet backend --network-security-group gluster-nsg --private-ip-address 192.168.2.12
+az network nic create --resource-group $rg --name g1-client --vnet-name gluster --subnet client --network-security-group gluster-nsg --private-ip-address 192.168.1.10 --accelerated-networking true
+az network nic create --resource-group $rg --name g1-backend --vnet-name gluster --subnet backend --network-security-group gluster-nsg --private-ip-address 192.168.2.10 --accelerated-networking true
+az network nic create --resource-group $rg --name g2-client --vnet-name gluster --subnet client --network-security-group gluster-nsg --private-ip-address 192.168.1.11 --accelerated-networking true
+az network nic create --resource-group $rg --name g2-backend --vnet-name gluster --subnet backend --network-security-group gluster-nsg --private-ip-address 192.168.2.11 --accelerated-networking true
+az network nic create --resource-group $rg --name g3-client --vnet-name gluster --subnet client --network-security-group gluster-nsg --private-ip-address 192.168.1.12 --accelerated-networking true
+az network nic create --resource-group $rg --name g3-backend --vnet-name gluster --subnet backend --network-security-group gluster-nsg --private-ip-address 192.168.2.12 --accelerated-networking true
 
 echo "Create Gluster VM's..."
-az vm create --resource-group $rg --name g1 --image RedHat:RHEL:7-RAW-CI:latest --size Standard_DS3_v2 --admin-username rhel --nics g1-client g1-backend --data-disk-sizes-gb 10 --no-wait
-az vm create --resource-group $rg --name g2 --image RedHat:RHEL:7-RAW-CI:latest --size Standard_DS3_v2 --admin-username rhel --nics g2-client g2-backend --data-disk-sizes-gb 10 --no-wait
-az vm create --resource-group $rg --name g3 --image RedHat:RHEL:7-RAW-CI:latest --size Standard_DS3_v2 --admin-username rhel --nics g3-client g3-backend --data-disk-sizes-gb 10 --no-wait
+az vm create --resource-group $rg --name g1 --image RedHat:RHEL:7-RAW-CI:latest --size Standard_DS3_v2 --admin-username rhel --nics g1-client g1-backend --data-disk-sizes-gb 10 --no-wait --custom-data start_network.sh
+az vm create --resource-group $rg --name g2 --image RedHat:RHEL:7-RAW-CI:latest --size Standard_DS3_v2 --admin-username rhel --nics g2-client g2-backend --data-disk-sizes-gb 10 --no-wait --custom-data start_network.sh
+az vm create --resource-group $rg --name g3 --image RedHat:RHEL:7-RAW-CI:latest --size Standard_DS3_v2 --admin-username rhel --nics g3-client g3-backend --data-disk-sizes-gb 10 --no-wait --custom-data start_network.sh
 
 echo "Create Jumpbox.."
 az network public-ip create -g $rg -n jumpbox-pubip --allocation-method Static --dns-name jumpboxgluster
