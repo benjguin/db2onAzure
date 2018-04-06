@@ -16,6 +16,7 @@ cd /data2
 mkdir db2bits/
 cd db2bits/
 curl -o v11.1_linuxx64_server_t.tar.gz "$db2bits"
+tar xzvf v11.1_linuxx64_server_t.tar.gz
 
 #TODO: have to copy the script so that it is available
 ./start_network.sh
@@ -189,7 +190,7 @@ sdg                                       8:96   0 93.1G  0 disk
 from the GUI, open a terminal and run 
 
 ```bash
-/data1/db2bits/server_t/db2setup -l /tmp/db2setup.log -t /tmp/db2setup.trc
+/data2/db2bits/server_t/db2setup -l /tmp/db2setup.log -t /tmp/db2setup.trc
 ```
 
 Documentation is [here](https://www.ibm.com/support/knowledgecenter/en/SSEPGG_11.1.0/com.ibm.db2.luw.qb.server.doc/doc/t0054851.html?pos=2)
@@ -218,3 +219,12 @@ Host List | d1 [eth1], d2 [eth1], cf1 [eth1], cf3 [eth1]|
 Response File and Summary | first option | Install DB2 Server Edition with the IBM DB2 pureScale feature and save my settings in a response file
 '' | Response file name | /root/db2server.rsp
 
+this generated a reponse file (available in this repo: `db2server.rsp`) that can be used for a setup with the response file.
+
+```bash
+ssh 192.168.1.20
+sudo su
+
+tentativenum=180406d
+/data2/db2bits/server_t/db2setup -r /root/db2server.rsp -l /tmp/db2setup_${tentativenum}.log -t /tmp/db2setup_${tentativenum}.trc
+```
