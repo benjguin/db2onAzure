@@ -34,8 +34,11 @@ Add-IscsiVirtualDiskTargetMapping -Path G:\ivhdx1.vhdx -TargetName w1i0 -Lun 1
 (Get-IscsiServerTarget w1i0).LunMappings
 
 # IQN can be found on intiator: `cat /etc/iscsi/initiatorname.iscsi`
-Set-IscsiServerTarget -TargetName w1i0 -InitiatorIds "IQN:iqn.1994-05.com.redhat:c4e37143a6fa"
-
+Set-IscsiServerTarget -TargetName w1i0 -InitiatorIds `
+    ("IQN:iqn.1994-05.com.redhat:c4e37143a6fa", `
+    "IQN:iqn.1994-05.com.redhat:242e56883d62", `
+    "IQN:iqn.1994-05.com.redhat:fd582735ef35", `
+    "IQN:iqn.1994-05.com.redhat:b58d9add7fcc")
 
 #NB: this is for dev/test only here, no authentication was added at all
 
