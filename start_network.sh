@@ -33,7 +33,7 @@ to 192.168.3.$lastip/32 table eth1-rt
 EOF
 
 cat > /etc/sysconfig/network-scripts/route-eth1 << EOF
-192.168.2.0/24 dev eth1 table eth1-rt
+192.168.3.0/24 dev eth1 table eth1-rt
 default via 0.0.0.0 dev eth1 table eth1-rt
 EOF
 

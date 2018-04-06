@@ -6,6 +6,8 @@
 
 # the following must be set before `create_azure_sources.sh`
 subscription="my azure subscription"
+pubKeyPath=~/.ssh/id_rsa.pub
+adwinPassword="Hell0World!"
 
 # the following must be set before `db2_setup.sh`
 jumpbox="jump.example.com"
