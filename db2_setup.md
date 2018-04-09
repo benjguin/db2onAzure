@@ -62,7 +62,7 @@ firewall-cmd --reload
 
 # install pre-requisistes
 yum update -y
-yum install -y gcc gcc-c++ libstdc++*.i686 numactl sg3_utils kernel-devel compat-libstdc++-33.i686 compat-libstdc++-33.x86_64 pam-devel.i686 pam-devel.x86_64 ksh iscsi-initiator-utils device-mapper-multipath.x86_64 m4 yum install -y perl-Sys-Syslog patch
+yum install -y gcc gcc-c++ libstdc++*.i686 numactl sg3_utils kernel-devel compat-libstdc++-33.i686 compat-libstdc++-33.x86_64 pam-devel.i686 pam-devel.x86_64 ksh iscsi-initiator-utils device-mapper-multipath.x86_64 m4 perl-Sys-Syslog patch
 
 sed -i s/SELINUX=enforcing/SELINUX=disabled/ /etc/selinux/config
 #reboot needed?
