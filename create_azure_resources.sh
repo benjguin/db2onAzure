@@ -115,6 +115,6 @@ az network nic create --resource-group gluster-iscsi --name w1-client --vnet-nam
 az vm create --resource-group gluster-iscsi --name w1 \
     --image MicrosoftWindowsServer:WindowsServer:2016-Datacenter:latest \
     --size Standard_DS3_v2_Promo --nics w1-client \
-    --data-disk-sizes-gb 10 10 \
+    --data-disk-sizes-gb 512 \
     --admin-username adwin --admin-password "$adwinPassword" \
     --no-wait

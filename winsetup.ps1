@@ -1,11 +1,11 @@
 # RDP to the node and use this PowerShell script
 
 #https://docs.microsoft.com/en-us/azure/virtual-machines/windows/attach-disk-ps
-$disks = Get-Disk | Where partitionstyle -eq 'raw' | sort number
+$disks = Get-Disk | where partitionstyle -eq 'raw' | sort number
 
-$letters = 70..89 | ForEach-Object { [char]$_ }
+$letters = "FGHI" # only F will be used
 $count = 0
-$labels = "data1","data2","data3","data4"
+$labels = "data1","data2","data3","data4" # only data1 will be used
 
 foreach ($disk in $disks) {
     $driveLetter = $letters[$count].ToString()
@@ -19,17 +19,17 @@ $count++
 Install-WindowsFeature FS-IscsiTarget-Server
 New-IscsiServerTarget -TargetName w1i0
 
-Get-Volume
-Get-VirtualDisk
-#Remove-VirtualDisk -FriendlyName "diskvol0" -Confirm:$false
-Get-Volume | where DriveLetter -eq "F" | fl *
-New-IscsiVirtualDisk -Path F:\ivhdx0.vhdx -SizeBytes 10000000000 -UseFixed -DoNotClearData
+Get-Volume | where DriveLetter -eq "F" | fromat-list *
 
-Get-Volume | where DriveLetter -eq "G" | fl *
-New-IscsiVirtualDisk -Path G:\ivhdx1.vhdx -SizeBytes 10000000000 -UseFixed -DoNotClearData
+New-IscsiVirtualDisk -Path F:\ivhdx0.vhdx -SizeBytes 107374182400 -UseFixed #-DoNotClearData
+New-IscsiVirtualDisk -Path F:\ivhdx1.vhdx -SizeBytes 107374182400 -UseFixed #-DoNotClearData
+New-IscsiVirtualDisk -Path F:\ivhdx2.vhdx -SizeBytes 107374182400 -UseFixed #-DoNotClearData
+New-IscsiVirtualDisk -Path F:\ivhdx3.vhdx -SizeBytes 107374182400 -UseFixed #-DoNotClearData
 
 Add-IscsiVirtualDiskTargetMapping -Path F:\ivhdx0.vhdx -TargetName w1i0 -Lun 0
-Add-IscsiVirtualDiskTargetMapping -Path G:\ivhdx1.vhdx -TargetName w1i0 -Lun 1
+Add-IscsiVirtualDiskTargetMapping -Path F:\ivhdx1.vhdx -TargetName w1i0 -Lun 1
+Add-IscsiVirtualDiskTargetMapping -Path F:\ivhdx2.vhdx -TargetName w1i0 -Lun 2
+Add-IscsiVirtualDiskTargetMapping -Path F:\ivhdx3.vhdx -TargetName w1i0 -Lun 3
 
 (Get-IscsiServerTarget w1i0).LunMappings
 
