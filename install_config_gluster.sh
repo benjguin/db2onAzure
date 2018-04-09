@@ -15,7 +15,7 @@ EOF
 
 #Install stuff
 yum update -y
-cat >> /etc/yum.repos.d/Gluster.repo <<EOF
+cat > /etc/yum.repos.d/Gluster.repo <<'EOF'
 [gluster38]
 name=Gluster 3.8
 baseurl=http://mirror.centos.org/centos/7/storage/$basearch/gluster-3.8/
@@ -23,8 +23,7 @@ gpgcheck=0
 enabled=1
 EOF
 
-yum install glusterfs glusterfs-cli glusterfs-libs  -y
-yum install -y  glusterfs-cli glusterfs-libs glusterfs-server
+yum install glusterfs glusterfs-cli glusterfs-libs glusterfs-server -y
 
 #prepare the disks
 pvcreate /dev/sdc
@@ -52,8 +51,9 @@ cat >> /etc/fstab <<EOF
 EOF
 
 #firewall
-firewall-cmd --zone=public --add-port=24007-24008/tcp --permanent
+firewall-cmd --zone=public --add-port=24007-24010/tcp --permanent
 firewall-cmd --zone=public --add-port=49152-49160/tcp --permanent
+firewall-cmd --zone=public --add-port=3260/tcp --permanent
 firewall-cmd --reload
 
 #start gluster
@@ -76,6 +76,8 @@ gluster volume create db2quorum replica 3 g1b:/bricks/db2quorum/db2quorum g2b:/b
 gluster volume start db2data
 gluster volume start db2quorum
 
+mount -t glusterfs g1b:/db2data /db2/data/
+
 #gluster block
 
 yum -y install http://cbs.centos.org/kojifiles/packages/tcmu-runner/1.3.0/0.2rc4.el7/x86_64/libtcmu-1.3.0-0.2rc4.el7.x86_64.rpm
@@ -88,4 +90,4 @@ systemctl enable gluster-blockd
 systemctl status gluster-blockd
 
 #create gluster-block device file
-gluster-block create sampleVol/elasticBlock ha 3 10.70.35.109,10.70.35.104,10.70.35.51 40GiB
+gluster-block create db2data/GFS ha 3 192.168.1.10,192.168.1.11,192.168.1.12 90GiB

@@ -35,7 +35,8 @@ az network nsg create \
 az network nsg rule create --nsg-name gluster-nsg -g $rg --name allow-ssh --description "SSHDB2" --protocol tcp --priority 101 --destination-port-range "22"
 az network nsg rule create --nsg-name gluster-nsg -g $rg --name allow-iscsi --description "iSCSI" --protocol tcp --priority 201 --destination-port-range "3260"
 az network nsg rule create --nsg-name gluster-nsg -g $rg --name allow-gluster-bricks --description "Gluster-bricks" --protocol tcp --priority 202 --destination-port-range "49152-49160"
-az network nsg rule create --nsg-name gluster-nsg -g $rg --name allow-gluster-daemon --description "Gluster-daemon" --protocol "*" --priority 203 --destination-port-range "24007-24008"
+az network nsg rule create --nsg-name gluster-nsg -g $rg --name allow-gluster-daemon --description "Gluster-daemon" --protocol "*" --priority 203 --destination-port-range "24007-24010"
+az network nsg rule create --nsg-name gluster-nsg -g $rg --name allow-rpcbind --description "RPCbind" --protocol "*" --priority 204 --destination-port-range "111"
 
 
 echo "Creating 2 Nics per Gluster VM..."
