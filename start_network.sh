@@ -61,8 +61,13 @@ default via 0.0.0.0 dev eth0 table eth0-rt
 EOF
 
 cat > /etc/sysconfig/network-scripts/rule-eth1 << EOF
+<<<<<<< HEAD
+from 192.168.2.$lastip/32 table eth1-rt
+to 192.168.2.$lastip/32 table eth1-rt
+=======
 from 192.168.$eth1subnetip.$lastip/32 table eth1-rt
 to 192.168.$eth1subnetip.$lastip/32 table eth1-rt
+>>>>>>> f7a94f8ab17b9e9ceda2f6d3c4235f717a360dcd
 EOF
 
 cat > /etc/sysconfig/network-scripts/route-eth1 << EOF
