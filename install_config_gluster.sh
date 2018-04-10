@@ -45,13 +45,15 @@ pvcreate /dev/sdc
 pvcreate /dev/sdd
 vgcreate vg_gluster /dev/sdc /dev/sdd
 
-lvcreate -L 2000G -n brick1 vg_gluster
+lvcreate -L 1999G -n brick1 vg_gluster
 
 mkfs.xfs /dev/vg_gluster/brick1
 
 mkdir -p /bricks/db2data
 
 mount /dev/vg_gluster/brick1 /bricks/db2data/
+
+mkdir -p /bricks/db2data/db2data
 
 cat >> /etc/fstab <<EOF
 /dev/vg_gluster/brick1  /bricks/db2data    xfs     defaults    0 0
