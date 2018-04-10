@@ -2,6 +2,9 @@
 
 #install and configure gluster
 
+ip=`hostname -I`
+lastip=`echo ${ip//*.}`
+
 #setup DNS static
 cat >> /etc/hosts <<EOF
 192.168.1.10 g1
@@ -12,6 +15,18 @@ cat >> /etc/hosts <<EOF
 192.168.2.11 g2b
 192.168.2.12 g3b
 EOF
+
+cat > /etc/sysconfig/network-scripts/ifcfg-eth1 <<EOF
+BOOTPROTO=static
+IPADDR=192.168.2.$lastip
+DEVICE=eth1
+DEFROUTE=no
+ONBOOT=yes
+TYPE=Ethernet
+USERCTL=no
+EOF
+
+ifup eth1
 
 #Install stuff
 yum update -y
@@ -37,8 +52,6 @@ mkfs.xfs /dev/vg_gluster/brick1
 mkdir -p /bricks/db2data
 
 mount /dev/vg_gluster/brick1 /bricks/db2data/
-
-mkdir -p /bricks/db2data/db2data
 
 cat >> /etc/fstab <<EOF
 /dev/vg_gluster/brick1  /bricks/db2data    xfs     defaults    0 0

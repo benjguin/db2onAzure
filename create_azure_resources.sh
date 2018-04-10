@@ -53,9 +53,9 @@ az network nic create --resource-group $rg --name g3-client --vnet-name gluster 
 az network nic create --resource-group $rg --name g3-backend --vnet-name gluster --subnet backend --network-security-group gluster-nsg --private-ip-address 192.168.2.12 --accelerated-networking true
 
 echo "Create Gluster VM's..."
-az vm create --resource-group $rg --name g1 --image RedHat:RHEL:7-RAW-CI:latest --size Standard_DS3_v2 --admin-username rhel --nics g1-client g1-backend --data-disk-sizes-gb 50 50 --no-wait --custom-data start_network.sh
-az vm create --resource-group $rg --name g2 --image RedHat:RHEL:7-RAW-CI:latest --size Standard_DS3_v2 --admin-username rhel --nics g2-client g2-backend --data-disk-sizes-gb 50 50 --no-wait --custom-data start_network.sh
-az vm create --resource-group $rg --name g3 --image RedHat:RHEL:7-RAW-CI:latest --size Standard_DS3_v2 --admin-username rhel --nics g3-client g3-backend --data-disk-sizes-gb 50 50 --no-wait --custom-data start_network.sh
+az vm create --resource-group $rg --name g1 --image RedHat:RHEL:7-RAW-CI:latest --size Standard_DS3_v2 --admin-username rhel --nics g1-client g1-backend --data-disk-sizes-gb 1000 1000 --no-wait #--custom-data start_network.sh
+az vm create --resource-group $rg --name g2 --image RedHat:RHEL:7-RAW-CI:latest --size Standard_DS3_v2 --admin-username rhel --nics g2-client g2-backend --data-disk-sizes-gb 1000 1000 --no-wait #--custom-data start_network.sh
+az vm create --resource-group $rg --name g3 --image RedHat:RHEL:7-RAW-CI:latest --size Standard_DS3_v2 --admin-username rhel --nics g3-client g3-backend --data-disk-sizes-gb 1000 1000 --no-wait #--custom-data start_network.sh
 
 echo "Create Jumpbox.."
 az network public-ip create -g $rg -n jumpbox-pubip --allocation-method Static --dns-name jumpboxgluster
