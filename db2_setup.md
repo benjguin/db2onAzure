@@ -9,6 +9,7 @@ please execute `private.sh` before this script in order to setup variables
 
 ```bash
 # then connect to d1:
+scp $localgithubfolder/start_network.sh rhel@$jumpbox:~/
 ssh rhel@$jumpbox
 ssh 192.168.1.20
 sudo su
@@ -19,15 +20,6 @@ mkdir db2bits/
 cd db2bits/
 curl -o v11.1_linuxx64_server_t.tar.gz "$db2bits"
 tar xzvf v11.1_linuxx64_server_t.tar.gz
-
-#TODO: have to copy the script so that it is available
-./start_network.sh
-
-# cf https://www.ibm.com/support/knowledgecenter/en/SSEPGG_11.1.0/com.ibm.db2.luw.qb.server.doc/doc/t0055342.html?pos=3
-cat >> /etc/ssh/sshd_config << EOF
-
-PermitRootLogin yes
-EOF
 
 ssh-keygen -t dsa -f /root/.ssh/id_dsa -q -N ""
 cp /root/.ssh/id_dsa.pub /home/rhel/root_id_dsa.pub
@@ -42,19 +34,24 @@ scp rhel@192.168.1.20:/home/rhel/root_id_dsa.pub .
 # {all_db2_nodes{
 nodeip=192.168.1.21
 
-scp root_id_dsa.pub rhel@$nodeip:/home/rhel/
+scp -o StrictHostKeyChecking=no root_id_dsa.pub rhel@$nodeip:~/
+scp start_network.sh rhel@$nodeip:~/
 ssh $nodeip
 sudo su
 cat /home/rhel/root_id_dsa.pub >> /root/.ssh/authorized_keys
+# cf https://www.ibm.com/support/knowledgecenter/en/SSEPGG_11.1.0/com.ibm.db2.luw.qb.server.doc/doc/t0055342.html?pos=3
 cat >> /etc/ssh/sshd_config << EOF
 
 PermitRootLogin yes
 EOF
 
-cat << EOF >> /etc/ssh/ssh_config 
-Port 22
-Protocol 2,1
-EOF
+#TODO: have to copy the script so that it is available
+source /home/rhel/start_network.sh
+
+#cat << EOF >> /etc/ssh/ssh_config 
+#Port 22
+#Protocol 2,1
+#EOF
 
 firewall-cmd --add-port=56000/tcp --permanent
 firewall-cmd --add-port=56001/tcp --permanent
@@ -65,12 +62,36 @@ firewall-cmd --reload
 # install pre-requisistes
 yum update -y
 yum install -y gcc gcc-c++ libstdc++*.i686 numactl sg3_utils kernel-devel compat-libstdc++-33.i686 compat-libstdc++-33.x86_64 pam-devel.i686 pam-devel.x86_64 ksh iscsi-initiator-utils device-mapper-multipath.x86_64 m4 perl-Sys-Syslog patch
+#TODO: consolidate with previous line
+yum install -y rdma dapl ibacm ibutils libcxgb3 libibmad libipathverbs libmlx4 libmlx5 libmthca libnes libstdc++ glibc  gcc-c++ gcc kernel kernel-devel kernel-headers kernel-firmware ntp ntpdate sg3_utils sg3_utils-libs binutils binutils-devel m4 openssh cpp ksh libgcc file libgomp make patch perl-Sys-Sylog
 
 sed -i s/SELINUX=enforcing/SELINUX=disabled/ /etc/selinux/config
-#reboot needed?
+setenforce 0
 
-#TODO: have to copy the script so that it is available
-./start_network.sh
+# force initiator for the dev environment. Should retrieve them and update the target server instead.
+case `hostname` in
+"d1")
+cat <<EOF >/etc/iscsi/initiatorname.iscsi
+InitiatorName=iqn.1994-05.com.redhat:c4e37143a6fa
+EOF
+;;
+"d2")
+cat <<EOF >/etc/iscsi/initiatorname.iscsi
+InitiatorName=iqn.1994-05.com.redhat:242e56883d62
+EOF
+;;
+"cf1")
+cat <<EOF >/etc/iscsi/initiatorname.iscsi
+InitiatorName=iqn.1994-05.com.redhat:fd582735ef35
+EOF
+;;
+"cf2")
+cat <<EOF >/etc/iscsi/initiatorname.iscsi
+InitiatorName=iqn.1994-05.com.redhat:b58d9add7fcc
+EOF
+;;
+esac
+cat /etc/iscsi/initiatorname.iscsi
 
 cat << EOF >> /etc/hosts 
 192.168.3.20 d1
@@ -93,19 +114,18 @@ cat << EOF >> /etc/hosts
 EOF
 
 # define the witness. cf https://www.ibm.com/support/knowledgecenter/en/SSEPGG_11.1.0/com.ibm.db2.luw.qb.server.doc/doc/t0061581.html
-cat <<EOF > /var/ct/cfg/netmon.cf
-!REQD eth0 192.168.1.30
-!REQD eth1 192.168.3.60
-EOF
-
-nbnics=`ls -A /sys/class/net/ | wc -l`
-if [ $nbnics == 4 ]
-then
-cat <<EOF >> /var/ct/cfg/netmon.cf
-!REQD eth2 192.168.4.60
-EOF
-fi
-
+#cat <<EOF > /var/ct/cfg/netmon.cf
+#!REQD eth0 192.168.1.30
+#!REQD eth1 192.168.3.60
+#EOF
+#
+#nbnics=`ls -A /sys/class/net/ | wc -l`
+#if [ $nbnics == 4 ]
+#then
+#cat <<EOF >> /var/ct/cfg/netmon.cf
+#!REQD eth2 192.168.4.60
+#EOF
+#fi
 
 #format data disk and mount it
 printf "n\np\n1\n\n\np\nw\n" | fdisk /dev/sdc
@@ -145,15 +165,13 @@ chkconfig multipathd on
 
 multipath -l
 
-cat /etc/iscsi/initiatorname.iscsi
-# this has to be put on the iSCSI target servers so that they accept connections from this node
-
 iscsiadm -m discovery -t sendtargets -p 192.168.1.30
-iscsiadm -m node -L automatic
+iscsiadm -m node -L automatic # TODO: a timeout happens on an IP V6 address, no consequence
 iscsiadm -m session 
 multipath -l
 
 fdisk -l | grep /dev/mapper/3
+lsblk
 
 #fi # }connect to iscsi}
 
@@ -163,29 +181,46 @@ groupadd --gid 342 db2fadm1
 useradd -g db2iadm1 -m -d /home/db2sdin1 db2sdin1
 useradd -g db2fadm1 -m -d /home/db2sdfe1 db2sdfe1
 
-reboot
+exit
+exit
 # back to jumpbox
 # }all_db2_nodes}
 
 ssh 192.168.1.20
 sudo su
 
+cat <<EOF >~/.ssh/config
+Host *
+    StrictHostKeyChecking no
+EOF
+chmod 400 ~/.ssh/config
+
 cat /root/.ssh/id_dsa.pub >> /root/.ssh/authorized_keys
 scp /root/.ssh/id_dsa 192.168.1.21:/root/.ssh
 scp /root/.ssh/id_dsa 192.168.1.40:/root/.ssh
 scp /root/.ssh/id_dsa 192.168.1.41:/root/.ssh
-
+scp /root/.ssh/config 192.168.1.21:/root/.ssh
+scp /root/.ssh/config 192.168.1.40:/root/.ssh
+scp /root/.ssh/config 192.168.1.41:/root/.ssh
 
 # db2_install help : https://www.ibm.com/support/knowledgecenter/en/SSEPGG_11.1.0/com.ibm.db2.luw.admin.cmd.doc/doc/r0023669.html
 #/data1/db2bits/server_t/db2_install -y -b /opt/IBM/db2 -p SERVER -f PURESCALE -t /tmp/db2_install.trc -l /tmp/db2_install.log
 # this leads to a GPFS exception. So try the Db2 setup wizard which requires GUI
 
 # install GUI
-yum group install "Server with GUI"
+yum group install -y "Server with GUI"
 #check if the following lines are needed
 sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/g' /etc/ssh/sshd_config
 firewall-cmd --add-port=3389/tcp --permanent
 firewall-cmd --reload
+
+rpm -Uvh https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+rpm -Uvh http://li.nux.ro/download/nux/dextop/el7/x86_64/nux-dextop-release-0-1.el7.nux.noarch.rpm
+yum -y install xrdp 
+systemctl start xrdp.service
+netstat -antup | grep 3389
+# Set XRDP service to automatically start when VM starts
+chkconfig xrdp on
 
 passwd root
 ```
@@ -222,7 +257,8 @@ sdg                                       8:96   0 93.1G  0 disk
 from the GUI, open a terminal and run 
 
 ```bash
-/data2/db2bits/server_t/db2setup -l /tmp/db2setup.log -t /tmp/db2setup.trc
+tentativenum=180410b
+/data2/db2bits/server_t/db2setup -l /tmp/db2setup_${tentativenum}.log -t /tmp/db2setup_${tentativenum}.trc
 ```
 
 Documentation is [here](https://www.ibm.com/support/knowledgecenter/en/SSEPGG_11.1.0/com.ibm.db2.luw.qb.server.doc/doc/t0054851.html?pos=2)
@@ -240,16 +276,113 @@ Instance Owner | Password and Confirm password | ##obfuscated## |
 Fenced User | Password and Confirm password | ##obfuscated## |
 Cluster File System | Shared disk partition device path | /dev/sdd |
 '' | Mount point | /db2sd_1804a |
-'' | Shared disk for data | /dev/sdf |
+'' | Shared disk for data | /dev/sde |
 '' | Mount point (Data) | /db2fs/datafs1 |
-'' | Shared disk for log | /dev/sdg |
+'' | Shared disk for log | /dev/sdf |
 '' | Mount point (Log) | /db2fs/logfs1 |
-'' | DB2 Cluster Services Tiebreaker. Device path | /dev/sde |
-Host List | d1 [eth1], d2 [eth1], cf1 [eth1], cf3 [eth1]|
+'' | DB2 Cluster Services Tiebreaker. Device path | /dev/sdg |
+Host List | d1 [eth1], d2 [eth1], cf1 [eth1], cf2 [eth1]|
 '' | Preferred primary CF | cf1 |
-'' | Preferred primary CF | cf2 |
+'' | Preferred secondary CF | cf2 |
 Response File and Summary | first option | Install DB2 Server Edition with the IBM DB2 pureScale feature and save my settings in a response file
 '' | Response file name | /root/db2server.rsp
+
+The full summary reads: 
+
+```
+                                        
+Product to install:                     	DB2 Server Edition 
+Installation type:                      	Custom 
+                                        
+Previously Installed Components:        
+                                        
+Components to be installed:             
+    Base client support                 	
+    Java support                        	
+    SQL procedures                      	
+    Base server support                 	
+    DB2 data source support             	
+    ODBC data source support            	
+    Teradata data source support        	
+    Spatial Extender server support     	
+    Scientific Data Sources             	
+    JDBC data source support            	
+    IBM Software Development Kit (SDK) for Java(TM) 	
+    DB2 LDAP support                    	
+    DB2 Instance Setup wizard           	
+    Structured file data sources        	
+    Integrated Flash Copy Support       	
+    General Parallel File System (GPFS) 	
+    Oracle data source support          	
+    Connect support                     	
+    Application data sources            	
+    Spatial Extender client             	
+    SQL Server data source support      	
+    Communication support - TCP/IP      	
+    Tivoli SA MP                        	
+    Base application development tools  	
+    DB2 Update Service                  	
+    Replication tools                   	
+    Sample database source              	
+    DB2 Text Search                     	
+    Sybase data source support          	
+    Informix data source support        	
+    Federated Data Access Support       	
+    IBM DB2 pureScale Feature           	
+    First Steps                         	
+    Guardium Installation Manager Client 	
+                                        
+Languages:                              
+    English                             	
+        All Products                    	
+                                        
+Target directory:                       	/opt/ibm/db2/V11.1
+                                        
+Maximum space required on each host:    	3300 MB
+Install IBM Tivoli System Automation for Multiplatforms (Tivoli SA MP): 	Yes 
+                                        
+DB2 cluster services:                   
+    Mount point:                        	/db2sd_1804a
+    DB2 cluster services tiebreaker disk device path: 	/dev/sdg
+    DB2 cluster file system device path: 	/dev/sdd
+                                        
+New instances:                          
+    Instance name:                      	db2sdin2
+        FCM port range:                 	60000-60005
+        CF port:                        	56001
+        CF Management port:             	56000
+        TCP/IP configuration:           	
+            Service name:               	db2c_db2sdin2
+            Port number:                	50000
+        Instance user information:      	
+            User name:                  	db2sdin2
+            UID:                        	100
+            Group name:                 	db2iadm1
+            GID:                        	341
+            Home directory:             	/home/db2sdin2
+        Fenced user information:        	
+            User name:                  	db2sdfe2
+            UID:                        	101
+            Group name:                 	db2fadm1
+            GID:                        	342
+            Home directory:             	/home/db2sdfe2
+                                        
+Cluster caching facilities:             
+    Preferred primary cluster caching facility: 	cf1
+    Preferred secondary cluster caching facility: 	cf2
+DB2 members:                            
+    d1                                  	
+    d2                                  	
+                                        
+                                        
+New Host List:                          
+    Host                                	Cluster Interconnect Netname 
+    d1                                  	d1
+    d2                                  	d2
+    cf1                                 	cf1
+    cf2                                 	cf2
+```
+
 
 this generated a reponse file (available in this repo: `db2server.rsp`) that can be used for a setup with the response file.
 
@@ -257,7 +390,7 @@ this generated a reponse file (available in this repo: `db2server.rsp`) that can
 ssh 192.168.1.20
 sudo su
 
-tentativenum=180406d
+tentativenum=180410a
 /data2/db2bits/server_t/db2setup -r /root/db2server.rsp -l /tmp/db2setup_${tentativenum}.log -t /tmp/db2setup_${tentativenum}.trc
 ```
 
