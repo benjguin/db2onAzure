@@ -1,5 +1,7 @@
 # DB2 setup
 
+## configure the nodes, and setup DB2 pureScale
+
 NB: this was not translated to a proper bash script yet.
 For now, you have to copy and paste this code to your terminal.
 
@@ -70,6 +72,41 @@ sed -i s/SELINUX=enforcing/SELINUX=disabled/ /etc/selinux/config
 #TODO: have to copy the script so that it is available
 ./start_network.sh
 
+cat << EOF >> /etc/hosts 
+192.168.3.20 d1
+192.168.3.21 d2
+192.168.3.40 cf1
+192.168.3.41 cf2
+192.168.1.20 d1-eth0
+192.168.1.21 d2-eth0
+192.168.1.40 cf1-eth0
+192.168.1.41 cf2-eth0
+192.168.3.20 d1-eth1
+192.168.3.21 d2-eth1
+192.168.3.40 cf1-eth1
+192.168.3.41 cf2-eth1
+192.168.4.40 cf1-eth2
+192.168.4.41 cf2-eth2
+192.168.1.30 witn0-eth0
+192.168.3.60 witn1-eth1
+192.168.4.60 witn1-eth2
+EOF
+
+# define the witness. cf https://www.ibm.com/support/knowledgecenter/en/SSEPGG_11.1.0/com.ibm.db2.luw.qb.server.doc/doc/t0061581.html
+cat <<EOF > /var/ct/cfg/netmon.cf
+!REQD eth0 192.168.1.30
+!REQD eth1 192.168.3.60
+EOF
+
+nbnics=`ls -A /sys/class/net/ | wc -l`
+if [ $nbnics == 4 ]
+then
+cat <<EOF >> /var/ct/cfg/netmon.cf
+!REQD eth2 192.168.4.60
+EOF
+fi
+
+
 #format data disk and mount it
 printf "n\np\n1\n\n\np\nw\n" | fdisk /dev/sdc
 printf "\n" | mkfs -t ext4 /dev/sdc1
@@ -120,16 +157,11 @@ fdisk -l | grep /dev/mapper/3
 
 #fi # }connect to iscsi}
 
-cat << EOF >> /etc/hosts 
-192.168.3.20 d1
-192.168.1.20 d1b
-192.168.3.21 d2
-192.168.1.21 d2b
-192.168.3.40 cf1
-192.168.1.40 cf1b
-192.168.3.41 cf2
-192.168.1.41 cf2b
-EOF
+#https://www.ibm.com/support/knowledgecenter/en/SSEPGG_11.1.0/com.ibm.db2.luw.qb.server.doc/doc/t0055374.html?pos=2
+groupadd --gid 341 db2iadm1
+groupadd --gid 342 db2fadm1
+useradd -g db2iadm1 -m -d /home/db2sdin1 db2sdin1
+useradd -g db2fadm1 -m -d /home/db2sdfe1 db2sdfe1
 
 reboot
 # back to jumpbox
@@ -227,4 +259,17 @@ sudo su
 
 tentativenum=180406d
 /data2/db2bits/server_t/db2setup -r /root/db2server.rsp -l /tmp/db2setup_${tentativenum}.log -t /tmp/db2setup_${tentativenum}.trc
+```
+
+## Create DB2 database, connect to it from a client
+
+```bash
+ssh rhel@$jumpbox
+ssh 192.168.1.20
+sudo su
+
+DB2DIR=/data1/opt/ibm/db2/V11.1
+# https://www.ibm.com/support/knowledgecenter/en/SSEPGG_11.1.0/com.ibm.db2.luw.qb.server.doc/doc/t0006744.html
+# https://www.ibm.com/support/knowledgecenter/en/SSEPGG_11.1.0/com.ibm.db2.luw.admin.cmd.doc/doc/r0002057.html
+$DB2DIR/instance/db2icrt -cf cf1 -cfnet cf1-eth1 -cf cf2 -cfnet cf2-eth1 -m d1 -mnet d1-eth1 -m d2 -mnet d2-eth1 -instance_shared_dev /dev/sdd -tbdev /dev/sde -u db2sdfe1 db2sdin1
 ```

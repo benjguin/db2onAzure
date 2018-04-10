@@ -72,16 +72,16 @@ LANG       = EN
 *-----------------------------------------------
 HOST       = host1
 host1.HOSTNAME       = d1
-host1.CLUSTER_INTERCONNECT_NETNAME       = d1
+host1.CLUSTER_INTERCONNECT_NETNAME       = d1-eth1
 HOST       = host2
 host2.HOSTNAME       = d2
-host2.CLUSTER_INTERCONNECT_NETNAME       = d2
+host2.CLUSTER_INTERCONNECT_NETNAME       = d2-eth1
 HOST       = host3
 host3.HOSTNAME       = cf1
-host3.CLUSTER_INTERCONNECT_NETNAME       = cf1
+host3.CLUSTER_INTERCONNECT_NETNAME       = cf1-eth1
 HOST       = host4
 host4.HOSTNAME       = cf2
-host4.CLUSTER_INTERCONNECT_NETNAME       = cf2
+host4.CLUSTER_INTERCONNECT_NETNAME       = cf2-eth1
 
 
 * ----------------------------------------------
