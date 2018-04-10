@@ -30,24 +30,18 @@ pvcreate /dev/sdc
 pvcreate /dev/sdd
 vgcreate vg_gluster /dev/sdc /dev/sdd
 
-lvcreate -L 90G -n brick1 vg_gluster
-lvcreate -L 9G -n brick2 vg_gluster
+lvcreate -L 2000G -n brick1 vg_gluster
 
 mkfs.xfs /dev/vg_gluster/brick1
-mkfs.xfs /dev/vg_gluster/brick2
 
 mkdir -p /bricks/db2data
-mkdir -p /bricks/db2quorum
 
 mount /dev/vg_gluster/brick1 /bricks/db2data/
-mount /dev/vg_gluster/brick2 /bricks/db2quorum/
 
 mkdir -p /bricks/db2data/db2data
-mkdir -p /bricks/db2quorum/db2quorum
 
 cat >> /etc/fstab <<EOF
 /dev/vg_gluster/brick1  /bricks/db2data    xfs     defaults    0 0
-/dev/vg_gluster/brick2  /bricks/db2quorum    xfs     defaults    0 0
 EOF
 
 #firewall
@@ -60,24 +54,6 @@ firewall-cmd --reload
 systemctl enable glusterd
 systemctl start glusterd
 
-gluster peer probe g1b
-gluster peer probe g2b
-gluster peer probe g3b
-
-gluster pool list
-
-mkdir -p /db2/data
-mkdir -p /db2/quorum
-
-#create gluster volumes
-gluster volume create db2data replica 3 g1b:/bricks/db2data/db2data g2b:/bricks/db2data/db2data g3b:/bricks/db2data/db2data
-gluster volume create db2quorum replica 3 g1b:/bricks/db2quorum/db2quorum g2b:/bricks/db2quorum/db2quorum g3b:/bricks/db2quorum/db2quorum
-
-gluster volume start db2data
-gluster volume start db2quorum
-
-mount -t glusterfs g1b:/db2data /db2/data/
-
 #gluster block
 
 yum -y install http://cbs.centos.org/kojifiles/packages/tcmu-runner/1.3.0/0.2rc4.el7/x86_64/libtcmu-1.3.0-0.2rc4.el7.x86_64.rpm
@@ -88,6 +64,3 @@ yum -y install http://cbs.centos.org/kojifiles/packages/gluster-block/0.3/2.el7/
 systemctl start gluster-blockd
 systemctl enable gluster-blockd
 systemctl status gluster-blockd
-
-#create gluster-block device file
-gluster-block create db2data/GFS ha 3 192.168.1.10,192.168.1.11,192.168.1.12 90GiB
