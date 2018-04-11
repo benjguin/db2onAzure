@@ -11,7 +11,7 @@ please execute `private.sh` before this script in order to setup variables
 # then connect to d1:
 scp $localgithubfolder/start_network.sh rhel@$jumpbox:~/
 ssh rhel@$jumpbox
-ssh 192.168.1.20
+ssh -o StrictHostKeyChecking=no 192.168.1.20
 sudo su
 
 mkdir /data2
@@ -32,13 +32,21 @@ scp rhel@192.168.1.20:/home/rhel/root_id_dsa.pub .
 
 # TODO - this has to be done on all nodes d1 (for what has not already been done), d2 to d4, cf1 and cf2
 # {all_db2_nodes{
-nodeip=192.168.1.21
+nodeip=192.168.1.20 # and also 192.168.1.21, 192.168.1.40 and 192.168.1.41
 
 scp -o StrictHostKeyChecking=no root_id_dsa.pub rhel@$nodeip:~/
 scp start_network.sh rhel@$nodeip:~/
 ssh $nodeip
 sudo su
-cat /home/rhel/root_id_dsa.pub >> /root/.ssh/authorized_keys
+if [ `hostname` != "d1" ]
+then
+    mkdir ~/.ssh
+    chmod 700 ~/.ssh
+    touch ~/.ssh/authorized_keys
+    chmod 600 ~/.ssh/authorized_keys
+    cat /home/rhel/root_id_dsa.pub >> /root/.ssh/authorized_keys
+fi
+
 # cf https://www.ibm.com/support/knowledgecenter/en/SSEPGG_11.1.0/com.ibm.db2.luw.qb.server.doc/doc/t0055342.html?pos=3
 cat >> /etc/ssh/sshd_config << EOF
 
@@ -207,8 +215,8 @@ scp /root/.ssh/config 192.168.1.41:/root/.ssh
 yum group install -y "Server with GUI"
 #check if the following lines are needed
 sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/g' /etc/ssh/sshd_config
-firewall-cmd --add-port=3389/tcp --permanent
-firewall-cmd --reload
+#firewall-cmd --add-port=3389/tcp --permanent
+#firewall-cmd --reload
 
 rpm -Uvh https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
 rpm -Uvh http://li.nux.ro/download/nux/dextop/el7/x86_64/nux-dextop-release-0-1.el7.nux.noarch.rpm

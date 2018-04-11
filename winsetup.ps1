@@ -19,12 +19,12 @@ $count++
 Install-WindowsFeature FS-IscsiTarget-Server
 New-IscsiServerTarget -TargetName w1i0
 
-Get-Volume | where DriveLetter -eq "F" | fromat-list *
+Get-Volume | where DriveLetter -eq "F" | format-list *
 
-New-IscsiVirtualDisk -Path F:\ivhdx0.vhdx -SizeBytes 107374182400 -UseFixed #-DoNotClearData
-New-IscsiVirtualDisk -Path F:\ivhdx1.vhdx -SizeBytes 107374182400 -UseFixed #-DoNotClearData
-New-IscsiVirtualDisk -Path F:\ivhdx2.vhdx -SizeBytes 107374182400 -UseFixed #-DoNotClearData
-New-IscsiVirtualDisk -Path F:\ivhdx3.vhdx -SizeBytes 107374182400 -UseFixed #-DoNotClearData
+New-IscsiVirtualDisk -Path F:\ivhdx0.vhdx -SizeBytes 107374182400 -UseFixed -DoNotClearData
+New-IscsiVirtualDisk -Path F:\ivhdx1.vhdx -SizeBytes 107374182400 -UseFixed -DoNotClearData
+New-IscsiVirtualDisk -Path F:\ivhdx2.vhdx -SizeBytes 107374182400 -UseFixed -DoNotClearData
+New-IscsiVirtualDisk -Path F:\ivhdx3.vhdx -SizeBytes 107374182400 -UseFixed -DoNotClearData
 
 Add-IscsiVirtualDiskTargetMapping -Path F:\ivhdx0.vhdx -TargetName w1i0 -Lun 0
 Add-IscsiVirtualDiskTargetMapping -Path F:\ivhdx1.vhdx -TargetName w1i0 -Lun 1

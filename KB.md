@@ -139,7 +139,15 @@ there is still 360003ff44dc75adc9a0c97b937e4dabe1
 
 ```
 
-form Windows, remove the disks and recreate them:
+
+```bash
+lsblk
+iscsiadm -m session 
+iscsiadm -m session -u
+iscsiadm -m node -p 192.168.1.30 --op=delete
+```
+
+from Windows, remove the disks and recreate them:
 
 ```powershell
 Get-IscsiServerTarget
@@ -183,12 +191,11 @@ Add-IscsiVirtualDiskTargetMapping -Path J:\ivhdx3.vhdx -TargetName w1i0 -Lun 3
 refresh on all nodes
 
 ```bash
-lsblk
-iscsiadm -m session 
-iscsiadm -m session -u
-iscsiadm -m node -p 192.168.1.30 --op=delete
 iscsiadm -m discovery -t sendtargets -p 192.168.1.30
 iscsiadm -m node -L automatic
+# this can be interrupted (CTRL-C) once the first login to `192.168.1.30` is successful.
+
+# next lines are optional
 multipath -l
 lsblk
 ```
@@ -236,4 +243,38 @@ seems not sufficient so disable firewall until we find a better solution
 systemctl stop firewalld
 systemctl disable firewalld
 systemctl status firewalld
+```
+
+## There is already a file system
+
+```
+/opt/ibm/db2/V11.1/instance/db2icrt -cf cf1 -cfnet cf1 -cf cf2 -cfnet cf2 -m d1 -mnet d1 -m d2 -mnet d2 -instance_shared_dev /dev/sdd -tbdev /dev/sdg -u db2sdfe1 db2sdin1
+
+(...)
+
+ERROR: The instance shared device "/dev/sdd" was specified. However, the DB2 installer
+has detected that there is already an existing user managed GPFS cluster on the
+host. To use an existing user managed file system for the DB2 pureScale
+instance setup, specify the directory instead of the device path. Specify the
+directory using either the instance shared directory option, or the
+INSTANCE_SHARED_DIR keyword. For details about user managed file system,
+instance shared device path or instance shared directory, see the DB2
+Informaiton Center.
+
+ERROR: The "db2icrt" command failed. Ensure that errors reported in the log
+file are fixed, then rerun the command.
+```
+
+
+```
+[root@d1 V11.1]# /opt/ibm/db2/V11.1/bin/db2cluster -cfs -list -filesystem
+FILE SYSTEM NAME                       MOUNT POINT
+---------------------------------      -------------------------
+db2fs1                                 /db2sd_20180411000011
+
+[root@d1 V11.1]# /opt/ibm/db2/V11.1/bin/db2cluster -cfs -delete -filesystem db2fs1
+The shared file system cluster has not been started. Start the cluster with 'db2cluster -cfs -start -all' and re-issue this command.
+A diagnostic log has been saved to '/tmp/ibm.db2.cluster.Gixsus'.
+
+
 ```
