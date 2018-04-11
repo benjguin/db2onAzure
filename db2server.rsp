@@ -5,7 +5,7 @@
 *  Product Installation
 LIC_AGREEMENT       = ACCEPT
 PROD       = DB2_SERVER_EDITION
-FILE       = /opt/ibm/db2/V11.1
+FILE       = /data1/opt/ibm/db2/V11.1
 INSTALL_TYPE       = CUSTOM
 COMP       = TSAMP
 COMP       = INFORMIX_DATA_SOURCE_SUPPORT

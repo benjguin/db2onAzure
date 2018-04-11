@@ -53,17 +53,27 @@ source /home/rhel/start_network.sh
 #Protocol 2,1
 #EOF
 
-firewall-cmd --add-port=56000/tcp --permanent
-firewall-cmd --add-port=56001/tcp --permanent
-firewall-cmd --add-port=50000/tcp --permanent
-firewall-cmd --add-port=60000-60005/tcp --permanent
-firewall-cmd --reload
+systemctl stop firewalld
+systemctl disable firewalld
+systemctl status firewalld
+# TODO: update firewall instead of disabling it - For now, the following is not sufficient:
+# cf <https://www.ibm.com/support/knowledgecenter/en/SSEPGG_11.1.0/com.ibm.db2.luw.qb.server.doc/doc/r0061630.html?pos=2>
+#firewall-cmd --add-port=56000/tcp --permanent
+#firewall-cmd --add-port=56001/tcp --permanent
+#firewall-cmd --add-port=50000/tcp --permanent
+#firewall-cmd --add-port=60000-60005/tcp --permanent
+#firewall-cmd --add-port=1191/tcp --permanent
+#firewall-cmd --add-port=12347/udp --permanent
+#firewall-cmd --add-port=12348/udp --permanent
+#firewall-cmd --add-port=657/udp --permanent
+#firewall-cmd --reload
 
 # install pre-requisistes
 yum update -y
 yum install -y gcc gcc-c++ libstdc++*.i686 numactl sg3_utils kernel-devel compat-libstdc++-33.i686 compat-libstdc++-33.x86_64 pam-devel.i686 pam-devel.x86_64 ksh iscsi-initiator-utils device-mapper-multipath.x86_64 m4 perl-Sys-Syslog patch
 #TODO: consolidate with previous line
-yum install -y rdma dapl ibacm ibutils libcxgb3 libibmad libipathverbs libmlx4 libmlx5 libmthca libnes libstdc++ glibc  gcc-c++ gcc kernel kernel-devel kernel-headers kernel-firmware ntp ntpdate sg3_utils sg3_utils-libs binutils binutils-devel m4 openssh cpp ksh libgcc file libgomp make patch perl-Sys-Sylog
+yum install -y libibcm libibverbs librdmacm rdma dapl ibacm ibutils libcxgb3 libibmad libipathverbs libmlx4 libmlx5 libmthca libnes libstdc++ glibc gcc-c++ gcc kernel kernel-devel kernel-headers kernel-firmware ntp ntpdate sg3_utils sg3_utils-libs binutils binutils-devel m4 openssh cpp ksh libgcc file libgomp make patch perl-Sys-Sylog
+
 
 sed -i s/SELINUX=enforcing/SELINUX=disabled/ /etc/selinux/config
 setenforce 0
@@ -112,20 +122,6 @@ cat << EOF >> /etc/hosts
 192.168.3.60 witn1-eth1
 192.168.4.60 witn1-eth2
 EOF
-
-# define the witness. cf https://www.ibm.com/support/knowledgecenter/en/SSEPGG_11.1.0/com.ibm.db2.luw.qb.server.doc/doc/t0061581.html
-#cat <<EOF > /var/ct/cfg/netmon.cf
-#!REQD eth0 192.168.1.30
-#!REQD eth1 192.168.3.60
-#EOF
-#
-#nbnics=`ls -A /sys/class/net/ | wc -l`
-#if [ $nbnics == 4 ]
-#then
-#cat <<EOF >> /var/ct/cfg/netmon.cf
-#!REQD eth2 192.168.4.60
-#EOF
-#fi
 
 #format data disk and mount it
 printf "n\np\n1\n\n\np\nw\n" | fdisk /dev/sdc
@@ -401,8 +397,7 @@ ssh rhel@$jumpbox
 ssh 192.168.1.20
 sudo su
 
-DB2DIR=/data1/opt/ibm/db2/V11.1
 # https://www.ibm.com/support/knowledgecenter/en/SSEPGG_11.1.0/com.ibm.db2.luw.qb.server.doc/doc/t0006744.html
 # https://www.ibm.com/support/knowledgecenter/en/SSEPGG_11.1.0/com.ibm.db2.luw.admin.cmd.doc/doc/r0002057.html
-$DB2DIR/instance/db2icrt -cf cf1 -cfnet cf1-eth1 -cf cf2 -cfnet cf2-eth1 -m d1 -mnet d1-eth1 -m d2 -mnet d2-eth1 -instance_shared_dev /dev/sdd -tbdev /dev/sde -u db2sdfe1 db2sdin1
+/data1/opt/ibm/db2/V11.1/instance/db2icrt -cf cf1 -cfnet cf1 -cf cf2 -cfnet cf2 -m d1 -mnet d1 -m d2 -mnet d2 -instance_shared_dev /dev/sdd -tbdev /dev/sdg -u db2sdfe1 db2sdin1
 ```
