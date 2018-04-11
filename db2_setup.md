@@ -14,13 +14,6 @@ ssh rhel@$jumpbox
 ssh -o StrictHostKeyChecking=no 192.168.1.20
 sudo su
 
-mkdir /data2
-cd /data2
-mkdir db2bits/
-cd db2bits/
-curl -o v11.1_linuxx64_server_t.tar.gz "$db2bits"
-tar xzvf v11.1_linuxx64_server_t.tar.gz
-
 ssh-keygen -t dsa -f /root/.ssh/id_dsa -q -N ""
 cp /root/.ssh/id_dsa.pub /home/rhel/root_id_dsa.pub
 
@@ -38,6 +31,7 @@ scp -o StrictHostKeyChecking=no root_id_dsa.pub rhel@$nodeip:~/
 scp start_network.sh rhel@$nodeip:~/
 ssh $nodeip
 sudo su
+# TODO: check if that works...
 if [ `hostname` != "d1" ]
 then
     mkdir ~/.ssh
@@ -53,7 +47,14 @@ cat >> /etc/ssh/sshd_config << EOF
 PermitRootLogin yes
 EOF
 
-#TODO: have to copy the script so that it is available
+db2bits='https://###obfuscated###.blob.core.windows.net/setup/v11.1_linuxx64_server_t.tar.gz?sv=2016-05-31###obfuscated###2FGtJ6Q%3D'
+mkdir /data2
+cd /data2
+mkdir db2bits/
+cd db2bits/
+curl -o v11.1_linuxx64_server_t.tar.gz "$db2bits"
+tar xzvf v11.1_linuxx64_server_t.tar.gz
+
 source /home/rhel/start_network.sh
 
 #cat << EOF >> /etc/ssh/ssh_config 
@@ -169,13 +170,15 @@ chkconfig multipathd on
 
 multipath -l
 
-iscsiadm -m discovery -t sendtargets -p 192.168.1.30
-iscsiadm -m node -L automatic # TODO: a timeout happens on an IP V6 address, no consequence
+iscsiadm -m discovery -t sendtargets -p 192.168.1.10
+iscsiadm -m node -L automatic 
+# TODO: a timeout happens on an IP V6 address for w1 iSCSI target, no consequence
 iscsiadm -m session 
 multipath -l
-
 fdisk -l | grep /dev/mapper/3
-lsblk
+ll /dev/mapper
+
+lsblk #inconsistent paths frmo one machine to another
 
 #fi # }connect to iscsi}
 
@@ -184,6 +187,22 @@ groupadd --gid 341 db2iadm1
 groupadd --gid 342 db2fadm1
 useradd -g db2iadm1 -m -d /home/db2sdin1 db2sdin1
 useradd -g db2fadm1 -m -d /home/db2sdfe1 db2sdfe1
+
+mkdir -p /var/ct/cfg/
+# define the witness. cf https://www.ibm.com/support/knowledgecenter/en/SSEPGG_11.1.0/com.ibm.db2.luw.qb.server.doc/doc/t0061581.html
+cat <<EOF > /var/ct/cfg/netmon.cf
+!REQD eth0 192.168.1.30
+!REQD eth1 192.168.3.60
+EOF
+
+nbnics=`ls -A /sys/class/net/ | wc -l`
+if [ $nbnics == 4 ]
+then
+cat <<EOF >> /var/ct/cfg/netmon.cf
+!REQD eth2 192.168.4.60
+EOF
+fi
+cat /var/ct/cfg/netmon.cf
 
 exit
 exit
@@ -200,12 +219,12 @@ EOF
 chmod 400 ~/.ssh/config
 
 cat /root/.ssh/id_dsa.pub >> /root/.ssh/authorized_keys
-scp /root/.ssh/id_dsa 192.168.1.21:/root/.ssh
-scp /root/.ssh/id_dsa 192.168.1.40:/root/.ssh
-scp /root/.ssh/id_dsa 192.168.1.41:/root/.ssh
-scp /root/.ssh/config 192.168.1.21:/root/.ssh
-scp /root/.ssh/config 192.168.1.40:/root/.ssh
-scp /root/.ssh/config 192.168.1.41:/root/.ssh
+scp /root/.ssh/id_dsa d2:/root/.ssh
+scp /root/.ssh/id_dsa cf1:/root/.ssh
+scp /root/.ssh/id_dsa cf2:/root/.ssh
+scp /root/.ssh/config d2:/root/.ssh
+scp /root/.ssh/config cf1:/root/.ssh
+scp /root/.ssh/config cf2:/root/.ssh
 
 # db2_install help : https://www.ibm.com/support/knowledgecenter/en/SSEPGG_11.1.0/com.ibm.db2.luw.admin.cmd.doc/doc/r0023669.html
 #/data1/db2bits/server_t/db2_install -y -b /opt/IBM/db2 -p SERVER -f PURESCALE -t /tmp/db2_install.trc -l /tmp/db2_install.log
@@ -394,7 +413,7 @@ this generated a reponse file (available in this repo: `db2server.rsp`) that can
 ssh 192.168.1.20
 sudo su
 
-tentativenum=180410a
+tentativenum=180411b
 /data2/db2bits/server_t/db2setup -r /root/db2server.rsp -l /tmp/db2setup_${tentativenum}.log -t /tmp/db2setup_${tentativenum}.trc
 ```
 

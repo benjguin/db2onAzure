@@ -5,7 +5,7 @@
 *  Product Installation
 LIC_AGREEMENT       = ACCEPT
 PROD       = DB2_SERVER_EDITION
-FILE       = /data1/opt/ibm/db2/V11.1
+FILE       = /data1/db2
 INSTALL_TYPE       = CUSTOM
 COMP       = TSAMP
 COMP       = INFORMIX_DATA_SOURCE_SUPPORT
@@ -87,15 +87,15 @@ host4.CLUSTER_INTERCONNECT_NETNAME       = cf2
 * ----------------------------------------------
 *  Shared file system settings
 * ----------------------------------------------
-INSTANCE_SHARED_DEVICE_PATH       = /dev/sdd
+INSTANCE_SHARED_DEVICE_PATH       = /dev/dm-1
 INSTANCE_SHARED_MOUNT       = /db2sd_1804a
 DATA_SHARED_MOUNT       = /db2fs/datafs1
 LOG_SHARED_MOUNT       = /db2fs/logfs1
-DATA_SHARED_DEVICE_PATH       = /dev/sde
-LOG_SHARED_DEVICE_PATH       = /dev/sdf
+DATA_SHARED_DEVICE_PATH       = /dev/dm-0
+LOG_SHARED_DEVICE_PATH       = /dev/dm-2
 
 
 * ----------------------------------------------
 *  Tiebreaker settings
 * ----------------------------------------------
-DB2_CLUSTER_SERVICES_TIEBREAKER_DEVICE_PATH       = /dev/sdg
+DB2_CLUSTER_SERVICES_TIEBREAKER_DEVICE_PATH       = /dev/dm-3

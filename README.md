@@ -24,4 +24,3 @@ The main steps, in order, are the following:
     - `start_network.sh`
     - `db2server.rsp`
 - `KB.md` has a number of know issues and how they could be fixe or diagnosed
-- `update_or_manage.md` contains processes to update or maintain the infrastructure

@@ -56,22 +56,32 @@ make
 ```
 
 <https://stackoverflow.com/questions/45866521/ibm-gpfs-4-2-1-compile-error>
++ release of RedHat 7.5 ...
 
-```
-vi /usr/lpp/mmfs/src/gpl-linux/kdump.c 
-```
-
-add the following line:
-
-```c
-unsigned long page_offset_base;
+```bash
+sed -i '122iunsigned long page_offset_base;' /usr/lpp/mmfs/src/gpl-linux/kdump.c
+touch /usr/lpp/mmfs/src/config/env.mcr
 ```
 
 ```
 make
 ```
 
-## GPFS is in use
+note that this workaround may not be completely right as the service fails afterwards
+
+```
+systemctl
+(...)
+
+  iscsi.service                                            loaded active exited    Login and scanning of iSCSI devices
+  iscsid.service                                           loaded active running   Open-iSCSI
+● kdump.service                                            loaded failed failed    Crash recovery kernel arming
+  kmod-static-nodes.service                                loaded active exited    Create list of required static device nodes for the curre
+  ksm.service                                              loaded active exited    Kernel Samepage Merging
+  ksmtuned.service                                         loaded active running   Kernel Samepage Merging (KSM) Tuning Daemon
+```
+
+## GPFS is in use - try to drop recreate the iSCSI disks
 
 ```
 The disk is not available as a free disk for a file system.  A concurrent create file system or add disk to file system may have been run wi
@@ -277,4 +287,80 @@ The shared file system cluster has not been started. Start the cluster with 'db2
 A diagnostic log has been saved to '/tmp/ibm.db2.cluster.Gixsus'.
 
 
+```
+
+## uninstall DB2 before reinstalling it
+
+<https://www.ibm.com/support/knowledgecenter/en/SSEPGG_10.1.0/com.ibm.db2.luw.qb.server.doc/doc/t0007435.html>
+
+```bash
+cd /opt/ibm/db2/V11.1/install/
+./db2_deinstall -a
+```
+
+## drop the DB2 nodes and recreate them
+
+```bash
+az login
+az account set -s "$subscription"
+
+rg=gluster-iscsi
+
+az vm list -g $rg
+az vm delete -y -g $rg --name d1 &
+az vm delete -y -g $rg --name d2 &
+az vm delete -y -g $rg --name cf1 &
+az vm delete -y -g $rg --name cf2 &
+az vm list -g $rg
+```
+
+once all VM are removed 
+
+```bash
+az vm create --resource-group $rg --name d1 --image RedHat:RHEL:7-RAW-CI:latest --size Standard_DS3_v2_Promo --admin-username rhel --nics d1-client d1-cluster --data-disk-sizes-gb 10 --no-wait
+az vm create --resource-group $rg --name d2 --image RedHat:RHEL:7-RAW-CI:latest --size Standard_DS3_v2_Promo --admin-username rhel --nics d2-client d2-cluster --data-disk-sizes-gb 10 --no-wait
+az vm create --resource-group $rg --name cf1 --image RedHat:RHEL:7-RAW-CI:latest --size Standard_DS3_v2_Promo --admin-username rhel --nics cf1-client cf1-cluster cf1-db2client --data-disk-sizes-gb 10 --no-wait
+az vm create --resource-group $rg --name cf2 --image RedHat:RHEL:7-RAW-CI:latest --size Standard_DS3_v2_Promo --admin-username rhel --nics cf2-client cf2-cluster cf2-db2client --data-disk-sizes-gb 10 --no-wait
+
+az vm list -g $rg
+
+az vm get-instance-view -g $rg --name d1
+az vm get-instance-view -g $rg --name d2
+az vm get-instance-view -g $rg --name cf1
+az vm get-instance-view -g $rg --name cf2
+```
+
+once all VM are up and running
+
+```bash
+scp rhel@$jumpbox:/home/rhel/.ssh/id_rsa.pub jumbox_id_rsa.pub
+az vm user update -g $rg --name d1 --username rhel --ssh-key-value jumbox_id_rsa.pub --no-wait
+az vm user update -g $rg --name d2 --username rhel --ssh-key-value jumbox_id_rsa.pub --no-wait
+az vm user update -g $rg --name cf1 --username rhel --ssh-key-value jumbox_id_rsa.pub --no-wait
+az vm user update -g $rg --name cf2 --username rhel --ssh-key-value jumbox_id_rsa.pub --no-wait
+
+ssh rhel@$jumpbox
+vi /home/rhel/.ssh/known_hosts
+```
+
+remove old nodes corresponding to 192.168.1.20, 192.168.1.21, 192.168.1.40, 192.168.1.41.
+
+execute steps in [db2_setup](db2_setup.md)
+
+remove orphan disks:
+
+```bash
+for v in d1 d2 cf1 cf2
+do
+  disks=`az disk list -g $rg | grep "${v}_disk2" | awk '{print $1}'`
+  for d in $disks
+  do
+    orphan=`az disk show -g $rg --name $d --output json | grep managedBy | grep " null," | wc -l`
+    if [ "$orphan" == "1" ]
+    then
+      echo $d is an orphan
+      az disk delete -y -g $rg --name $d
+    fi
+  done
+done
 ```
