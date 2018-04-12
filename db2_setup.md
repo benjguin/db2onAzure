@@ -144,23 +144,42 @@ EOF
 #if [ `hostname` != "cf1" ] && [ `hostname` != "cf1" ]
 #then # {connect to iscsi{
 # setup multipath.conf 
-cat << EOF >> /etc/multipath.conf 
+cat << EOF > /etc/multipath.conf 
 defaults { 
-    user_friendly_names no 
+    user_friendly_names yes
+    bindings_file /etc/multipath/bindings4db2
     max_fds max
     flush_on_last_del yes 
     queue_without_daemon no 
     dev_loss_tmo infinity
-    fast_io_fail_tmo 5 
+    fast_io_fail_tmo 5
 } 
 blacklist { 
     wwid "SAdaptec*" 
     devnode "^hd[a-z]" 
     devnode "^(ram|raw|loop|fd|md|dm-|sr|scd|st)[0-9]*" 
+    devnode "^sda[0-9]*" 
+    devnode "^sdb[0-9]*" 
     devnode "^sdc[0-9]*" 
     devnode "^cciss.*" 
 } 
-devices { 
+multipaths {
+    multipath {
+        wwid  36001405149ee39c319845aaa710099a7
+        alias db2data1  
+    }
+    multipath {
+        wwid  36001405bfc71ff861174f2bbb0bfea37
+        alias db2log1  
+    }
+    multipath {
+        wwid  36001405484ba6ab80934f2290a2b579f
+        alias db2shared
+    }
+    multipath {
+        wwid  36001405645b2e72c56142ef97932cb95
+        alias db2tieb 
+    }
 }
 EOF
 
@@ -191,7 +210,7 @@ useradd -g db2fadm1 -m -d /home/db2sdfe1 db2sdfe1
 mkdir -p /var/ct/cfg/
 # define the witness. cf https://www.ibm.com/support/knowledgecenter/en/SSEPGG_11.1.0/com.ibm.db2.luw.qb.server.doc/doc/t0061581.html
 cat <<EOF > /var/ct/cfg/netmon.cf
-!REQD eth0 192.168.1.30
+!REQD eth0 192.168.1.10
 !REQD eth1 192.168.3.60
 EOF
 
@@ -241,6 +260,7 @@ rpm -Uvh https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
 rpm -Uvh http://li.nux.ro/download/nux/dextop/el7/x86_64/nux-dextop-release-0-1.el7.nux.noarch.rpm
 yum -y install xrdp 
 systemctl start xrdp.service
+sleep 0.5s
 netstat -antup | grep 3389
 # Set XRDP service to automatically start when VM starts
 chkconfig xrdp on
@@ -412,6 +432,12 @@ this generated a reponse file (available in this repo: `db2server.rsp`) that can
 ```bash
 ssh 192.168.1.20
 sudo su
+
+ll /dev/mapper
+vi /root/db2server.rsp
+# update based on ll /dev/mapper on d1
+# see <http://www-01.ibm.com/support/docview.wss?uid=swg21969333>
+# TODO: automate
 
 tentativenum=180411b
 /data2/db2bits/server_t/db2setup -r /root/db2server.rsp -l /tmp/db2setup_${tentativenum}.log -t /tmp/db2setup_${tentativenum}.trc

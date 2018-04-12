@@ -52,7 +52,8 @@ To compile manually:
 ```bash
 cd /usr/lpp/mmfs/src
 export SHARKCLONEROOT=/usr/lpp/mmfs/src
-make
+make Autoconfig
+make World
 ```
 
 <https://stackoverflow.com/questions/45866521/ibm-gpfs-4-2-1-compile-error>
@@ -60,7 +61,6 @@ make
 
 ```bash
 sed -i '122iunsigned long page_offset_base;' /usr/lpp/mmfs/src/gpl-linux/kdump.c
-touch /usr/lpp/mmfs/src/config/env.mcr
 ```
 
 ```

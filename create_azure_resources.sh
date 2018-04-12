@@ -82,12 +82,10 @@ az network nic create --resource-group $rg --name d4-cluster --vnet-name gluster
 az network nic create --resource-group $rg --name d4-client  --vnet-name gluster --subnet client     --network-security-group gluster-nsg --private-ip-address 192.168.1.23
 
 echo "Create DB2 VM's..."
-az vm create --resource-group $rg --name d1 --image RedHat:RHEL:7-RAW-CI:latest --size Standard_DS3_v2_Promo --admin-username rhel --nics d1-client d1-cluster --data-disk-sizes-gb 10 --no-wait
-az vm create --resource-group $rg --name d2 --image RedHat:RHEL:7-RAW-CI:latest --size Standard_DS3_v2_Promo --admin-username rhel --nics d2-client d2-cluster --data-disk-sizes-gb 10 --no-wait
-#az vm create --resource-group $rg --name d3 --image RedHat:RHEL:7-RAW-CI:latest --size Standard_DS3_v2_Promo --admin-username rhel --nics d3-client d3-cluster --data-disk-sizes-gb 10 --no-wait
-#az vm create --resource-group $rg --name d4 --image RedHat:RHEL:7-RAW-CI:latest --size Standard_DS3_v2_Promo --admin-username rhel --nics d4-client d4-cluster --data-disk-sizes-gb 10 --no-wait
-az vm create --resource-group $rg --name cf1 --image RedHat:RHEL:7-RAW-CI:latest --size Standard_DS3_v2_Promo --admin-username rhel --nics cf1-client cf1-cluster cf1-db2client --data-disk-sizes-gb 10 --no-wait
-az vm create --resource-group $rg --name cf2 --image RedHat:RHEL:7-RAW-CI:latest --size Standard_DS3_v2_Promo --admin-username rhel --nics cf2-client cf2-cluster cf2-db2client --data-disk-sizes-gb 10 --no-wait
+az vm create --resource-group $rg --name d1 --image RedHat:RHEL:7-RAW-CI:latest --size Standard_DS3_v2_Promo --admin-username rhel --nics d1-client d1-cluster --data-disk-sizes-gb 32 --no-wait
+az vm create --resource-group $rg --name d2 --image RedHat:RHEL:7-RAW-CI:latest --size Standard_DS3_v2_Promo --admin-username rhel --nics d2-client d2-cluster --data-disk-sizes-gb 32 --no-wait
+az vm create --resource-group $rg --name cf1 --image RedHat:RHEL:7-RAW-CI:latest --size Standard_DS3_v2_Promo --admin-username rhel --nics cf1-client cf1-cluster cf1-db2client --data-disk-sizes-gb 32 --no-wait
+az vm create --resource-group $rg --name cf2 --image RedHat:RHEL:7-RAW-CI:latest --size Standard_DS3_v2_Promo --admin-username rhel --nics cf2-client cf2-cluster cf2-db2client --data-disk-sizes-gb 32 --no-wait
 
 # TODO: generate keypair on the jumpboxn get the public key and update the public keys on all VMs 
 # so that the jumpbox can connect to all VMs
@@ -102,8 +100,6 @@ az vm user update -g $rg --name g2 --username rhel --ssh-key-value jumbox_id_rsa
 az vm user update -g $rg --name g3 --username rhel --ssh-key-value jumbox_id_rsa.pub
 az vm user update -g $rg --name d1 --username rhel --ssh-key-value jumbox_id_rsa.pub
 az vm user update -g $rg --name d2 --username rhel --ssh-key-value jumbox_id_rsa.pub
-#az vm user update -g $rg --name d3 --username rhel --ssh-key-value jumbox_id_rsa.pub
-#az vm user update -g $rg --name d4 --username rhel --ssh-key-value jumbox_id_rsa.pub
 az vm user update -g $rg --name cf1 --username rhel --ssh-key-value jumbox_id_rsa.pub
 az vm user update -g $rg --name cf2 --username rhel --ssh-key-value jumbox_id_rsa.pub
 
