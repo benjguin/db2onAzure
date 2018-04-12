@@ -234,10 +234,9 @@ sestatus
 sed -i s/SELINUX=enforcing/SELINUX=disabled/ /etc/selinux/config
 setenforce 0
 sestatus
-# have to reboot, setenforce 0 does not work
-reboot
-#exit
-#exit
+
+exit
+exit
 # back to jumpbox
 ```
 }all_db2_nodes}
