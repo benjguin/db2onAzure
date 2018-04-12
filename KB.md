@@ -54,31 +54,7 @@ cd /usr/lpp/mmfs/src
 export SHARKCLONEROOT=/usr/lpp/mmfs/src
 make Autoconfig
 make World
-```
-
-<https://stackoverflow.com/questions/45866521/ibm-gpfs-4-2-1-compile-error>
-+ release of RedHat 7.5 ...
-
-```bash
-sed -i '122iunsigned long page_offset_base;' /usr/lpp/mmfs/src/gpl-linux/kdump.c
-```
-
-```
-make
-```
-
-note that this workaround may not be completely right as the service fails afterwards
-
-```
-systemctl
-(...)
-
-  iscsi.service                                            loaded active exited    Login and scanning of iSCSI devices
-  iscsid.service                                           loaded active running   Open-iSCSI
-● kdump.service                                            loaded failed failed    Crash recovery kernel arming
-  kmod-static-nodes.service                                loaded active exited    Create list of required static device nodes for the curre
-  ksm.service                                              loaded active exited    Kernel Samepage Merging
-  ksmtuned.service                                         loaded active running   Kernel Samepage Merging (KSM) Tuning Daemon
+make InstallImages
 ```
 
 ## GPFS is in use - try to drop recreate the iSCSI disks
@@ -317,10 +293,11 @@ az vm list -g $rg
 once all VM are removed 
 
 ```bash
-az vm create --resource-group $rg --name d1 --image RedHat:RHEL:7-RAW-CI:latest --size Standard_DS3_v2_Promo --admin-username rhel --nics d1-client d1-cluster --data-disk-sizes-gb 10 --no-wait
-az vm create --resource-group $rg --name d2 --image RedHat:RHEL:7-RAW-CI:latest --size Standard_DS3_v2_Promo --admin-username rhel --nics d2-client d2-cluster --data-disk-sizes-gb 10 --no-wait
-az vm create --resource-group $rg --name cf1 --image RedHat:RHEL:7-RAW-CI:latest --size Standard_DS3_v2_Promo --admin-username rhel --nics cf1-client cf1-cluster cf1-db2client --data-disk-sizes-gb 10 --no-wait
-az vm create --resource-group $rg --name cf2 --image RedHat:RHEL:7-RAW-CI:latest --size Standard_DS3_v2_Promo --admin-username rhel --nics cf2-client cf2-cluster cf2-db2client --data-disk-sizes-gb 10 --no-wait
+db2vmimage='RedHat:RHEL:7.3:7.3.2017090723'
+az vm create --resource-group $rg --name d1 --image "$db2vmimage" --size Standard_DS3_v2_Promo --admin-username rhel --nics d1-client d1-cluster --data-disk-sizes-gb 32 --no-wait
+az vm create --resource-group $rg --name d2 --image "$db2vmimage" --size Standard_DS3_v2_Promo --admin-username rhel --nics d2-client d2-cluster --data-disk-sizes-gb 32 --no-wait
+az vm create --resource-group $rg --name cf1 --image "$db2vmimage" --size Standard_DS3_v2_Promo --admin-username rhel --nics cf1-client cf1-cluster cf1-db2client --data-disk-sizes-gb 32 --no-wait
+az vm create --resource-group $rg --name cf2 --image "$db2vmimage" --size Standard_DS3_v2_Promo --admin-username rhel --nics cf2-client cf2-cluster cf2-db2client --data-disk-sizes-gb 32 --no-wait
 
 az vm list -g $rg
 

@@ -82,12 +82,13 @@ az network nic create --resource-group $rg --name d4-cluster --vnet-name gluster
 az network nic create --resource-group $rg --name d4-client  --vnet-name gluster --subnet client     --network-security-group gluster-nsg --private-ip-address 192.168.1.23
 
 echo "Create DB2 VM's..."
-az vm create --resource-group $rg --name d1 --image RedHat:RHEL:7-RAW-CI:latest --size Standard_DS3_v2_Promo --admin-username rhel --nics d1-client d1-cluster --data-disk-sizes-gb 32 --no-wait
-az vm create --resource-group $rg --name d2 --image RedHat:RHEL:7-RAW-CI:latest --size Standard_DS3_v2_Promo --admin-username rhel --nics d2-client d2-cluster --data-disk-sizes-gb 32 --no-wait
-az vm create --resource-group $rg --name cf1 --image RedHat:RHEL:7-RAW-CI:latest --size Standard_DS3_v2_Promo --admin-username rhel --nics cf1-client cf1-cluster cf1-db2client --data-disk-sizes-gb 32 --no-wait
-az vm create --resource-group $rg --name cf2 --image RedHat:RHEL:7-RAW-CI:latest --size Standard_DS3_v2_Promo --admin-username rhel --nics cf2-client cf2-cluster cf2-db2client --data-disk-sizes-gb 32 --no-wait
+db2vmimage='RedHat:RHEL:7.3:7.3.2017090723'
+az vm create --resource-group $rg --name d1 --image "$db2vmimage" --size Standard_DS3_v2_Promo --admin-username rhel --nics d1-client d1-cluster --data-disk-sizes-gb 32 --no-wait
+az vm create --resource-group $rg --name d2 --image "$db2vmimage" --size Standard_DS3_v2_Promo --admin-username rhel --nics d2-client d2-cluster --data-disk-sizes-gb 32 --no-wait
+az vm create --resource-group $rg --name cf1 --image "$db2vmimage" --size Standard_DS3_v2_Promo --admin-username rhel --nics cf1-client cf1-cluster cf1-db2client --data-disk-sizes-gb 32 --no-wait
+az vm create --resource-group $rg --name cf2 --image "$db2vmimage" --size Standard_DS3_v2_Promo --admin-username rhel --nics cf2-client cf2-cluster cf2-db2client --data-disk-sizes-gb 32 --no-wait
 
-# TODO: generate keypair on the jumpboxn get the public key and update the public keys on all VMs 
+# TODO: generate keypair on the jumpbox, get the public key and update the public keys on all VMs 
 # so that the jumpbox can connect to all VMs
 # TODO test
 ssh rhel@$jumpbox -t -t << EOF

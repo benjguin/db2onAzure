@@ -22,16 +22,19 @@ exit # exit from sudo su
 exit # exit from 192.168.1.20
 
 scp rhel@192.168.1.20:/home/rhel/root_id_dsa.pub .
+```
 
-# TODO - this has to be done on all nodes d1 (for what has not already been done), d2 to d4, cf1 and cf2
-# {all_db2_nodes{
+TODO - this has to be done on all nodes d1 (for what has not already been done), d2 to d4, cf1 and cf2
+
+{all_db2_nodes{
+
+```bash
 nodeip=192.168.1.20 # and also 192.168.1.21, 192.168.1.40 and 192.168.1.41
 
 scp -o StrictHostKeyChecking=no root_id_dsa.pub rhel@$nodeip:~/
 scp start_network.sh rhel@$nodeip:~/
 ssh $nodeip
 sudo su
-# TODO: check if that works...
 if [ `hostname` != "d1" ]
 then
     mkdir ~/.ssh
@@ -84,33 +87,30 @@ yum install -y gcc gcc-c++ libstdc++*.i686 numactl sg3_utils kernel-devel compat
 yum install -y libibcm libibverbs librdmacm rdma dapl ibacm ibutils libcxgb3 libibmad libipathverbs libmlx4 libmlx5 libmthca libnes libstdc++ glibc gcc-c++ gcc kernel kernel-devel kernel-headers kernel-firmware ntp ntpdate sg3_utils sg3_utils-libs binutils binutils-devel m4 openssh cpp ksh libgcc file libgomp make patch perl-Sys-Sylog
 
 
-sed -i s/SELINUX=enforcing/SELINUX=disabled/ /etc/selinux/config
-setenforce 0
-
 # force initiator for the dev environment. Should retrieve them and update the target server instead.
-case `hostname` in
-"d1")
-cat <<EOF >/etc/iscsi/initiatorname.iscsi
-InitiatorName=iqn.1994-05.com.redhat:c4e37143a6fa
-EOF
-;;
-"d2")
-cat <<EOF >/etc/iscsi/initiatorname.iscsi
-InitiatorName=iqn.1994-05.com.redhat:242e56883d62
-EOF
-;;
-"cf1")
-cat <<EOF >/etc/iscsi/initiatorname.iscsi
-InitiatorName=iqn.1994-05.com.redhat:fd582735ef35
-EOF
-;;
-"cf2")
-cat <<EOF >/etc/iscsi/initiatorname.iscsi
-InitiatorName=iqn.1994-05.com.redhat:b58d9add7fcc
-EOF
-;;
-esac
-cat /etc/iscsi/initiatorname.iscsi
+#case `hostname` in
+#"d1")
+#cat <<EOF >/etc/iscsi/initiatorname.iscsi
+#InitiatorName=iqn.1994-05.com.redhat:c4e37143a6fa
+#EOF
+#;;
+#"d2")
+#cat <<EOF >/etc/iscsi/initiatorname.iscsi
+#InitiatorName=iqn.1994-05.com.redhat:242e56883d62
+#EOF
+#;;
+#"cf1")
+#cat <<EOF >/etc/iscsi/initiatorname.iscsi
+#InitiatorName=iqn.1994-05.com.redhat:fd582735ef35
+#EOF
+#;;
+#"cf2")
+#cat <<EOF >/etc/iscsi/initiatorname.iscsi
+#InitiatorName=iqn.1994-05.com.redhat:b58d9add7fcc
+#EOF
+#;;
+#esac
+#cat /etc/iscsi/initiatorname.iscsi
 
 cat << EOF >> /etc/hosts 
 192.168.3.20 d1
@@ -186,18 +186,16 @@ EOF
 modprobe dm-multipath 
 service multipathd start 
 chkconfig multipathd on
-
 multipath -l
-
 iscsiadm -m discovery -t sendtargets -p 192.168.1.10
 iscsiadm -m node -L automatic 
 # TODO: a timeout happens on an IP V6 address for w1 iSCSI target, no consequence
 iscsiadm -m session 
 multipath -l
 fdisk -l | grep /dev/mapper/3
-ll /dev/mapper
-
 lsblk #inconsistent paths frmo one machine to another
+sleep 0.5s
+ll /dev/mapper
 
 #fi # }connect to iscsi}
 
@@ -223,11 +221,28 @@ EOF
 fi
 cat /var/ct/cfg/netmon.cf
 
-exit
-exit
-# back to jumpbox
-# }all_db2_nodes}
+# this was developed with `uname -r` returning `3.10.0-514.28.1.el7.x86_64`
+uname -r
+ls -als /lib/modules/`uname -r`/
+yum install -y ftp://mirror.switch.ch/pool/4/mirror/scientificlinux/7.1/x86_64/updates/security/kernel-devel-3.10.0-514.el7.x86_64.rpm
+rm -f /lib/modules/3.10.0-514.28.1.el7.x86_64/build
+ln -s /usr/src/kernels/3.10.0-514.el7.x86_64 /lib/modules/3.10.0-514.28.1.el7.x86_64/build
+ll /lib/modules/
+ls -als /lib/modules/`uname -r`/
 
+sestatus
+sed -i s/SELINUX=enforcing/SELINUX=disabled/ /etc/selinux/config
+setenforce 0
+sestatus
+# have to reboot, setenforce 0 does not work
+reboot
+#exit
+#exit
+# back to jumpbox
+```
+}all_db2_nodes}
+
+```bash
 ssh 192.168.1.20
 sudo su
 
@@ -245,11 +260,36 @@ scp /root/.ssh/config d2:/root/.ssh
 scp /root/.ssh/config cf1:/root/.ssh
 scp /root/.ssh/config cf2:/root/.ssh
 
-# db2_install help : https://www.ibm.com/support/knowledgecenter/en/SSEPGG_11.1.0/com.ibm.db2.luw.admin.cmd.doc/doc/r0023669.html
-#/data1/db2bits/server_t/db2_install -y -b /opt/IBM/db2 -p SERVER -f PURESCALE -t /tmp/db2_install.trc -l /tmp/db2_install.log
-# this leads to a GPFS exception. So try the Db2 setup wizard which requires GUI
+# if you don't have a response file, you might want to see *First install with GUI, generate a response file* in the Appendix of this document.
 
-# install GUI
+# TODO: automate the following, starting from the db2server.rsp in this repo.
+ll /dev/mapper
+vi /root/db2server.rsp
+# take the 
+# update based on ll /dev/mapper on d1
+# see <http://www-01.ibm.com/support/docview.wss?uid=swg21969333>
+# TODO: automate
+
+tentativenum=180412b
+/data2/db2bits/server_t/db2setup -r /root/db2server.rsp -l /tmp/db2setup_${tentativenum}.log -t /tmp/db2setup_${tentativenum}.trc
+```
+
+## Create DB2 database, connect to it from a client
+
+```bash
+ssh rhel@$jumpbox
+ssh 192.168.1.20
+sudo su
+
+# https://www.ibm.com/support/knowledgecenter/en/SSEPGG_11.1.0/com.ibm.db2.luw.qb.server.doc/doc/t0006744.html
+# https://www.ibm.com/support/knowledgecenter/en/SSEPGG_11.1.0/com.ibm.db2.luw.admin.cmd.doc/doc/r0002057.html
+/data1/opt/ibm/db2/V11.1/instance/db2icrt -cf cf1 -cfnet cf1 -cf cf2 -cfnet cf2 -m d1 -mnet d1 -m d2 -mnet d2 -instance_shared_dev /dev/sdd -tbdev /dev/sdg -u db2sdfe1 db2sdin1
+```
+
+## Appendix
+
+### First install with GUI, generate a response file
+
 yum group install -y "Server with GUI"
 #check if the following lines are needed
 sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/g' /etc/ssh/sshd_config
@@ -429,28 +469,3 @@ New Host List:
 
 this generated a reponse file (available in this repo: `db2server.rsp`) that can be used for a setup with the response file.
 
-```bash
-ssh 192.168.1.20
-sudo su
-
-ll /dev/mapper
-vi /root/db2server.rsp
-# update based on ll /dev/mapper on d1
-# see <http://www-01.ibm.com/support/docview.wss?uid=swg21969333>
-# TODO: automate
-
-tentativenum=180411b
-/data2/db2bits/server_t/db2setup -r /root/db2server.rsp -l /tmp/db2setup_${tentativenum}.log -t /tmp/db2setup_${tentativenum}.trc
-```
-
-## Create DB2 database, connect to it from a client
-
-```bash
-ssh rhel@$jumpbox
-ssh 192.168.1.20
-sudo su
-
-# https://www.ibm.com/support/knowledgecenter/en/SSEPGG_11.1.0/com.ibm.db2.luw.qb.server.doc/doc/t0006744.html
-# https://www.ibm.com/support/knowledgecenter/en/SSEPGG_11.1.0/com.ibm.db2.luw.admin.cmd.doc/doc/r0002057.html
-/data1/opt/ibm/db2/V11.1/instance/db2icrt -cf cf1 -cfnet cf1 -cf cf2 -cfnet cf2 -m d1 -mnet d1 -m d2 -mnet d2 -instance_shared_dev /dev/sdd -tbdev /dev/sdg -u db2sdfe1 db2sdin1
-```
