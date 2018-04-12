@@ -52,7 +52,7 @@ To compile manually:
 ```bash
 cd /usr/lpp/mmfs/src
 export SHARKCLONEROOT=/usr/lpp/mmfs/src
-make Autoconfig
+#make Autoconfig
 make World
 make InstallImages
 ```
@@ -340,4 +340,24 @@ do
     fi
   done
 done
+```
+
+## ABRT has detected 1 problem(s)
+
+```
+[rhel@cf1 ~]$ sudo su
+ABRT has detected 1 problem(s). For more info run: abrt-cli list
+[root@cf1 rhel]# abrt-cli list
+id bc3b270d1b311fb692bf95e5a24ca7292c4567d4
+reason:         NMI watchdog: BUG: soft lockup - CPU#1 stuck for 22s! [systemd-udevd:220]
+time:           Thu 12 Apr 2018 02:35:01 PM UTC
+cmdline:        BOOT_IMAGE=/vmlinuz-3.10.0-514.28.1.el7.x86_64 root=UUID=3c11fba3-32c7-4d0c-b614-aad5630504eb ro console=tty1 console=ttyS0 earlyprintk=ttyS0 rootdelay=300
+package:        kernel
+uid:            0 (root)
+count:          1
+Directory:      /var/spool/abrt/oops-2018-04-12-14:35:01-568-0
+Run 'abrt-cli report /var/spool/abrt/oops-2018-04-12-14:35:01-568-0' for creating a case in Red Hat Customer Portal
+
+The Autoreporting feature is disabled. Please consider enabling it by issuing
+'abrt-auto-reporting enabled' as a user with root privileges
 ```

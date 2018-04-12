@@ -87,12 +87,12 @@ host4.CLUSTER_INTERCONNECT_NETNAME       = cf2
 * ----------------------------------------------
 *  Shared file system settings
 * ----------------------------------------------
-INSTANCE_SHARED_DEVICE_PATH       = /dev/dm-1
+INSTANCE_SHARED_DEVICE_PATH       = /dev/dm-2
 INSTANCE_SHARED_MOUNT       = /db2sd_1804a
 DATA_SHARED_MOUNT       = /db2fs/datafs1
 LOG_SHARED_MOUNT       = /db2fs/logfs1
 DATA_SHARED_DEVICE_PATH       = /dev/dm-0
-LOG_SHARED_DEVICE_PATH       = /dev/dm-2
+LOG_SHARED_DEVICE_PATH       = /dev/dm-1
 
 
 * ----------------------------------------------

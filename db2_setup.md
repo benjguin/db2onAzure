@@ -88,29 +88,29 @@ yum install -y libibcm libibverbs librdmacm rdma dapl ibacm ibutils libcxgb3 lib
 
 
 # force initiator for the dev environment. Should retrieve them and update the target server instead.
-#case `hostname` in
-#"d1")
-#cat <<EOF >/etc/iscsi/initiatorname.iscsi
-#InitiatorName=iqn.1994-05.com.redhat:c4e37143a6fa
-#EOF
-#;;
-#"d2")
-#cat <<EOF >/etc/iscsi/initiatorname.iscsi
-#InitiatorName=iqn.1994-05.com.redhat:242e56883d62
-#EOF
-#;;
-#"cf1")
-#cat <<EOF >/etc/iscsi/initiatorname.iscsi
-#InitiatorName=iqn.1994-05.com.redhat:fd582735ef35
-#EOF
-#;;
-#"cf2")
-#cat <<EOF >/etc/iscsi/initiatorname.iscsi
-#InitiatorName=iqn.1994-05.com.redhat:b58d9add7fcc
-#EOF
-#;;
-#esac
-#cat /etc/iscsi/initiatorname.iscsi
+case `hostname` in
+"d1")
+cat <<EOF >/etc/iscsi/initiatorname.iscsi
+InitiatorName=iqn.1994-05.com.redhat:c4e37143a6fa
+EOF
+;;
+"d2")
+cat <<EOF >/etc/iscsi/initiatorname.iscsi
+InitiatorName=iqn.1994-05.com.redhat:242e56883d62
+EOF
+;;
+"cf1")
+cat <<EOF >/etc/iscsi/initiatorname.iscsi
+InitiatorName=iqn.1994-05.com.redhat:fd582735ef35
+EOF
+;;
+"cf2")
+cat <<EOF >/etc/iscsi/initiatorname.iscsi
+InitiatorName=iqn.1994-05.com.redhat:b58d9add7fcc
+EOF
+;;
+esac
+cat /etc/iscsi/initiatorname.iscsi
 
 cat << EOF >> /etc/hosts 
 192.168.3.20 d1
@@ -146,7 +146,7 @@ EOF
 # setup multipath.conf 
 cat << EOF > /etc/multipath.conf 
 defaults { 
-    user_friendly_names yes
+    user_friendly_names no
     bindings_file /etc/multipath/bindings4db2
     max_fds max
     flush_on_last_del yes 
@@ -180,6 +180,22 @@ multipaths {
         wwid  36001405645b2e72c56142ef97932cb95
         alias db2tieb 
     }
+    multipath {
+        wwid  360003ff44dc75adc800f2990db2fcf81
+        alias w1db2data1  
+    }
+    multipath {
+        wwid  360003ff44dc75adc8363d5a9792956e7
+        alias w1db2log1  
+    }
+    multipath {
+        wwid  360003ff44dc75adc83e04536df6bc2a4
+        alias w1db2shared
+    }
+    multipath {
+        wwid  360003ff44dc75adc8aa0f47208aab56c
+        alias w1db2tieb 
+    }
 }
 EOF
 
@@ -187,7 +203,8 @@ modprobe dm-multipath
 service multipathd start 
 chkconfig multipathd on
 multipath -l
-iscsiadm -m discovery -t sendtargets -p 192.168.1.10
+#iscsiadm -m discovery -t sendtargets -p 192.168.1.10
+iscsiadm -m discovery -t sendtargets -p 192.168.1.30
 iscsiadm -m node -L automatic 
 # TODO: a timeout happens on an IP V6 address for w1 iSCSI target, no consequence
 iscsiadm -m session 
@@ -269,7 +286,7 @@ vi /root/db2server.rsp
 # see <http://www-01.ibm.com/support/docview.wss?uid=swg21969333>
 # TODO: automate
 
-tentativenum=180412b
+tentativenum=180412a
 /data2/db2bits/server_t/db2setup -r /root/db2server.rsp -l /tmp/db2setup_${tentativenum}.log -t /tmp/db2setup_${tentativenum}.trc
 ```
 
