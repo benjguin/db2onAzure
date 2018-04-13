@@ -84,7 +84,6 @@ systemctl status firewalld
 #yum update --releasever=7.3 # TODO: test this - return HTTP 404...
 # DO NOT USE yum update -y
 # TODO: TEST it actually installs everything while executing only once
-# TODO don't install kernel 
 yum install -y \
     binutils \
     binutils-devel \
@@ -100,10 +99,8 @@ yum install -y \
     ibacm \
     ibutils \
     iscsi-initiator-utils \
-    kernel \
-    kernel-devel \
-    kernel-firmware \
-    kernel-headers \
+    kernel-devel-3.10.0-514.el7.x86_64 \
+    kernel-headers-3.10.0-514.el7.x86_64 \
     ksh \
     libcxgb3 \
     libgcc \
@@ -130,6 +127,7 @@ yum install -y \
     patch \
     perl-Sys-Syslog \
     rdma \
+    rpm-build redhat-rpm-config asciidoc hmaccalc perl-ExtUtils-Embed pesign xmlto \
     sg3_utils \
     sg3_utils-libs
 
@@ -288,7 +286,7 @@ cat /var/ct/cfg/netmon.cf
 # this was developed with `uname -r` returning `3.10.0-514.28.1.el7.x86_64` before reboot
 uname -r
 ls -als /lib/modules/`uname -r`/
-yum install -y ftp://mirror.switch.ch/pool/4/mirror/scientificlinux/7.1/x86_64/updates/security/kernel-devel-3.10.0-514.el7.x86_64.rpm
+#yum install -y ftp://mirror.switch.ch/pool/4/mirror/scientificlinux/7.1/x86_64/updates/security/kernel-devel-3.10.0-514.el7.x86_64.rpm
 rm -f /lib/modules/3.10.0-514.28.1.el7.x86_64/build
 ln -s /usr/src/kernels/3.10.0-514.el7.x86_64 /lib/modules/3.10.0-514.28.1.el7.x86_64/build
 ll /lib/modules/
@@ -300,12 +298,24 @@ setenforce 0
 sestatus
 
 awk -F\' '$1=="menuentry " {print $2}' /etc/grub2.cfg
-#TODO: check second entry is kernel 514
+#TODO: check second entry is kernel 514, maybe not yum install kernel will avoid this
 grub2-set-default 1
 cat /boot/grub2/grubenv |grep saved
 grub2-mkconfig -o /boot/efi/EFI/redhat/grub.cfg
 grub2-mkconfig -o /boot/grub2/grub.cfg
 reboot
+### wait for reboot and reconnect
+
+yum install -y rpm-build redhat-rpm-config asciidoc hmaccalc perl-ExtUtils-Embed pesign xmlto
+cd /usr/lpp/mmfs/src
+#mv config/env.mcr config/env.mcr.old
+make Autoconfig
+make World
+make InstallImages
+ll /usr/lpp/mmfs/src/bin/lxtrace*
+ll /usr/lpp/mmfs/src/bin/kdump*
+make rpm
+ll /root/rpmbuild/RPMS/x86_64/gpfs*
 
 #exit
 #exit
@@ -352,7 +362,7 @@ the last step may fail with warnings. We need at least the bits in /data1/db2.
 {on the 4 nodes{
 ```
 cd /usr/lpp/mmfs/src
-mv config/env.mcr config/env.mcr.old
+#mv config/env.mcr config/env.mcr.old
 make Autoconfig
 make World
 make InstallImages
