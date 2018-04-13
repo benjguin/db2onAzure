@@ -55,6 +55,7 @@ mv config/env.mcr config/env.mcr.old
 make Autoconfig
 make World
 make InstallImages
+make rpm
 ```
 
 ## GPFS is in use - try to drop recreate the iSCSI disks

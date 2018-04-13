@@ -389,7 +389,7 @@ ll /dev/mapper
 #lrwxrwxrwx 1 root root       7 Apr 13 06:29 w1db2shared -> ../dm-1
 #lrwxrwxrwx 1 root root       7 Apr 13 06:29 w1db2tieb -> ../dm-0
 
-/data1/db2/instance/db2icrt -cf cf1 -cfnet cf1 -cf cf2 -cfnet cf2 -m d1 -mnet d1 -m d2 -mnet d2 -instance_shared_dev /dev/dm-1 -tbdev /dev/dm-0 -u db2sdfe1 db2sdin1
+/data1/db2/instance/db2icrt -cf cf1 -cfnet cf1 -cf cf2 -cfnet cf2 -m d1 -mnet d1 -m d2 -mnet d2 -instance_shared_dev /dev/dm-2 -tbdev /dev/dm-0 -u db2sdfe1 db2sdin1
 ```
 
 ## Appendix
