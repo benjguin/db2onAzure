@@ -26,6 +26,10 @@ systemctl enable multipathd
 
 iscsiadm --mode discovery --type sendtargets --portal 192.168.1.10 -l
 
-mkfs.xfs /dev/mapper/mpatha
-mkfs.xfs /dev/mapper/mpathb
-mkdir -p /db2/{data,quorum}
+for device in {a,b,c,d}; do mkfs.xfs /dev/mapper/mpath$device; done
+
+
+mkdir -p /db2/{data,quorum,shared,logs}
+
+# iscsiadm -m session
+# iscsiadm --mode node --logoutall=all
