@@ -31,6 +31,7 @@ fi
 
 cat >  /etc/sysconfig/network-scripts/ifcfg-eth1 << EOF
 BOOTPROTO=dhcp  
+DEFROUTE=no
 DEVICE=eth1
 ONBOOT=yes
 TYPE=Ethernet
