@@ -51,8 +51,8 @@ To compile manually:
 
 ```bash
 cd /usr/lpp/mmfs/src
-export SHARKCLONEROOT=/usr/lpp/mmfs/src
-#make Autoconfig
+mv config/env.mcr config/env.mcr.old
+make Autoconfig
 make World
 make InstallImages
 ```
@@ -172,6 +172,12 @@ New-IscsiVirtualDisk -Path J:\ivhdx3.vhdx -SizeBytes 107374182400 -UseFixed -DoN
 Add-IscsiVirtualDiskTargetMapping -Path J:\ivhdx3.vhdx -TargetName w1i0 -Lun 3
 
 (Get-IscsiServerTarget w1i0).LunMappings
+
+Get-IscsiVirtualDisk -Path J:\ivhdx0.vhdx | format-table Path, SerialNumber, Status
+Get-IscsiVirtualDisk -Path J:\ivhdx1.vhdx | format-table Path, SerialNumber, Status
+Get-IscsiVirtualDisk -Path J:\ivhdx2.vhdx | format-table Path, SerialNumber, Status
+Get-IscsiVirtualDisk -Path J:\ivhdx3.vhdx | format-table Path, SerialNumber, Status
+
 ```
 
 refresh on all nodes
@@ -360,4 +366,27 @@ Run 'abrt-cli report /var/spool/abrt/oops-2018-04-12-14:35:01-568-0' for creatin
 
 The Autoreporting feature is disabled. Please consider enabling it by issuing
 'abrt-auto-reporting enabled' as a user with root privileges
+```
+
+## db2icrt doesn't allow the use of symlinks as device names
+
+<http://www-01.ibm.com/support/docview.wss?uid=swg21969333>
+
+> The raw device name must be used in the db2icrt command, because DB2 requires real device nodes with device numbers in the format /dev/dm-n
+> 
+> Note that RedHat documentation implies that raw device names may be problematic when used because the are dynamic. However DB2 design is such that this doesn't pose problem to DB2, the reason is GPFS does device discovery based on nsd header and not on the dm-X name. GPFS keeps track of the devices in nsdmap and does nsddiscovery when gets started based on nsd header written on the disk so dm-X being different from orignal is fine.
+
+## how to boot to a specific kernel version
+
+- <https://access.redhat.com/solutions/186763>
+- <https://access.redhat.com/solutions/1605183>
+
+## A few commands to check the state of the cluster
+
+```
+/data1/db2/bin/db2cluster -cfs -list 
+/data1/db2/bin/db2cluster -cfs -list -filesystem
+/usr/lpp/mmfs/bin/mmgetstate
+
+
 ```

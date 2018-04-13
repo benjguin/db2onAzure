@@ -81,10 +81,57 @@ systemctl status firewalld
 #firewall-cmd --reload
 
 # install pre-requisistes
-yum update -y
-yum install -y gcc gcc-c++ libstdc++*.i686 numactl sg3_utils kernel-devel compat-libstdc++-33.i686 compat-libstdc++-33.x86_64 pam-devel.i686 pam-devel.x86_64 ksh iscsi-initiator-utils device-mapper-multipath.x86_64 m4 perl-Sys-Syslog patch
-#TODO: consolidate with previous line
-yum install -y libibcm libibverbs librdmacm rdma dapl ibacm ibutils libcxgb3 libibmad libipathverbs libmlx4 libmlx5 libmthca libnes libstdc++ glibc gcc-c++ gcc kernel kernel-devel kernel-headers kernel-firmware ntp ntpdate sg3_utils sg3_utils-libs binutils binutils-devel m4 openssh cpp ksh libgcc file libgomp make patch perl-Sys-Sylog
+#yum update --releasever=7.3 # TODO: test this - return HTTP 404...
+# DO NOT USE yum update -y
+# TODO: TEST it actually installs everything while executing only once
+# TODO don't install kernel 
+yum install -y \
+    binutils \
+    binutils-devel \
+    compat-libstdc++-33.i686 \
+    compat-libstdc++-33.x86_64 \
+    cpp \
+    dapl \
+    device-mapper-multipath.x86_64 \
+    file \
+    gcc \
+    gcc-c++ \
+    glibc \
+    ibacm \
+    ibutils \
+    iscsi-initiator-utils \
+    kernel \
+    kernel-devel \
+    kernel-firmware \
+    kernel-headers \
+    ksh \
+    libcxgb3 \
+    libgcc \
+    libgomp \
+    libibcm \
+    libibmad \
+    libibverbs \
+    libipathverbs \
+    libmlx4 \
+    libmlx5 \
+    libmthca \
+    libnes \
+    librdmacm \
+    libstdc++ \
+    libstdc++*.i686 \
+    m4 \
+    make \
+    ntp \
+    ntpdate \
+    numactl \
+    openssh \
+    pam-devel.i686 \
+    pam-devel.x86_64 \
+    patch \
+    perl-Sys-Syslog \
+    rdma \
+    sg3_utils \
+    sg3_utils-libs
 
 
 # force initiator for the dev environment. Should retrieve them and update the target server instead.
@@ -181,19 +228,19 @@ multipaths {
         alias db2tieb 
     }
     multipath {
-        wwid  360003ff44dc75adc800f2990db2fcf81
+        wwid  360003ff44dc75adc8e43c83ade54ca61
         alias w1db2data1  
     }
     multipath {
-        wwid  360003ff44dc75adc8363d5a9792956e7
+        wwid  360003ff44dc75adca690dbe49a7dbb6e
         alias w1db2log1  
     }
     multipath {
-        wwid  360003ff44dc75adc83e04536df6bc2a4
+        wwid  360003ff44dc75adca8f4ab81522fbbaf
         alias w1db2shared
     }
     multipath {
-        wwid  360003ff44dc75adc8aa0f47208aab56c
+        wwid  360003ff44dc75adcad5c46d22163e3df
         alias w1db2tieb 
     }
 }
@@ -225,7 +272,7 @@ useradd -g db2fadm1 -m -d /home/db2sdfe1 db2sdfe1
 mkdir -p /var/ct/cfg/
 # define the witness. cf https://www.ibm.com/support/knowledgecenter/en/SSEPGG_11.1.0/com.ibm.db2.luw.qb.server.doc/doc/t0061581.html
 cat <<EOF > /var/ct/cfg/netmon.cf
-!REQD eth0 192.168.1.10
+!REQD eth0 192.168.1.30
 !REQD eth1 192.168.3.60
 EOF
 
@@ -238,7 +285,7 @@ EOF
 fi
 cat /var/ct/cfg/netmon.cf
 
-# this was developed with `uname -r` returning `3.10.0-514.28.1.el7.x86_64`
+# this was developed with `uname -r` returning `3.10.0-514.28.1.el7.x86_64` before reboot
 uname -r
 ls -als /lib/modules/`uname -r`/
 yum install -y ftp://mirror.switch.ch/pool/4/mirror/scientificlinux/7.1/x86_64/updates/security/kernel-devel-3.10.0-514.el7.x86_64.rpm
@@ -252,8 +299,16 @@ sed -i s/SELINUX=enforcing/SELINUX=disabled/ /etc/selinux/config
 setenforce 0
 sestatus
 
-exit
-exit
+awk -F\' '$1=="menuentry " {print $2}' /etc/grub2.cfg
+#TODO: check second entry is kernel 514
+grub2-set-default 1
+cat /boot/grub2/grubenv |grep saved
+grub2-mkconfig -o /boot/efi/EFI/redhat/grub.cfg
+grub2-mkconfig -o /boot/grub2/grub.cfg
+reboot
+
+#exit
+#exit
 # back to jumpbox
 ```
 }all_db2_nodes}
@@ -290,7 +345,23 @@ tentativenum=180412a
 /data2/db2bits/server_t/db2setup -r /root/db2server.rsp -l /tmp/db2setup_${tentativenum}.log -t /tmp/db2setup_${tentativenum}.trc
 ```
 
-## Create DB2 database, connect to it from a client
+the last step may fail with warnings. We need at least the bits in /data1/db2.
+
+## Compile GPL, Create DB2 database, connect to it from a client
+
+{on the 4 nodes{
+```
+cd /usr/lpp/mmfs/src
+mv config/env.mcr config/env.mcr.old
+make Autoconfig
+make World
+make InstallImages
+
+/data1/db2/bin/db2cluster -cfs -list -filesystem
+
+```
+}on the 4 nodes}
+
 
 ```bash
 ssh rhel@$jumpbox
@@ -299,7 +370,16 @@ sudo su
 
 # https://www.ibm.com/support/knowledgecenter/en/SSEPGG_11.1.0/com.ibm.db2.luw.qb.server.doc/doc/t0006744.html
 # https://www.ibm.com/support/knowledgecenter/en/SSEPGG_11.1.0/com.ibm.db2.luw.admin.cmd.doc/doc/r0002057.html
-/data1/opt/ibm/db2/V11.1/instance/db2icrt -cf cf1 -cfnet cf1 -cf cf2 -cfnet cf2 -m d1 -mnet d1 -m d2 -mnet d2 -instance_shared_dev /dev/sdd -tbdev /dev/sdg -u db2sdfe1 db2sdin1
+ll /dev/mapper
+
+#sample result: 
+#crw------- 1 root root 10, 236 Apr 13 06:29 control
+#lrwxrwxrwx 1 root root       7 Apr 13 07:04 w1db2data1 -> ../dm-2
+#lrwxrwxrwx 1 root root       7 Apr 13 07:10 w1db2log1 -> ../dm-3
+#lrwxrwxrwx 1 root root       7 Apr 13 06:29 w1db2shared -> ../dm-1
+#lrwxrwxrwx 1 root root       7 Apr 13 06:29 w1db2tieb -> ../dm-0
+
+/data1/db2/instance/db2icrt -cf cf1 -cfnet cf1 -cf cf2 -cfnet cf2 -m d1 -mnet d1 -m d2 -mnet d2 -instance_shared_dev /dev/dm-1 -tbdev /dev/dm-0 -u db2sdfe1 db2sdin1
 ```
 
 ## Appendix
