@@ -298,8 +298,10 @@ setenforce 0
 sestatus
 
 awk -F\' '$1=="menuentry " {print $2}' /etc/grub2.cfg
-#TODO: check second entry is kernel 514, maybe not yum install kernel will avoid this
-grub2-set-default 1
+#TODO: check third entry is kernel 514, maybe not yum install kernel will avoid this
+# Red Hat Enterprise Linux Server (3.10.0-514.el7.x86_64) 7.3 (Maipo)
+# please do **not** point to Red Hat Enterprise Linux Server (3.10.0-514.28.1.el7.x86_64) 7.3 (Maipo)
+grub2-set-default 2
 cat /boot/grub2/grubenv |grep saved
 grub2-mkconfig -o /boot/efi/EFI/redhat/grub.cfg
 grub2-mkconfig -o /boot/grub2/grub.cfg
@@ -351,7 +353,7 @@ vi /root/db2server.rsp
 # see <http://www-01.ibm.com/support/docview.wss?uid=swg21969333>
 # TODO: automate
 
-tentativenum=180412a
+tentativenum=180412b
 /data2/db2bits/server_t/db2setup -r /root/db2server.rsp -l /tmp/db2setup_${tentativenum}.log -t /tmp/db2setup_${tentativenum}.trc
 ```
 
@@ -389,7 +391,7 @@ ll /dev/mapper
 #lrwxrwxrwx 1 root root       7 Apr 13 06:29 w1db2shared -> ../dm-1
 #lrwxrwxrwx 1 root root       7 Apr 13 06:29 w1db2tieb -> ../dm-0
 
-/data1/db2/instance/db2icrt -cf cf1 -cfnet cf1 -cf cf2 -cfnet cf2 -m d1 -mnet d1 -m d2 -mnet d2 -instance_shared_dev /dev/dm-2 -tbdev /dev/dm-0 -u db2sdfe1 db2sdin1
+/data1/db2/instance/db2icrt -d -cf cf1 -cfnet cf1 -cf cf2 -cfnet cf2 -m d1 -mnet d1 -m d2 -mnet d2 -instance_shared_dev /dev/dm-2 -tbdev /dev/dm-0 -u db2sdfe1 db2sdin1
 ```
 
 ## Appendix
