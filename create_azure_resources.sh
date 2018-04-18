@@ -68,25 +68,21 @@ az network nic create --resource-group $rg --name cf1-client --vnet-name gluster
 az network nic create --resource-group $rg --name cf2-client --vnet-name gluster --subnet client --network-security-group gluster-nsg --private-ip-address 192.168.1.41
 az network nic create --resource-group $rg --name cf1-cluster --vnet-name gluster --subnet db2cluster --network-security-group gluster-nsg --private-ip-address 192.168.3.40
 az network nic create --resource-group $rg --name cf2-cluster --vnet-name gluster --subnet db2cluster --network-security-group gluster-nsg --private-ip-address 192.168.3.41
-az network nic create --resource-group $rg --name cf1-db2client --vnet-name gluster --subnet db2client --network-security-group gluster-nsg --private-ip-address 192.168.4.40
-az network nic create --resource-group $rg --name cf2-db2client --vnet-name gluster --subnet db2client --network-security-group gluster-nsg --private-ip-address 192.168.4.41
 
 echo "Creating Nics per DB2 server VM..."
-az network nic create --resource-group $rg --name d1-cluster --vnet-name gluster --subnet db2cluster --network-security-group gluster-nsg --private-ip-address 192.168.3.20
 az network nic create --resource-group $rg --name d1-client  --vnet-name gluster --subnet client     --network-security-group gluster-nsg --private-ip-address 192.168.1.20
-az network nic create --resource-group $rg --name d2-cluster --vnet-name gluster --subnet db2cluster --network-security-group gluster-nsg --private-ip-address 192.168.3.21
 az network nic create --resource-group $rg --name d2-client  --vnet-name gluster --subnet client     --network-security-group gluster-nsg --private-ip-address 192.168.1.21
-az network nic create --resource-group $rg --name d3-cluster --vnet-name gluster --subnet db2cluster --network-security-group gluster-nsg --private-ip-address 192.168.3.22
-az network nic create --resource-group $rg --name d3-client  --vnet-name gluster --subnet client     --network-security-group gluster-nsg --private-ip-address 192.168.1.22
-az network nic create --resource-group $rg --name d4-cluster --vnet-name gluster --subnet db2cluster --network-security-group gluster-nsg --private-ip-address 192.168.3.23
-az network nic create --resource-group $rg --name d4-client  --vnet-name gluster --subnet client     --network-security-group gluster-nsg --private-ip-address 192.168.1.23
+az network nic create --resource-group $rg --name d1-cluster --vnet-name gluster --subnet db2cluster --network-security-group gluster-nsg --private-ip-address 192.168.3.20
+az network nic create --resource-group $rg --name d2-cluster --vnet-name gluster --subnet db2cluster --network-security-group gluster-nsg --private-ip-address 192.168.3.21
+az network nic create --resource-group $rg --name d1-db2client --vnet-name gluster --subnet db2client --network-security-group gluster-nsg --private-ip-address 192.168.4.20
+az network nic create --resource-group $rg --name d2-db2client --vnet-name gluster --subnet db2client --network-security-group gluster-nsg --private-ip-address 192.168.4.21
 
 echo "Create DB2 VM's..."
 db2vmimage='RedHat:RHEL:7.3:7.3.2017090723'
-az vm create --resource-group $rg --name d1 --image "$db2vmimage" --size Standard_DS3_v2_Promo --admin-username rhel --nics d1-client d1-cluster --data-disk-sizes-gb 32 --no-wait
-az vm create --resource-group $rg --name d2 --image "$db2vmimage" --size Standard_DS3_v2_Promo --admin-username rhel --nics d2-client d2-cluster --data-disk-sizes-gb 32 --no-wait
-az vm create --resource-group $rg --name cf1 --image "$db2vmimage" --size Standard_DS3_v2_Promo --admin-username rhel --nics cf1-client cf1-cluster cf1-db2client --data-disk-sizes-gb 32 --no-wait
-az vm create --resource-group $rg --name cf2 --image "$db2vmimage" --size Standard_DS3_v2_Promo --admin-username rhel --nics cf2-client cf2-cluster cf2-db2client --data-disk-sizes-gb 32 --no-wait
+az vm create --resource-group $rg --name d1 --image "$db2vmimage" --size Standard_DS3_v2_Promo --admin-username rhel --nics d1-client d1-cluster d1-db2client --data-disk-sizes-gb 32 --no-wait
+az vm create --resource-group $rg --name d2 --image "$db2vmimage" --size Standard_DS3_v2_Promo --admin-username rhel --nics d2-client d2-cluster d2-db2client --data-disk-sizes-gb 32 --no-wait
+az vm create --resource-group $rg --name cf1 --image "$db2vmimage" --size Standard_DS3_v2_Promo --admin-username rhel --nics cf1-client cf1-cluster --data-disk-sizes-gb 32 --no-wait
+az vm create --resource-group $rg --name cf2 --image "$db2vmimage" --size Standard_DS3_v2_Promo --admin-username rhel --nics cf2-client cf2-cluster --data-disk-sizes-gb 32 --no-wait
 
 # TODO: generate keypair on the jumpbox, get the public key and update the public keys on all VMs 
 # so that the jumpbox can connect to all VMs

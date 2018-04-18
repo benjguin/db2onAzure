@@ -191,6 +191,7 @@ iscsiadm -m node -L automatic
 # next lines are optional
 multipath -l
 lsblk
+ll /dev/mapper
 ```
 
 ## Security Handshake
@@ -301,10 +302,10 @@ once all VM are removed
 
 ```bash
 db2vmimage='RedHat:RHEL:7.3:7.3.2017090723'
-az vm create --resource-group $rg --name d1 --image "$db2vmimage" --size Standard_DS3_v2_Promo --admin-username rhel --nics d1-client d1-cluster --data-disk-sizes-gb 32 --no-wait
-az vm create --resource-group $rg --name d2 --image "$db2vmimage" --size Standard_DS3_v2_Promo --admin-username rhel --nics d2-client d2-cluster --data-disk-sizes-gb 32 --no-wait
-az vm create --resource-group $rg --name cf1 --image "$db2vmimage" --size Standard_DS3_v2_Promo --admin-username rhel --nics cf1-client cf1-cluster cf1-db2client --data-disk-sizes-gb 32 --no-wait
-az vm create --resource-group $rg --name cf2 --image "$db2vmimage" --size Standard_DS3_v2_Promo --admin-username rhel --nics cf2-client cf2-cluster cf2-db2client --data-disk-sizes-gb 32 --no-wait
+az vm create --resource-group $rg --name d1 --image "$db2vmimage" --size Standard_DS3_v2_Promo --admin-username rhel --nics d1-client d1-cluster d1-db2client --data-disk-sizes-gb 32 --no-wait
+az vm create --resource-group $rg --name d2 --image "$db2vmimage" --size Standard_DS3_v2_Promo --admin-username rhel --nics d2-client d2-cluster d2-db2client --data-disk-sizes-gb 32 --no-wait
+az vm create --resource-group $rg --name cf1 --image "$db2vmimage" --size Standard_DS3_v2_Promo --admin-username rhel --nics cf1-client cf1-cluster --data-disk-sizes-gb 32 --no-wait
+az vm create --resource-group $rg --name cf2 --image "$db2vmimage" --size Standard_DS3_v2_Promo --admin-username rhel --nics cf2-client cf2-cluster --data-disk-sizes-gb 32 --no-wait
 
 az vm list -g $rg
 
@@ -382,12 +383,57 @@ The Autoreporting feature is disabled. Please consider enabling it by issuing
 - <https://access.redhat.com/solutions/186763>
 - <https://access.redhat.com/solutions/1605183>
 
-## A few commands to check the state of the cluster
+## A few commands to check the state of the cluster, or remove uninstalled components
+
+<https://www.ibm.com/developerworks/data/library/techarticle/dm-1011db2purescalefeature/>
 
 ```
 /data1/db2/bin/db2cluster -cfs -list 
 /data1/db2/bin/db2cluster -cfs -list -filesystem
-/usr/lpp/mmfs/bin/mmgetstate
+/usr/lpp/mmfs/bin/mmgetstate -a
+/usr/lpp/mmfs/bin/mmlscluster
+lsrpdomain
+```
 
+from [How to remove a TSA peer domain](http://www.dba-db2.com/2016/02/how-to-remove-a-tsa-peer-domain.html)
 
+```
+lsrpdomain
+rmrpdomain db2domain_20180417160454
+```
+
+## need to remove GPFS
+
+<https://www.ibm.com/support/knowledgecenter/SSFKCN_4.1.0/com.ibm.cluster.gpfs.v4r1.gpfs300.doc/bl1ins_uninstall.htm>
+
+```
+The instance shared device "/dev/dm-2" was specified. However, the DB2
+installer has detected that there is already an existing user managed GPFS
+cluster on the host. To use an existing user managed file system for the DB2
+pureScale instance setup, specify the directory instead of the device path.
+Specify the directory using either the instance shared directory option, or the
+INSTANCE_SHARED_DIR keyword. For details about user managed file system,
+instance shared device path or instance shared directory, see the DB2
+Informaiton Center.
+```
+
+```bash
+/usr/lpp/mmfs/bin/mmshutdown -a
+yum list gpfs*
+rpm -e gpfs.docs.noarch
+rpm -e gpfs.ext.x86_64
+rpm -e gpfs.gpl.noarch
+rpm -e gpfs.gskit.x86_64
+rpm -e gpfs.msg.en_US.noarch
+rpm -e gpfs.base.x86_64 
+yum list gpfs*
+```
+
+optionally:
+
+```
+rm -rf /var/mmfs
+rm -rf /usr/lpp/mmfs
+rm -f /var/adm/ras/mm*
+rm -rf /tmp/mmfs
 ```

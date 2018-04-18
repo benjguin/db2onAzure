@@ -170,21 +170,31 @@ cat << EOF >> /etc/hosts
 192.168.3.21 d2-eth1
 192.168.3.40 cf1-eth1
 192.168.3.41 cf2-eth1
-192.168.4.40 cf1-eth2
-192.168.4.41 cf2-eth2
+192.168.4.20 d1-eth2
+192.168.4.21 d2-eth2
 192.168.1.30 witn0-eth0
 192.168.3.60 witn1-eth1
 192.168.4.60 witn1-eth2
 EOF
 
 #format data disk and mount it
-printf "n\np\n1\n\n\np\nw\n" | fdisk /dev/sdc
-printf "\n" | mkfs -t ext4 /dev/sdc1
+#TODO: data disk may be on sdb or sdc
+#dataon=sdb
+dataon=sdc
+printf "n\np\n1\n\n\np\nw\n" | fdisk /dev/$dataon
+printf "\n" | mkfs -t ext4 /dev/${dataon}1
 mkdir /data1
-mount /dev/sdc1 /data1
+mount /dev/${dataon}1 /data1
+if [ "$dataon" == "sdc" ]
+then 
 cat >> /etc/fstab << EOF
 /dev/sdc1   /data1  auto    defaults,nofail 0   0
 EOF
+else
+cat >> /etc/fstab << EOF
+/dev/sdb1   /data1  auto    defaults,nofail 0   0
+EOF
+fi
 
 #if [ `hostname` != "cf1" ] && [ `hostname` != "cf1" ]
 #then # {connect to iscsi{
@@ -226,19 +236,19 @@ multipaths {
         alias db2tieb 
     }
     multipath {
-        wwid  360003ff44dc75adc8e43c83ade54ca61
+        wwid  360003ff44dc75adc8a833f5e2a000a50
         alias w1db2data1  
     }
     multipath {
-        wwid  360003ff44dc75adca690dbe49a7dbb6e
+        wwid  360003ff44dc75adc8f92b0dced7e4886
         alias w1db2log1  
     }
     multipath {
-        wwid  360003ff44dc75adca8f4ab81522fbbaf
+        wwid  360003ff44dc75adcba4d5eac89852c53
         alias w1db2shared
     }
     multipath {
-        wwid  360003ff44dc75adcad5c46d22163e3df
+        wwid  360003ff44dc75adcbaee3c293e0a909e
         alias w1db2tieb 
     }
 }
@@ -270,12 +280,13 @@ useradd -g db2fadm1 -m -d /home/db2sdfe1 db2sdfe1
 mkdir -p /var/ct/cfg/
 # define the witness. cf https://www.ibm.com/support/knowledgecenter/en/SSEPGG_11.1.0/com.ibm.db2.luw.qb.server.doc/doc/t0061581.html
 cat <<EOF > /var/ct/cfg/netmon.cf
+!IBQPORTONLY !ALL
 !REQD eth0 192.168.1.30
 !REQD eth1 192.168.3.60
 EOF
 
-nbnics=`ls -A /sys/class/net/ | wc -l`
-if [ $nbnics == 4 ]
+nbnics=`ls -als /sys/class/net/  | grep eth | wc -l`
+if [ $nbnics == 3 ]
 then
 cat <<EOF >> /var/ct/cfg/netmon.cf
 !REQD eth2 192.168.4.60
@@ -285,39 +296,45 @@ cat /var/ct/cfg/netmon.cf
 
 # this was developed with `uname -r` returning `3.10.0-514.28.1.el7.x86_64` before reboot
 uname -r
-ls -als /lib/modules/`uname -r`/
-#yum install -y ftp://mirror.switch.ch/pool/4/mirror/scientificlinux/7.1/x86_64/updates/security/kernel-devel-3.10.0-514.el7.x86_64.rpm
-rm -f /lib/modules/3.10.0-514.28.1.el7.x86_64/build
-ln -s /usr/src/kernels/3.10.0-514.el7.x86_64 /lib/modules/3.10.0-514.28.1.el7.x86_64/build
-ll /lib/modules/
-ls -als /lib/modules/`uname -r`/
+awk -F\' '$1=="menuentry " {print $2}' /etc/grub2.cfg
+#TODO: check third entry is kernel 514, maybe not yum install kernel will avoid this
+# Red Hat Enterprise Linux Server (3.10.0-514.el7.x86_64) 7.3 (Maipo)
+# please do **not** point to Red Hat Enterprise Linux Server (3.10.0-514.28.1.el7.x86_64) 7.3 (Maipo)
+grub2-set-default 'Red Hat Enterprise Linux Server (3.10.0-514.el7.x86_64) 7.3 (Maipo)'
+cat /boot/grub2/grubenv |grep saved
+grub2-mkconfig -o /boot/efi/EFI/redhat/grub.cfg
+grub2-mkconfig -o /boot/grub2/grub.cfg
+
+## this was developed with `uname -r` returning `3.10.0-514.28.1.el7.x86_64` before reboot
+#uname -r
+#ls -als /lib/modules/`uname -r`/
+##yum install -y ftp://mirror.switch.ch/pool/4/mirror/scientificlinux/7.1/x86_64/updates/security/kernel-devel-3.10.0-514.el7.x86_64.rpm
+#rm -f /lib/modules/3.10.0-514.28.1.el7.x86_64/build
+#ln -s /usr/src/kernels/3.10.0-514.el7.x86_64 /lib/modules/3.10.0-514.28.1.el7.x86_64/build
+#ll /lib/modules/
+#ls -als /lib/modules/`uname -r`/
 
 sestatus
 sed -i s/SELINUX=enforcing/SELINUX=disabled/ /etc/selinux/config
 setenforce 0
 sestatus
 
-awk -F\' '$1=="menuentry " {print $2}' /etc/grub2.cfg
-#TODO: check third entry is kernel 514, maybe not yum install kernel will avoid this
-# Red Hat Enterprise Linux Server (3.10.0-514.el7.x86_64) 7.3 (Maipo)
-# please do **not** point to Red Hat Enterprise Linux Server (3.10.0-514.28.1.el7.x86_64) 7.3 (Maipo)
-grub2-set-default 2
-cat /boot/grub2/grubenv |grep saved
-grub2-mkconfig -o /boot/efi/EFI/redhat/grub.cfg
-grub2-mkconfig -o /boot/grub2/grub.cfg
 reboot
 ### wait for reboot and reconnect
 
-yum install -y rpm-build redhat-rpm-config asciidoc hmaccalc perl-ExtUtils-Embed pesign xmlto
-cd /usr/lpp/mmfs/src
-#mv config/env.mcr config/env.mcr.old
-make Autoconfig
-make World
-make InstallImages
-ll /usr/lpp/mmfs/src/bin/lxtrace*
-ll /usr/lpp/mmfs/src/bin/kdump*
-make rpm
-ll /root/rpmbuild/RPMS/x86_64/gpfs*
+#ssh $nodeip
+#sudo su
+#
+#yum install -y rpm-build redhat-rpm-config asciidoc hmaccalc perl-ExtUtils-Embed pesign xmlto
+#cd /usr/lpp/mmfs/src
+##mv config/env.mcr config/env.mcr.old
+#make Autoconfig
+#make World
+#make InstallImages
+#ll /usr/lpp/mmfs/src/bin/lxtrace*
+#ll /usr/lpp/mmfs/src/bin/kdump*
+#make rpm
+#ll /root/rpmbuild/RPMS/x86_64/gpfs*
 
 #exit
 #exit
@@ -398,20 +415,23 @@ ll /dev/mapper
 
 ### First install with GUI, generate a response file
 
+```bash
 yum group install -y "Server with GUI"
 #check if the following lines are needed
 sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/g' /etc/ssh/sshd_config
 #firewall-cmd --add-port=3389/tcp --permanent
 #firewall-cmd --reload
 
+yum -y downgrade xorg-x11-server-Xorg
 rpm -Uvh https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
-rpm -Uvh http://li.nux.ro/download/nux/dextop/el7/x86_64/nux-dextop-release-0-1.el7.nux.noarch.rpm
+rpm -Uvh http://li.nux.ro/download/nux/dextop/el7/x86_64/nux-dextop-release-0-5.el7.nux.noarch.rpm
 yum -y install xrdp 
 systemctl start xrdp.service
-sleep 0.5s
-netstat -antup | grep 3389
+
 # Set XRDP service to automatically start when VM starts
 chkconfig xrdp on
+sleep 2s
+netstat -antup | grep 3389
 
 passwd root
 ```
@@ -419,31 +439,6 @@ passwd root
 Setup an ssh tunnel. Example: `ssh -L 8034:192.168.1.20:3389 rhel@$jumpbox`
 
 Connect from an RDP client (e.g.: Windows + R, `mstsc`) and connect to `localhost:8034`
-
-Note that at this stage, devices look like this: 
-
-```
-[root@d1 rhel]# lsblk
-NAME                                    MAJ:MIN RM  SIZE RO TYPE  MOUNTPOINT
-fd0                                       2:0    1    4K  0 disk
-sda                                       8:0    0   32G  0 disk
-├─sda1                                    8:1    0  500M  0 part  /boot
-└─sda2                                    8:2    0 31.5G  0 part  /
-sdb                                       8:16   0   28G  0 disk
-└─3600224808df59698273b75f41aea9df8     253:0    0   28G  0 mpath
-  └─3600224808df59698273b75f41aea9df8p1 253:1    0   28G  0 part
-sdc                                       8:32   0   10G  0 disk
-└─sdc1                                    8:33   0   10G  0 part  /data1
-sdd                                       8:48   0  9.3G  0 disk
-└─360003ff44dc75adc882c5583a561aa53     253:2    0  9.3G  0 mpath
-sde                                       8:64   0  9.3G  0 disk
-└─360003ff44dc75adcbdecfe2f0b22c7c6     253:4    0  9.3G  0 mpath
-sdf                                       8:80   0 93.1G  0 disk
-└─360003ff44dc75adc8cdd40a1f6c43aa5     253:3    0 93.1G  0 mpath
-sdg                                       8:96   0 93.1G  0 disk
-└─360003ff44dc75adca79cdb4c4e6408ec     253:5    0 93.1G  0 mpath
-```
-
 
 from the GUI, open a terminal and run 
 
@@ -454,6 +449,19 @@ tentativenum=180410b
 
 Documentation is [here](https://www.ibm.com/support/knowledgecenter/en/SSEPGG_11.1.0/com.ibm.db2.luw.qb.server.doc/doc/t0054851.html?pos=2)
 
+at this point, in this example, d1 shows the following: 
+
+```
+[root@d1 rhel]# ll /dev/mapper
+total 0
+crw------- 1 root root 10, 236 Apr 17 12:51 control
+lrwxrwxrwx 1 root root       7 Apr 17 12:51 w1db2data1 -> ../dm-1
+lrwxrwxrwx 1 root root       7 Apr 17 12:51 w1db2log1 -> ../dm-0
+lrwxrwxrwx 1 root root       7 Apr 17 12:51 w1db2shared -> ../dm-2
+lrwxrwxrwx 1 root root       7 Apr 17 12:51 w1db2tieb -> ../dm-3
+```
+
+
 Here is how the setup is filled: 
 
 Screen name | Field | Value | Comments
@@ -463,15 +471,15 @@ Choose a Product | | DB2 Version 11.1.2.2. Server Editions with DB2 pureScale |
 Configuration | Directory | /data1/opt/ibm/db2/V11.1 |
 '' | Select the installation type | Typical |
 ''| I agree to the IBM terms | checked |
-Instance Owner | Password and Confirm password | ##obfuscated## |
-Fenced User | Password and Confirm password | ##obfuscated## |
-Cluster File System | Shared disk partition device path | /dev/sdd |
+Instance Owner | Existing User For Instance, User name | db2sdin1 |
+Fenced User | Existing User, User name | db2sdfe1 | 
+Cluster File System | Shared disk partition device path | /dev/dm-2 |
 '' | Mount point | /db2sd_1804a |
-'' | Shared disk for data | /dev/sde |
+'' | Shared disk for data | /dev/dm-1 |
 '' | Mount point (Data) | /db2fs/datafs1 |
-'' | Shared disk for log | /dev/sdf |
+'' | Shared disk for log | /dev/dm-0 |
 '' | Mount point (Log) | /db2fs/logfs1 |
-'' | DB2 Cluster Services Tiebreaker. Device path | /dev/sdg |
+'' | DB2 Cluster Services Tiebreaker. Device path | /dev/dm-3 |
 Host List | d1 [eth1], d2 [eth1], cf1 [eth1], cf2 [eth1]|
 '' | Preferred primary CF | cf1 |
 '' | Preferred secondary CF | cf2 |
@@ -534,29 +542,29 @@ Install IBM Tivoli System Automation for Multiplatforms (Tivoli SA MP): 	Yes
                                         
 DB2 cluster services:                   
     Mount point:                        	/db2sd_1804a
-    DB2 cluster services tiebreaker disk device path: 	/dev/sdg
-    DB2 cluster file system device path: 	/dev/sdd
+    DB2 cluster services tiebreaker disk device path: 	/dev/dm-3
+    DB2 cluster file system device path: 	/dev/dm-2
                                         
 New instances:                          
-    Instance name:                      	db2sdin2
+    Instance name:                      	db2sdin1
         FCM port range:                 	60000-60005
         CF port:                        	56001
         CF Management port:             	56000
         TCP/IP configuration:           	
-            Service name:               	db2c_db2sdin2
-            Port number:                	50000
+            Service name:               	db2c_db2sdin1
+            Port number:                	50137
         Instance user information:      	
-            User name:                  	db2sdin2
-            UID:                        	100
+            User name:                  	db2sdin1
+            UID:                        	1001
             Group name:                 	db2iadm1
             GID:                        	341
-            Home directory:             	/home/db2sdin2
+            Home directory:             	/home/db2sdin1
         Fenced user information:        	
-            User name:                  	db2sdfe2
-            UID:                        	101
+            User name:                  	db2sdfe1
+            UID:                        	1002
             Group name:                 	db2fadm1
             GID:                        	342
-            Home directory:             	/home/db2sdfe2
+            Home directory:             	/home/db2sdfe1
                                         
 Cluster caching facilities:             
     Preferred primary cluster caching facility: 	cf1
@@ -573,7 +581,6 @@ New Host List:
     cf1                                 	cf1
     cf2                                 	cf2
 ```
-
 
 this generated a reponse file (available in this repo: `db2server.rsp`) that can be used for a setup with the response file.
 
