@@ -2,7 +2,9 @@
 
 Known issues and fixes or diagnostics path
 
-## need to have a witness node
+## Network related issues
+
+### need to have a witness node
 
 ```
 ERROR: A reachable IP address could not be automatically determined that did
@@ -19,23 +21,27 @@ d1:eth1 d1:virbr0eth1 d2:eth1eth1 cf1:eth1eth1 cf2:eth1". The format of
 on each node (d1, d2, cf1, cf2): 
 
 ```bash
+mkdir -p /var/ct/cfg/
 # define the witness. cf https://www.ibm.com/support/knowledgecenter/en/SSEPGG_11.1.0/com.ibm.db2.luw.qb.server.doc/doc/t0061581.html
 cat <<EOF > /var/ct/cfg/netmon.cf
+!IBQPORTONLY !ALL
 !REQD eth0 192.168.1.30
 !REQD eth1 192.168.3.60
 EOF
 
-nbnics=`ls -A /sys/class/net/ | wc -l`
-if [ $nbnics == 4 ]
+nbnics=`ls -als /sys/class/net/  | grep eth | wc -l`
+if [ $nbnics == 3 ]
 then
 cat <<EOF >> /var/ct/cfg/netmon.cf
 !REQD eth2 192.168.4.60
 EOF
 fi
+cat /var/ct/cfg/netmon.cf
 ```
 
+## GPFS related issues
 
-## GPL compilation
+### GPL compilation
 
 ```
 WARNING: An error occurred while compiling IBM General Parallel File System
@@ -56,6 +62,34 @@ make Autoconfig
 make World
 make InstallImages
 make rpm
+```
+
+usually, this is related to the kernel used.
+
+```bash
+uname -r
+ls -als /lib/modules/
+ls -als /lib/modules/`uname -r`/
+```
+
+### how to boot to a specific kernel version
+
+- <https://access.redhat.com/solutions/186763>
+- <https://access.redhat.com/solutions/1605183>
+
+the code we use on d1, d2, cf1 and cf2 is the following: 
+
+```bash
+uname -r
+awk -F\' '$1=="menuentry " {print $2}' /etc/grub2.cfg
+# please do **not** point to Red Hat Enterprise Linux Server (3.10.0-514.28.1.el7.x86_64) 7.3 (Maipo)
+grub2-set-default 'Red Hat Enterprise Linux Server (3.10.0-514.el7.x86_64) 7.3 (Maipo)'
+cat /boot/grub2/grubenv |grep saved
+grub2-mkconfig -o /boot/efi/EFI/redhat/grub.cfg
+grub2-mkconfig -o /boot/grub2/grub.cfg
+
+
+reboot
 ```
 
 ## GPFS is in use - try to drop recreate the iSCSI disks
@@ -378,10 +412,6 @@ The Autoreporting feature is disabled. Please consider enabling it by issuing
 > 
 > Note that RedHat documentation implies that raw device names may be problematic when used because the are dynamic. However DB2 design is such that this doesn't pose problem to DB2, the reason is GPFS does device discovery based on nsd header and not on the dm-X name. GPFS keeps track of the devices in nsdmap and does nsddiscovery when gets started based on nsd header written on the disk so dm-X being different from orignal is fine.
 
-## how to boot to a specific kernel version
-
-- <https://access.redhat.com/solutions/186763>
-- <https://access.redhat.com/solutions/1605183>
 
 ## A few commands to check the state of the cluster, or remove uninstalled components
 

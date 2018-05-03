@@ -1,0 +1,996 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "pubKeyValue": {
+            "type": "string"
+        },
+        "adwinPassword": {
+            "type": "securestring"
+        },
+        "db2bits": {
+            "type": "string"
+        },
+        "gitrawurl": {
+            "type": "string"
+        },
+        "vnetName": {
+            "defaultValue": "db2vnet",
+            "type": "string"
+        },
+        "nb_db2_member_vms": {
+            "defaultValue": 2,
+            "type": "int"
+        },
+        "nb_db2_caching_facilities_vms": {
+            "defaultValue": 2,
+            "type": "int"
+        },
+        "nb_db2_glusterfs_vms": {
+            "defaultValue": 3,
+            "type": "int"
+        }
+    },
+    "variables": {
+        "location": {
+            "value": "[resourceGroup().location]"
+        },
+        "uniqueString1": {
+            "value": "[uniqueString(resourceGroup().id, '1')]"
+        }
+    },
+    "resources": [
+        {
+            "comments": "db2 members VMs",
+            "type": "Microsoft.Compute/virtualMachines",
+            "name": "[concat('d', copyIndex())]",
+            "apiVersion": "2017-12-01",
+            "location": "[variables('location')]",
+            "tags": {},
+            "scale": null,
+            "properties": {
+                "hardwareProfile": {
+                    "vmSize": "Standard_DS3_v2_Promo"
+                },
+                "storageProfile": {
+                    "imageReference": {
+                        "publisher": "RedHat",
+                        "offer": "RHEL",
+                        "sku": "7.3",
+                        "version": "7.3.2017090723"
+                    },
+                    "osDisk": {
+                        "osType": "Linux",
+                        "name": "[concat('d', copyIndex(),'_osDisk_1_', variables('uniqueString1'))]",
+                        "createOption": "FromImage",
+                        "caching": "ReadWrite",
+                        "managedDisk": {
+                            "id": "[concat('d', copyIndex(),'_osDisk_1_', variables('uniqueString1'))]"
+                        }
+                    },
+                    "dataDisks": [
+                        {
+                            "lun": 0,
+                            "name": "[concat('d', copyIndex(),'_dataDisk_lun0')]",
+                            "createOption": "Empty",
+                            "diskSizeGB": 32,
+                            "caching": "None",
+                            "managedDisk": {
+                                "id": "[concat('d', copyIndex(),'_dataDisk_lun0_', variables('uniqueString1'))]",
+                                "storageAccountType": "Premium_LRS"
+                            }
+                        }
+                    ]
+                },
+                "osProfile": {
+                    "computerName": "[concat('d', copyIndex())]",
+                    "adminUsername": "rhel",
+                    "linuxConfiguration": {
+                        "disablePasswordAuthentication": true,
+                        "ssh": {
+                            "publicKeys": [
+                                {
+                                    "path": "/home/rhel/.ssh/authorized_keys",
+                                    "keyData": "[concat(parameters('pubKeyValue'), '\n')]"
+                                }
+                            ]
+                        }
+                    },
+                    "secrets": []
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', concat('d', copyIndex(), '_main'))]",
+                            "properties": {
+                                "primary": true
+                            }
+                        },
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', concat('d', copyIndex(), '_gfsfe'))]",
+                            "properties": {
+                                "primary": false
+                            }
+                        },
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', concat('d', copyIndex(), '_db2be'))]",
+                            "properties": {
+                                "primary": false
+                            }
+                        },
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', concat('d', copyIndex(), '_db2fe'))]",
+                            "properties": {
+                                "primary": false
+                            }
+                        }
+                    ]
+                }
+            },
+            "copy": {
+                "name": "db2_member_vms_copy",
+                "count": "[parameters('nb_db2_member_vms')]"
+            },
+            "dependsOn": ["db2_member_nics_client_copy"]
+        },
+        {
+            "comments": "db2 member NICs on main subnet",
+            "type": "Microsoft.Network/networkInterfaces",
+            "name": "[concat('d', copyIndex(), '_main')]",
+            "apiVersion": "2018-02-01",
+            "location": "[variables('location')]",
+            "scale": null,
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "ipconfig1",
+                        "properties": {
+                            "privateIPAddress": "[concat('192.168.0.2', copyIndex())]",
+                            "privateIPAllocationMethod": "Static",
+                            "subnet": {
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('vnetName'), 'main')]"
+                            },
+                            "primary": true,
+                            "privateIPAddressVersion": "IPv4"
+                        }
+                    }
+                ],
+                "dnsSettings": {
+                    "dnsServers": [],
+                    "appliedDnsServers": []
+                },
+                "enableAcceleratedNetworking": false,
+                "enableIPForwarding": false,
+                "networkSecurityGroup": {
+                    "id": "[resourceId('Microsoft.Network/networkSecurityGroups', concat(parameters('vnetName'), '_nsg'))]"
+                },
+                "primary": true,
+                "virtualMachine": {
+                    "id": "[resourceId('Microsoft.Compute/virtualMachines', concat('d', copyIndex()))]"
+                }
+            },
+            "copy": {
+                "name": "db2_member_nics_client_copy",
+                "count": "[parameters('nb_db2_member_vms')]"
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('vnetName'), 'client')]",
+                "[resourceId('Microsoft.Network/networkSecurityGroups', concat(parameters('vnetName'), '_nsg'))]",
+                "db2_member_vms_copy"
+            ]
+        },
+
+
+
+
+
+
+
+        {
+            "comments": "Generalized from resource: '/subscriptions/b4ed3d75-dd0d-4660-aacd-7cb2d1bed125/resourceGroups/a_180503a/providers/Microsoft.Compute/virtualMachines/witn1'.",
+            "type": "Microsoft.Compute/virtualMachines",
+            "name": "[parameters('virtualMachines_witn1_name')]",
+            "apiVersion": "2017-12-01",
+            "location": "[variables('location')]",
+            "tags": {},
+            "scale": null,
+            "properties": {
+                "hardwareProfile": {
+                    "vmSize": "Standard_B1s"
+                },
+                "storageProfile": {
+                    "imageReference": {
+                        "publisher": "OpenLogic",
+                        "offer": "CentOS",
+                        "sku": "7.3",
+                        "version": "latest"
+                    },
+                    "osDisk": {
+                        "osType": "Linux",
+                        "name": "[concat(parameters('virtualMachines_witn1_name'),'_OsDisk_1_8cf3b2427d7a4128b5a0f8e3cfa0e21b')]",
+                        "createOption": "FromImage",
+                        "caching": "ReadWrite",
+                        "managedDisk": {
+                            "id": "[parameters('virtualMachines_witn1_id')]"
+                        }
+                    },
+                    "dataDisks": []
+                },
+                "osProfile": {
+                    "computerName": "[parameters('virtualMachines_witn1_name')]",
+                    "adminUsername": "rhel",
+                    "linuxConfiguration": {
+                        "disablePasswordAuthentication": true,
+                        "ssh": {
+                            "publicKeys": [
+                                {
+                                    "path": "/home/rhel/.ssh/authorized_keys",
+                                    "keyData": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDFc3JmK8S/wZYej6LGl3yuwea6geBt2aAR++sT/R78Clb5U9nLHxe5cx9bxtx+D/4iDTv9i5Wh3bAkIqHMiOBuKHuyeKEmd5LvuEgxegRLK6soUhb3gIO0I7lmgn+i3u4hPXt/B8/b1lFxCRJQ5DeOUw6q8NHBvwHC+ydHxGW8LGH+WtipBjHq/1uzwV/h+l4+HNJxcYUzrn1doMrOGSfMvPOkWqYNlvf/wYbV3OnyqAbcbkkxrKxlwry06IE5Swg862tspDrd6VCMXH0KdpvTsw3z2dbg2pKGCTfIRpXzSMSdCeSYAUPf096AaKebMnbVnDcI4XVqmjWI4eHY6K33 benjamin@3-4.fr\n"
+                                }
+                            ]
+                        }
+                    },
+                    "secrets": []
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', parameters('networkInterfaces_witn1_db2cluster_name'))]",
+                            "properties": {
+                                "primary": true
+                            }
+                        },
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', parameters('networkInterfaces_witn1_db2client_name'))]",
+                            "properties": {
+                                "primary": false
+                            }
+                        }
+                    ]
+                }
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/networkInterfaces', parameters('networkInterfaces_witn1_db2cluster_name'))]",
+                "[resourceId('Microsoft.Network/networkInterfaces', parameters('networkInterfaces_witn1_db2client_name'))]"
+            ]
+        },
+        {
+            "comments": "Generalized from resource: '/subscriptions/b4ed3d75-dd0d-4660-aacd-7cb2d1bed125/resourceGroups/a_180503a/providers/Microsoft.Network/networkInterfaces/d1-cluster'.",
+            "type": "Microsoft.Network/networkInterfaces",
+            "name": "[parameters('networkInterfaces_d1_cluster_name')]",
+            "apiVersion": "2018-02-01",
+            "location": "[variables('location')]",
+            "scale": null,
+            "properties": {
+                "provisioningState": "Succeeded",
+                "resourceGuid": "d2749949-a231-4c52-b7c6-ac15a124879b",
+                "ipConfigurations": [
+                    {
+                        "name": "ipconfig1",
+                        "etag": "W/\"a0cf6711-893f-4a7c-9161-a485bd594b15\"",
+                        "properties": {
+                            "provisioningState": "Succeeded",
+                            "privateIPAddress": "192.168.3.20",
+                            "privateIPAllocationMethod": "Static",
+                            "subnet": {
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworks_gluster_name'), parameters('subnets_db2cluster_name'))]"
+                            },
+                            "primary": true,
+                            "privateIPAddressVersion": "IPv4"
+                        }
+                    }
+                ],
+                "dnsSettings": {
+                    "dnsServers": [],
+                    "appliedDnsServers": []
+                },
+                "enableAcceleratedNetworking": false,
+                "enableIPForwarding": false,
+                "networkSecurityGroup": {
+                    "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroups_gluster_nsg_name'))]"
+                },
+                "primary": false,
+                "virtualMachine": {
+                    "id": "[resourceId('Microsoft.Compute/virtualMachines', parameters('virtualMachines_d1_name'))]"
+                }
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworks_gluster_name'), parameters('subnets_db2cluster_name'))]",
+                "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroups_gluster_nsg_name'))]",
+                "[resourceId('Microsoft.Compute/virtualMachines', parameters('virtualMachines_d1_name'))]"
+            ]
+        },
+        {
+            "comments": "Generalized from resource: '/subscriptions/b4ed3d75-dd0d-4660-aacd-7cb2d1bed125/resourceGroups/a_180503a/providers/Microsoft.Network/networkInterfaces/d1-db2client'.",
+            "type": "Microsoft.Network/networkInterfaces",
+            "name": "[parameters('networkInterfaces_d1_db2client_name')]",
+            "apiVersion": "2018-02-01",
+            "location": "[variables('location')]",
+            "scale": null,
+            "properties": {
+                "provisioningState": "Succeeded",
+                "resourceGuid": "7ff47f79-2938-48b8-845f-2b1bb4f92ae5",
+                "ipConfigurations": [
+                    {
+                        "name": "ipconfig1",
+                        "etag": "W/\"c87b82ae-0fa2-435c-b9d9-cff3cb9e7f3b\"",
+                        "properties": {
+                            "provisioningState": "Succeeded",
+                            "privateIPAddress": "192.168.4.20",
+                            "privateIPAllocationMethod": "Static",
+                            "subnet": {
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworks_gluster_name'), parameters('subnets_db2client_name'))]"
+                            },
+                            "primary": true,
+                            "privateIPAddressVersion": "IPv4"
+                        }
+                    }
+                ],
+                "dnsSettings": {
+                    "dnsServers": [],
+                    "appliedDnsServers": []
+                },
+                "enableAcceleratedNetworking": false,
+                "enableIPForwarding": false,
+                "networkSecurityGroup": {
+                    "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroups_gluster_nsg_name'))]"
+                },
+                "primary": false,
+                "virtualMachine": {
+                    "id": "[resourceId('Microsoft.Compute/virtualMachines', parameters('virtualMachines_d1_name'))]"
+                }
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworks_gluster_name'), parameters('subnets_db2client_name'))]",
+                "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroups_gluster_nsg_name'))]",
+                "[resourceId('Microsoft.Compute/virtualMachines', parameters('virtualMachines_d1_name'))]"
+            ]
+        },
+        {
+            "comments": "Generalized from resource: '/subscriptions/b4ed3d75-dd0d-4660-aacd-7cb2d1bed125/resourceGroups/a_180503a/providers/Microsoft.Network/networkInterfaces/jumpbox'.",
+            "type": "Microsoft.Network/networkInterfaces",
+            "name": "[parameters('networkInterfaces_jumpbox_name')]",
+            "apiVersion": "2018-02-01",
+            "location": "[variables('location')]",
+            "scale": null,
+            "properties": {
+                "provisioningState": "Succeeded",
+                "resourceGuid": "35d544db-63ff-46f6-b9a3-bc6d3d272d24",
+                "ipConfigurations": [
+                    {
+                        "name": "ipconfig1",
+                        "etag": "W/\"c66665d5-0c95-4139-9829-df92e18df308\"",
+                        "properties": {
+                            "provisioningState": "Succeeded",
+                            "privateIPAddress": "192.168.1.5",
+                            "privateIPAllocationMethod": "Static",
+                            "publicIPAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses', parameters('publicIPAddresses_jumpbox_pubip_name'))]"
+                            },
+                            "subnet": {
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworks_gluster_name'), parameters('subnets_client_name'))]"
+                            },
+                            "primary": true,
+                            "privateIPAddressVersion": "IPv4"
+                        }
+                    }
+                ],
+                "dnsSettings": {
+                    "dnsServers": [],
+                    "appliedDnsServers": [],
+                    "internalDomainNameSuffix": "iwqjlgo12l1ufkh32gwtnj3hle.ax.internal.cloudapp.net"
+                },
+                "enableAcceleratedNetworking": false,
+                "enableIPForwarding": false,
+                "networkSecurityGroup": {
+                    "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroups_gluster_nsg_name'))]"
+                }
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/publicIPAddresses', parameters('publicIPAddresses_jumpbox_pubip_name'))]",
+                "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworks_gluster_name'), parameters('subnets_client_name'))]",
+                "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroups_gluster_nsg_name'))]"
+            ]
+        },
+        {
+            "comments": "Generalized from resource: '/subscriptions/b4ed3d75-dd0d-4660-aacd-7cb2d1bed125/resourceGroups/a_180503a/providers/Microsoft.Network/networkInterfaces/witn1-db2client'.",
+            "type": "Microsoft.Network/networkInterfaces",
+            "name": "[parameters('networkInterfaces_witn1_db2client_name')]",
+            "apiVersion": "2018-02-01",
+            "location": "[variables('location')]",
+            "scale": null,
+            "properties": {
+                "provisioningState": "Succeeded",
+                "resourceGuid": "9df209ab-f243-4f3d-8b66-e12628667e85",
+                "ipConfigurations": [
+                    {
+                        "name": "ipconfig1",
+                        "etag": "W/\"9ba262e8-494b-4433-829d-fbbd58658d63\"",
+                        "properties": {
+                            "provisioningState": "Succeeded",
+                            "privateIPAddress": "192.168.4.60",
+                            "privateIPAllocationMethod": "Static",
+                            "subnet": {
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworks_gluster_name'), parameters('subnets_db2client_name'))]"
+                            },
+                            "primary": true,
+                            "privateIPAddressVersion": "IPv4"
+                        }
+                    }
+                ],
+                "dnsSettings": {
+                    "dnsServers": [],
+                    "appliedDnsServers": []
+                },
+                "enableAcceleratedNetworking": false,
+                "enableIPForwarding": false,
+                "networkSecurityGroup": {
+                    "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroups_gluster_nsg_name'))]"
+                },
+                "primary": false,
+                "virtualMachine": {
+                    "id": "[resourceId('Microsoft.Compute/virtualMachines', parameters('virtualMachines_witn1_name'))]"
+                }
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworks_gluster_name'), parameters('subnets_db2client_name'))]",
+                "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroups_gluster_nsg_name'))]",
+                "[resourceId('Microsoft.Compute/virtualMachines', parameters('virtualMachines_witn1_name'))]"
+            ]
+        },
+        {
+            "comments": "Generalized from resource: '/subscriptions/b4ed3d75-dd0d-4660-aacd-7cb2d1bed125/resourceGroups/a_180503a/providers/Microsoft.Network/networkInterfaces/witn1-db2cluster'.",
+            "type": "Microsoft.Network/networkInterfaces",
+            "name": "[parameters('networkInterfaces_witn1_db2cluster_name')]",
+            "apiVersion": "2018-02-01",
+            "location": "[variables('location')]",
+            "scale": null,
+            "properties": {
+                "provisioningState": "Succeeded",
+                "resourceGuid": "78d50a47-d64f-4092-8174-a0dbd47e5d91",
+                "ipConfigurations": [
+                    {
+                        "name": "ipconfig1",
+                        "etag": "W/\"b404d818-7d8f-4fd4-8030-4bbb8557be9f\"",
+                        "properties": {
+                            "provisioningState": "Succeeded",
+                            "privateIPAddress": "192.168.3.60",
+                            "privateIPAllocationMethod": "Static",
+                            "subnet": {
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworks_gluster_name'), parameters('subnets_db2cluster_name'))]"
+                            },
+                            "primary": true,
+                            "privateIPAddressVersion": "IPv4"
+                        }
+                    }
+                ],
+                "dnsSettings": {
+                    "dnsServers": [],
+                    "appliedDnsServers": []
+                },
+                "enableAcceleratedNetworking": false,
+                "enableIPForwarding": false,
+                "networkSecurityGroup": {
+                    "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroups_gluster_nsg_name'))]"
+                },
+                "primary": true,
+                "virtualMachine": {
+                    "id": "[resourceId('Microsoft.Compute/virtualMachines', parameters('virtualMachines_witn1_name'))]"
+                }
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworks_gluster_name'), parameters('subnets_db2cluster_name'))]",
+                "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroups_gluster_nsg_name'))]",
+                "[resourceId('Microsoft.Compute/virtualMachines', parameters('virtualMachines_witn1_name'))]"
+            ]
+        },
+        {
+            "comments": "Generalized from resource: '/subscriptions/b4ed3d75-dd0d-4660-aacd-7cb2d1bed125/resourceGroups/a_180503a/providers/Microsoft.Network/networkSecurityGroups/gluster-nsg'.",
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "name": "[parameters('networkSecurityGroups_gluster_nsg_name')]",
+            "apiVersion": "2018-02-01",
+            "location": "[variables('location')]",
+            "scale": null,
+            "properties": {
+                "provisioningState": "Succeeded",
+                "resourceGuid": "b0a15879-2d9e-413e-ba1e-c96c2507d7bd",
+                "securityRules": [
+                    {
+                        "name": "allow-ssh",
+                        "etag": "W/\"152a3edf-eb71-4134-9c19-c9305d45cae0\"",
+                        "properties": {
+                            "provisioningState": "Succeeded",
+                            "description": "SSHDB2",
+                            "protocol": "Tcp",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "22",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "*",
+                            "access": "Allow",
+                            "priority": 101,
+                            "direction": "Inbound",
+                            "sourcePortRanges": [],
+                            "destinationPortRanges": [],
+                            "sourceAddressPrefixes": [],
+                            "destinationAddressPrefixes": []
+                        }
+                    },
+                    {
+                        "name": "allow-iscsi",
+                        "etag": "W/\"152a3edf-eb71-4134-9c19-c9305d45cae0\"",
+                        "properties": {
+                            "provisioningState": "Succeeded",
+                            "description": "iSCSI",
+                            "protocol": "Tcp",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "3260",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "*",
+                            "access": "Allow",
+                            "priority": 201,
+                            "direction": "Inbound",
+                            "sourcePortRanges": [],
+                            "destinationPortRanges": [],
+                            "sourceAddressPrefixes": [],
+                            "destinationAddressPrefixes": []
+                        }
+                    },
+                    {
+                        "name": "allow-gluster-bricks",
+                        "etag": "W/\"152a3edf-eb71-4134-9c19-c9305d45cae0\"",
+                        "properties": {
+                            "provisioningState": "Succeeded",
+                            "description": "Gluster-bricks",
+                            "protocol": "Tcp",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "49152-49160",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "*",
+                            "access": "Allow",
+                            "priority": 202,
+                            "direction": "Inbound",
+                            "sourcePortRanges": [],
+                            "destinationPortRanges": [],
+                            "sourceAddressPrefixes": [],
+                            "destinationAddressPrefixes": []
+                        }
+                    },
+                    {
+                        "name": "allow-gluster-daemon",
+                        "etag": "W/\"152a3edf-eb71-4134-9c19-c9305d45cae0\"",
+                        "properties": {
+                            "provisioningState": "Succeeded",
+                            "description": "Gluster-daemon",
+                            "protocol": "*",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "24007-24010",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "*",
+                            "access": "Allow",
+                            "priority": 203,
+                            "direction": "Inbound",
+                            "sourcePortRanges": [],
+                            "destinationPortRanges": [],
+                            "sourceAddressPrefixes": [],
+                            "destinationAddressPrefixes": []
+                        }
+                    },
+                    {
+                        "name": "allow-rpcbind",
+                        "etag": "W/\"152a3edf-eb71-4134-9c19-c9305d45cae0\"",
+                        "properties": {
+                            "provisioningState": "Succeeded",
+                            "description": "RPCbind",
+                            "protocol": "*",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "111",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "*",
+                            "access": "Allow",
+                            "priority": 204,
+                            "direction": "Inbound",
+                            "sourcePortRanges": [],
+                            "destinationPortRanges": [],
+                            "sourceAddressPrefixes": [],
+                            "destinationAddressPrefixes": []
+                        }
+                    }
+                ],
+                "defaultSecurityRules": [
+                    {
+                        "name": "AllowVnetInBound",
+                        "etag": "W/\"152a3edf-eb71-4134-9c19-c9305d45cae0\"",
+                        "properties": {
+                            "provisioningState": "Succeeded",
+                            "description": "Allow inbound traffic from all VMs in VNET",
+                            "protocol": "*",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "*",
+                            "sourceAddressPrefix": "VirtualNetwork",
+                            "destinationAddressPrefix": "VirtualNetwork",
+                            "access": "Allow",
+                            "priority": 65000,
+                            "direction": "Inbound",
+                            "sourcePortRanges": [],
+                            "destinationPortRanges": [],
+                            "sourceAddressPrefixes": [],
+                            "destinationAddressPrefixes": []
+                        }
+                    },
+                    {
+                        "name": "AllowAzureLoadBalancerInBound",
+                        "etag": "W/\"152a3edf-eb71-4134-9c19-c9305d45cae0\"",
+                        "properties": {
+                            "provisioningState": "Succeeded",
+                            "description": "Allow inbound traffic from azure load balancer",
+                            "protocol": "*",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "*",
+                            "sourceAddressPrefix": "AzureLoadBalancer",
+                            "destinationAddressPrefix": "*",
+                            "access": "Allow",
+                            "priority": 65001,
+                            "direction": "Inbound",
+                            "sourcePortRanges": [],
+                            "destinationPortRanges": [],
+                            "sourceAddressPrefixes": [],
+                            "destinationAddressPrefixes": []
+                        }
+                    },
+                    {
+                        "name": "DenyAllInBound",
+                        "etag": "W/\"152a3edf-eb71-4134-9c19-c9305d45cae0\"",
+                        "properties": {
+                            "provisioningState": "Succeeded",
+                            "description": "Deny all inbound traffic",
+                            "protocol": "*",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "*",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "*",
+                            "access": "Deny",
+                            "priority": 65500,
+                            "direction": "Inbound",
+                            "sourcePortRanges": [],
+                            "destinationPortRanges": [],
+                            "sourceAddressPrefixes": [],
+                            "destinationAddressPrefixes": []
+                        }
+                    },
+                    {
+                        "name": "AllowVnetOutBound",
+                        "etag": "W/\"152a3edf-eb71-4134-9c19-c9305d45cae0\"",
+                        "properties": {
+                            "provisioningState": "Succeeded",
+                            "description": "Allow outbound traffic from all VMs to all VMs in VNET",
+                            "protocol": "*",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "*",
+                            "sourceAddressPrefix": "VirtualNetwork",
+                            "destinationAddressPrefix": "VirtualNetwork",
+                            "access": "Allow",
+                            "priority": 65000,
+                            "direction": "Outbound",
+                            "sourcePortRanges": [],
+                            "destinationPortRanges": [],
+                            "sourceAddressPrefixes": [],
+                            "destinationAddressPrefixes": []
+                        }
+                    },
+                    {
+                        "name": "AllowInternetOutBound",
+                        "etag": "W/\"152a3edf-eb71-4134-9c19-c9305d45cae0\"",
+                        "properties": {
+                            "provisioningState": "Succeeded",
+                            "description": "Allow outbound traffic from all VMs to Internet",
+                            "protocol": "*",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "*",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "Internet",
+                            "access": "Allow",
+                            "priority": 65001,
+                            "direction": "Outbound",
+                            "sourcePortRanges": [],
+                            "destinationPortRanges": [],
+                            "sourceAddressPrefixes": [],
+                            "destinationAddressPrefixes": []
+                        }
+                    },
+                    {
+                        "name": "DenyAllOutBound",
+                        "etag": "W/\"152a3edf-eb71-4134-9c19-c9305d45cae0\"",
+                        "properties": {
+                            "provisioningState": "Succeeded",
+                            "description": "Deny all outbound traffic",
+                            "protocol": "*",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "*",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "*",
+                            "access": "Deny",
+                            "priority": 65500,
+                            "direction": "Outbound",
+                            "sourcePortRanges": [],
+                            "destinationPortRanges": [],
+                            "sourceAddressPrefixes": [],
+                            "destinationAddressPrefixes": []
+                        }
+                    }
+                ]
+            },
+            "dependsOn": []
+        },
+        {
+            "comments": "Generalized from resource: '/subscriptions/b4ed3d75-dd0d-4660-aacd-7cb2d1bed125/resourceGroups/a_180503a/providers/Microsoft.Network/publicIPAddresses/jumpbox-pubip'.",
+            "type": "Microsoft.Network/publicIPAddresses",
+            "sku": {
+                "name": "Basic",
+                "tier": "Regional"
+            },
+            "name": "[parameters('publicIPAddresses_jumpbox_pubip_name')]",
+            "apiVersion": "2018-02-01",
+            "location": "[variables('location')]",
+            "scale": null,
+            "properties": {
+                "provisioningState": "Succeeded",
+                "resourceGuid": "6a811ef1-ff0e-4f92-ac13-0d51b030c692",
+                "ipAddress": "51.145.137.214",
+                "publicIPAddressVersion": "IPv4",
+                "publicIPAllocationMethod": "Static",
+                "idleTimeoutInMinutes": 4,
+                "dnsSettings": {
+                    "domainNameLabel": "jumpboxgluster",
+                    "fqdn": "jumpboxgluster.westeurope.cloudapp.azure.com"
+                },
+                "ipTags": []
+            },
+            "dependsOn": []
+        },
+        {
+            "comments": "Generalized from resource: '/subscriptions/b4ed3d75-dd0d-4660-aacd-7cb2d1bed125/resourceGroups/a_180503a/providers/Microsoft.Network/virtualNetworks/gluster'.",
+            "type": "Microsoft.Network/virtualNetworks",
+            "name": "[parameters('virtualNetworks_gluster_name')]",
+            "apiVersion": "2018-02-01",
+            "location": "[variables('location')]",
+            "tags": {},
+            "scale": null,
+            "properties": {
+                "provisioningState": "Succeeded",
+                "resourceGuid": "9995a045-e2db-42f7-a8fd-e1ad36a7a75c",
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "192.168.0.0/16"
+                    ]
+                },
+                "dhcpOptions": {
+                    "dnsServers": []
+                },
+                "subnets": [
+                    {
+                        "name": "client",
+                        "etag": "W/\"8fff7a2d-5a6e-4f60-bd16-a8a083a4494e\"",
+                        "properties": {
+                            "provisioningState": "Succeeded",
+                            "addressPrefix": "192.168.1.0/24"
+                        }
+                    },
+                    {
+                        "name": "backend",
+                        "etag": "W/\"8fff7a2d-5a6e-4f60-bd16-a8a083a4494e\"",
+                        "properties": {
+                            "provisioningState": "Succeeded",
+                            "addressPrefix": "192.168.2.0/24"
+                        }
+                    },
+                    {
+                        "name": "db2cluster",
+                        "etag": "W/\"8fff7a2d-5a6e-4f60-bd16-a8a083a4494e\"",
+                        "properties": {
+                            "provisioningState": "Succeeded",
+                            "addressPrefix": "192.168.3.0/24"
+                        }
+                    },
+                    {
+                        "name": "db2client",
+                        "etag": "W/\"8fff7a2d-5a6e-4f60-bd16-a8a083a4494e\"",
+                        "properties": {
+                            "provisioningState": "Succeeded",
+                            "addressPrefix": "192.168.4.0/24"
+                        }
+                    }
+                ],
+                "virtualNetworkPeerings": [],
+                "enableDdosProtection": false,
+                "enableVmProtection": false
+            },
+            "dependsOn": []
+        },
+        {
+            "comments": "Generalized from resource: '/subscriptions/b4ed3d75-dd0d-4660-aacd-7cb2d1bed125/resourceGroups/a_180503a/providers/Microsoft.Network/networkSecurityGroups/gluster-nsg/securityRules/allow-ssh'.",
+            "type": "Microsoft.Network/networkSecurityGroups/securityRules",
+            "name": "[concat(parameters('networkSecurityGroups_gluster_nsg_name'), '/', parameters('securityRules_allow_ssh_name'))]",
+            "apiVersion": "2018-02-01",
+            "scale": null,
+            "properties": {
+                "provisioningState": "Succeeded",
+                "description": "SSHDB2",
+                "protocol": "Tcp",
+                "sourcePortRange": "*",
+                "destinationPortRange": "22",
+                "sourceAddressPrefix": "*",
+                "destinationAddressPrefix": "*",
+                "access": "Allow",
+                "priority": 101,
+                "direction": "Inbound",
+                "sourcePortRanges": [],
+                "destinationPortRanges": [],
+                "sourceAddressPrefixes": [],
+                "destinationAddressPrefixes": []
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroups_gluster_nsg_name'))]"
+            ]
+        },
+        {
+            "comments": "Generalized from resource: '/subscriptions/b4ed3d75-dd0d-4660-aacd-7cb2d1bed125/resourceGroups/a_180503a/providers/Microsoft.Network/networkSecurityGroups/gluster-nsg/securityRules/allow-iscsi'.",
+            "type": "Microsoft.Network/networkSecurityGroups/securityRules",
+            "name": "[concat(parameters('networkSecurityGroups_gluster_nsg_name'), '/', parameters('securityRules_allow_iscsi_name'))]",
+            "apiVersion": "2018-02-01",
+            "scale": null,
+            "properties": {
+                "provisioningState": "Succeeded",
+                "description": "iSCSI",
+                "protocol": "Tcp",
+                "sourcePortRange": "*",
+                "destinationPortRange": "3260",
+                "sourceAddressPrefix": "*",
+                "destinationAddressPrefix": "*",
+                "access": "Allow",
+                "priority": 201,
+                "direction": "Inbound",
+                "sourcePortRanges": [],
+                "destinationPortRanges": [],
+                "sourceAddressPrefixes": [],
+                "destinationAddressPrefixes": []
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroups_gluster_nsg_name'))]"
+            ]
+        },
+        {
+            "comments": "Generalized from resource: '/subscriptions/b4ed3d75-dd0d-4660-aacd-7cb2d1bed125/resourceGroups/a_180503a/providers/Microsoft.Network/networkSecurityGroups/gluster-nsg/securityRules/allow-gluster-bricks'.",
+            "type": "Microsoft.Network/networkSecurityGroups/securityRules",
+            "name": "[concat(parameters('networkSecurityGroups_gluster_nsg_name'), '/', parameters('securityRules_allow_gluster_bricks_name'))]",
+            "apiVersion": "2018-02-01",
+            "scale": null,
+            "properties": {
+                "provisioningState": "Succeeded",
+                "description": "Gluster-bricks",
+                "protocol": "Tcp",
+                "sourcePortRange": "*",
+                "destinationPortRange": "49152-49160",
+                "sourceAddressPrefix": "*",
+                "destinationAddressPrefix": "*",
+                "access": "Allow",
+                "priority": 202,
+                "direction": "Inbound",
+                "sourcePortRanges": [],
+                "destinationPortRanges": [],
+                "sourceAddressPrefixes": [],
+                "destinationAddressPrefixes": []
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroups_gluster_nsg_name'))]"
+            ]
+        },
+        {
+            "comments": "Generalized from resource: '/subscriptions/b4ed3d75-dd0d-4660-aacd-7cb2d1bed125/resourceGroups/a_180503a/providers/Microsoft.Network/networkSecurityGroups/gluster-nsg/securityRules/allow-gluster-daemon'.",
+            "type": "Microsoft.Network/networkSecurityGroups/securityRules",
+            "name": "[concat(parameters('networkSecurityGroups_gluster_nsg_name'), '/', parameters('securityRules_allow_gluster_daemon_name'))]",
+            "apiVersion": "2018-02-01",
+            "scale": null,
+            "properties": {
+                "provisioningState": "Succeeded",
+                "description": "Gluster-daemon",
+                "protocol": "*",
+                "sourcePortRange": "*",
+                "destinationPortRange": "24007-24010",
+                "sourceAddressPrefix": "*",
+                "destinationAddressPrefix": "*",
+                "access": "Allow",
+                "priority": 203,
+                "direction": "Inbound",
+                "sourcePortRanges": [],
+                "destinationPortRanges": [],
+                "sourceAddressPrefixes": [],
+                "destinationAddressPrefixes": []
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroups_gluster_nsg_name'))]"
+            ]
+        },
+        {
+            "comments": "Generalized from resource: '/subscriptions/b4ed3d75-dd0d-4660-aacd-7cb2d1bed125/resourceGroups/a_180503a/providers/Microsoft.Network/networkSecurityGroups/gluster-nsg/securityRules/allow-rpcbind'.",
+            "type": "Microsoft.Network/networkSecurityGroups/securityRules",
+            "name": "[concat(parameters('networkSecurityGroups_gluster_nsg_name'), '/', parameters('securityRules_allow_rpcbind_name'))]",
+            "apiVersion": "2018-02-01",
+            "scale": null,
+            "properties": {
+                "provisioningState": "Succeeded",
+                "description": "RPCbind",
+                "protocol": "*",
+                "sourcePortRange": "*",
+                "destinationPortRange": "111",
+                "sourceAddressPrefix": "*",
+                "destinationAddressPrefix": "*",
+                "access": "Allow",
+                "priority": 204,
+                "direction": "Inbound",
+                "sourcePortRanges": [],
+                "destinationPortRanges": [],
+                "sourceAddressPrefixes": [],
+                "destinationAddressPrefixes": []
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroups_gluster_nsg_name'))]"
+            ]
+        },
+        {
+            "comments": "Generalized from resource: '/subscriptions/b4ed3d75-dd0d-4660-aacd-7cb2d1bed125/resourceGroups/a_180503a/providers/Microsoft.Network/virtualNetworks/gluster/subnets/client'.",
+            "type": "Microsoft.Network/virtualNetworks/subnets",
+            "name": "[concat(parameters('virtualNetworks_gluster_name'), '/', parameters('subnets_client_name'))]",
+            "apiVersion": "2018-02-01",
+            "scale": null,
+            "properties": {
+                "provisioningState": "Succeeded",
+                "addressPrefix": "192.168.1.0/24"
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworks_gluster_name'))]"
+            ]
+        },
+        {
+            "comments": "Generalized from resource: '/subscriptions/b4ed3d75-dd0d-4660-aacd-7cb2d1bed125/resourceGroups/a_180503a/providers/Microsoft.Network/virtualNetworks/gluster/subnets/backend'.",
+            "type": "Microsoft.Network/virtualNetworks/subnets",
+            "name": "[concat(parameters('virtualNetworks_gluster_name'), '/', parameters('subnets_backend_name'))]",
+            "apiVersion": "2018-02-01",
+            "scale": null,
+            "properties": {
+                "provisioningState": "Succeeded",
+                "addressPrefix": "192.168.2.0/24"
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworks_gluster_name'))]"
+            ]
+        },
+        {
+            "comments": "Generalized from resource: '/subscriptions/b4ed3d75-dd0d-4660-aacd-7cb2d1bed125/resourceGroups/a_180503a/providers/Microsoft.Network/virtualNetworks/gluster/subnets/db2cluster'.",
+            "type": "Microsoft.Network/virtualNetworks/subnets",
+            "name": "[concat(parameters('virtualNetworks_gluster_name'), '/', parameters('subnets_db2cluster_name'))]",
+            "apiVersion": "2018-02-01",
+            "scale": null,
+            "properties": {
+                "provisioningState": "Succeeded",
+                "addressPrefix": "192.168.3.0/24"
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworks_gluster_name'))]"
+            ]
+        },
+        {
+            "comments": "Generalized from resource: '/subscriptions/b4ed3d75-dd0d-4660-aacd-7cb2d1bed125/resourceGroups/a_180503a/providers/Microsoft.Network/virtualNetworks/gluster/subnets/db2client'.",
+            "type": "Microsoft.Network/virtualNetworks/subnets",
+            "name": "[concat(parameters('virtualNetworks_gluster_name'), '/', parameters('subnets_db2client_name'))]",
+            "apiVersion": "2018-02-01",
+            "scale": null,
+            "properties": {
+                "provisioningState": "Succeeded",
+                "addressPrefix": "192.168.4.0/24"
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworks_gluster_name'))]"
+            ]
+        }
+    ]
+}

@@ -1,0 +1,27 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "pubKeyValue": {
+            "value": null
+        },
+        "adwinPassword": {
+            "value": null
+        },
+        "db2bits": {
+            "value": null
+        },
+        "gitrawurl": {
+            "value": null
+        },
+        "nb_db2_member_vms": {
+            "value": 2
+        },
+        "nb_db2_cahing_facilities_vms": {
+            "value": 2
+        },
+        "nb_glusterfs_vms": {
+            "value": 3
+        }
+    }
+}

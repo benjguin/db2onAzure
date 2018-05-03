@@ -60,11 +60,6 @@ tar xzvf v11.1_linuxx64_server_t.tar.gz
 
 source /home/rhel/start_network.sh
 
-#cat << EOF >> /etc/ssh/ssh_config 
-#Port 22
-#Protocol 2,1
-#EOF
-
 systemctl stop firewalld
 systemctl disable firewalld
 systemctl status firewalld
@@ -294,25 +289,14 @@ EOF
 fi
 cat /var/ct/cfg/netmon.cf
 
-# this was developed with `uname -r` returning `3.10.0-514.28.1.el7.x86_64` before reboot
 uname -r
 awk -F\' '$1=="menuentry " {print $2}' /etc/grub2.cfg
-#TODO: check third entry is kernel 514, maybe not yum install kernel will avoid this
-# Red Hat Enterprise Linux Server (3.10.0-514.el7.x86_64) 7.3 (Maipo)
 # please do **not** point to Red Hat Enterprise Linux Server (3.10.0-514.28.1.el7.x86_64) 7.3 (Maipo)
 grub2-set-default 'Red Hat Enterprise Linux Server (3.10.0-514.el7.x86_64) 7.3 (Maipo)'
 cat /boot/grub2/grubenv |grep saved
 grub2-mkconfig -o /boot/efi/EFI/redhat/grub.cfg
 grub2-mkconfig -o /boot/grub2/grub.cfg
-
-## this was developed with `uname -r` returning `3.10.0-514.28.1.el7.x86_64` before reboot
-#uname -r
-#ls -als /lib/modules/`uname -r`/
-##yum install -y ftp://mirror.switch.ch/pool/4/mirror/scientificlinux/7.1/x86_64/updates/security/kernel-devel-3.10.0-514.el7.x86_64.rpm
-#rm -f /lib/modules/3.10.0-514.28.1.el7.x86_64/build
-#ln -s /usr/src/kernels/3.10.0-514.el7.x86_64 /lib/modules/3.10.0-514.28.1.el7.x86_64/build
-#ll /lib/modules/
-#ls -als /lib/modules/`uname -r`/
+# NB: a reboot will be required
 
 sestatus
 sed -i s/SELINUX=enforcing/SELINUX=disabled/ /etc/selinux/config
