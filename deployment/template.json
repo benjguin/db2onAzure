@@ -2,7 +2,19 @@
     "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-        "pubKeyValue": {
+        "userPubKeyValue": {
+            "type": "string"
+        },
+        "rhelPrivKeyValue": {
+            "type": "securestring"
+        },
+        "rhelPubKeyValue": {
+            "type": "string"
+        },
+        "rootPrivKeyValue": {
+            "type": "securestring"
+        },
+        "rootPubKeyValue": {
             "type": "string"
         },
         "adwinPassword": {
@@ -157,7 +169,7 @@
                             "publicKeys": [
                                 {
                                     "path": "/home/rhel/.ssh/authorized_keys",
-                                    "keyData": "[concat(parameters('pubKeyValue'), '\n')]"
+                                    "keyData": "[concat(parameters('rhelPubKeyValue'), '\n')]"
                                 }
                             ]
                         }
@@ -314,7 +326,7 @@
                             "publicKeys": [
                                 {
                                     "path": "/home/rhel/.ssh/authorized_keys",
-                                    "keyData": "[concat(parameters('pubKeyValue'), '\n')]"
+                                    "keyData": "[concat(parameters('rhelPubKeyValue'), '\n')]"
                                 }
                             ]
                         }
@@ -476,7 +488,7 @@
                             "publicKeys": [
                                 {
                                     "path": "/home/rhel/.ssh/authorized_keys",
-                                    "keyData": "[concat(parameters('pubKeyValue'), '\n')]"
+                                    "keyData": "[concat(parameters('rhelPubKeyValue'), '\n')]"
                                 }
                             ]
                         }
@@ -615,7 +627,7 @@
                             "publicKeys": [
                                 {
                                     "path": "/home/rhel/.ssh/authorized_keys",
-                                    "keyData": "[concat(parameters('pubKeyValue'), '\n')]"
+                                    "keyData": "[concat(parameters('rhelPubKeyValue'), '\n')]"
                                 }
                             ]
                         }
@@ -880,7 +892,7 @@
                             "publicKeys": [
                                 {
                                     "path": "/home/rhel/.ssh/authorized_keys",
-                                    "keyData": "[concat(parameters('pubKeyValue'), '\n')]"
+                                    "keyData": "[concat(parameters('rhelPubKeyValue'), '\n')]"
                                 }
                             ]
                         }

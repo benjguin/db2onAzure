@@ -189,22 +189,30 @@ fi
 echo "Starting deployment..."
 (
 	set -x
+
+	# for production, Azure key vaults or othe means should be leveraged
+	ssh-keygen -t rsa -f ${DIR}/rhelid_rsa -q -N ""
+	ssh-keygen -t rsa -f ${DIR}/rootid_rsa -q -N ""
+	rhelPrivKeyValue=`cat ${DIR}/rhelid_rsa`
+	rhelPubKeyValue=`cat ${DIR}/rhelid_rsa.pub`
+	rootPrivKeyValue=`cat ${DIR}/rootid_rsa`
+	rootPubKeyValue=`cat ${DIR}/rootid_rsa.pub`
+
 	az group deployment create --name "$deploymentName" --resource-group "$rg" --template-file "$templateFilePath" \
         --parameters "@${parametersFilePath}" \
-        --parameters pubKeyValue="$pubKeyValue" adwinPassword="$adwinPassword" db2bits="$db2bits" gitrawurl="$gitrawurl" jumpboxPublicName="$jumpboxPublicName"
+        --parameters userPubKeyValue="$pubKeyValue" \
+		--parameters rhelPrivKeyValue="$rhelPrivKeyValue" rhelPubKeyValue="$rhelPubKeyValue" \
+		--parameters rootPrivKeyValue="$rootPrivKeyValue" rootPubKeyValue="$rootPubKeyValue" \
+		--parameters adwinPassword="$adwinPassword" \
+		--parameters db2bits="$db2bits" gitrawurl="$gitrawurl" jumpboxPublicName="$jumpboxPublicName"
+	
+	rm -f ${DIR}/rhelid_rsa
+	rm -f ${DIR}/rhelid_rsa.pub
+	rm -f ${DIR}/rootid_rsa
+	rm -f ${DIR}/rootid_rsa.pub
 )
 
 if [ $?  == 0 ];
  then
 	echo "Template has been successfully deployed"
 fi
-
-
-scp rhel@$jumpbox:/home/rhel/.ssh/id_rsa.pub jumbox_id_rsa.pub
-az vm user update -g $rg --name g1 --username rhel --ssh-key-value jumbox_id_rsa.pub
-az vm user update -g $rg --name g2 --username rhel --ssh-key-value jumbox_id_rsa.pub
-az vm user update -g $rg --name g3 --username rhel --ssh-key-value jumbox_id_rsa.pub
-az vm user update -g $rg --name d1 --username rhel --ssh-key-value jumbox_id_rsa.pub
-az vm user update -g $rg --name d2 --username rhel --ssh-key-value jumbox_id_rsa.pub
-az vm user update -g $rg --name cf1 --username rhel --ssh-key-value jumbox_id_rsa.pub
-az vm user update -g $rg --name cf2 --username rhel --ssh-key-value jumbox_id_rsa.pub

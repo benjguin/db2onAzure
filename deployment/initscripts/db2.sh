@@ -1,6 +1,14 @@
 #!/bin/bash
 
-db2bits=$1
+userPubKeyValue=$1
+rhelPrivKeyValue=$2
+rhelPubKeyValue=$3
+rootPrivKeyValue=$4
+rootPubKeyValue=$5
+db2bits=$6
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 ${DIR}/start_network.sh
+
+${DIR}/setsshkeys.sh "$userPubKeyValue" "$rhelPrivKeyValue" "$rhelPubKeyValue" "$rootPrivKeyValue" "$rootPubKeyValue"
+
