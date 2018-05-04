@@ -19,6 +19,7 @@ usage() {
     echo "- adwinPassword (-p): password for the 'adwin' user on Windows boxes"
     echo "- db2bits (-d): location where the 'v11.1_linuxx64_server_t.tar.gz' file can be downloaded from"
     echo "- gitrawurl (-u): folder where this repo is, with a trailing /. E.g.: https://raw.githubusercontent.com/benjguin/db2onAzure/master/"
+    echo "- jumpboxPublicName (-j): folder where this repo is, with a trailing /. E.g.: https://raw.githubusercontent.com/benjguin/db2onAzure/master/"
     echo ""
     echo "Usage: $0 -s <subscription> -g <resourceGroupName> -l <location> -n <deploymentName> -k pubKeyPath -p adwinPassword -d db2bits -u gitrawurl" 1>&2
     exit 1
@@ -40,6 +41,9 @@ while getopts ":d:g:k:l:n:p:s:u:" arg; do
 			;;
 		g)
 			rg=${OPTARG}
+			;;
+		j)
+			jumpboxPublicName=${OPTARG}
 			;;
 		k)
 			pubKeyPath=${OPTARG}
@@ -123,6 +127,11 @@ if [[ -z "$gitrawurl" ]]; then
     [[ "${gitrawurl:?}" ]]
 fi
 
+if [[ -z "$jumpboxPublicName" ]]; then
+	echo "Enter a jumpbox public name (a default random value would be provided otherwise):"
+	read jumpboxPublicName
+fi
+
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 #templateFile Path - template file to be used
@@ -181,7 +190,7 @@ echo "Starting deployment..."
 	set -x
 	az group deployment create --name "$deploymentName" --resource-group "$rg" --template-file "$templateFilePath" \
         --parameters "@${parametersFilePath}" \
-        --parameters pubKeyValue="$pubKeyValue" adwinPassword="$adwinPassword" db2bits="$db2bits" gitrawurl="$gitrawurl"
+        --parameters pubKeyValue="$pubKeyValue" adwinPassword="$adwinPassword" db2bits="$db2bits" gitrawurl="$gitrawurl" jumpboxPublicName="$jumpboxPublicName"
 )
 
 if [ $?  == 0 ];

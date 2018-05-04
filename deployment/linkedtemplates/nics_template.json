@@ -1,0 +1,71 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "vnetName": {
+            "defaultValue": "db2vnet",
+            "type": "string"
+        },
+        "subnetName": {
+            "type": "string"
+        },
+        "ipAdddressPrefix": {
+            "defaultValue": "192.168.199.9",
+            "type": "string"
+        },
+        "vmPrefix": {
+            "defaultValue": "x",
+            "type": "string"
+        },        
+        "nb_vms": {
+            "defaultValue": 0,
+            "type": "int"
+        }
+    },
+    "variables": {
+        "location": "[resourceGroup().location]"
+    },
+    "resources": [
+        {
+            "comments": "db2 member NICs on a subnet",
+            "type": "Microsoft.Network/networkInterfaces",
+            "name": "[concat(parameters('vmPrefix'), copyIndex(), '_', parameters('subnetName'))]",
+            "apiVersion": "2018-02-01",
+            "location": "[variables('location')]",
+            "scale": null,
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "ipconfig1",
+                        "properties": {
+                            "privateIPAddress": "[concat(parameters('ipAdddressPrefix'), copyIndex())]",
+                            "privateIPAllocationMethod": "Static",
+                            "subnet": {
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('vnetName'), parameters('subnetName'))]"
+                            },
+                            "primary": true,
+                            "privateIPAddressVersion": "IPv4"
+                        }
+                    }
+                ],
+                "dnsSettings": {
+                    "dnsServers": [],
+                    "appliedDnsServers": []
+                },
+                "enableAcceleratedNetworking": false,
+                "enableIPForwarding": false,
+                "networkSecurityGroup": {
+                    "id": "[resourceId('Microsoft.Network/networkSecurityGroups', concat(parameters('vnetName'), '_nsg'))]"
+                }
+            },
+            "copy": {
+                "name": "[concat('db2_member_nics_',parameters('subnetName') , '_copy')]",
+                "count": "[parameters('nb_vms')]"
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('vnetName'), parameters('subnetName'))]",
+                "[resourceId('Microsoft.Network/networkSecurityGroups', concat(parameters('vnetName'), '_nsg'))]"
+            ]
+        }
+    ]
+}
