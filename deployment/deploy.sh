@@ -32,6 +32,7 @@ declare pubKeyPath=""
 declare adwinPassword=""
 declare db2bits=""
 declare gitrawurl=""
+declare jumpboxPublicName=""
 
 # Initialize parameters specified from command line
 while getopts ":d:g:k:l:n:p:s:u:" arg; do
@@ -197,3 +198,13 @@ if [ $?  == 0 ];
  then
 	echo "Template has been successfully deployed"
 fi
+
+
+scp rhel@$jumpbox:/home/rhel/.ssh/id_rsa.pub jumbox_id_rsa.pub
+az vm user update -g $rg --name g1 --username rhel --ssh-key-value jumbox_id_rsa.pub
+az vm user update -g $rg --name g2 --username rhel --ssh-key-value jumbox_id_rsa.pub
+az vm user update -g $rg --name g3 --username rhel --ssh-key-value jumbox_id_rsa.pub
+az vm user update -g $rg --name d1 --username rhel --ssh-key-value jumbox_id_rsa.pub
+az vm user update -g $rg --name d2 --username rhel --ssh-key-value jumbox_id_rsa.pub
+az vm user update -g $rg --name cf1 --username rhel --ssh-key-value jumbox_id_rsa.pub
+az vm user update -g $rg --name cf2 --username rhel --ssh-key-value jumbox_id_rsa.pub

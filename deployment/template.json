@@ -39,40 +39,19 @@
         "location": "[resourceGroup().location]",
         "uniqueString1": "[uniqueString(resourceGroup().id, '1')]",
         "linkedTemplatesUrl": "[concat(parameters('gitrawurl'),'deployment/linkedtemplates/')]",
+        "initScriptsUrl": "[concat(parameters('gitrawurl'),'deployment/initscripts/')]",
         "db2MemberSubnets": ["main", "gpfsfe", "db2be", "db2fe"],
         "db2MemberIpAdddressPrefixes": ["192.168.0.2", "192.168.1.2", "192.168.3.2", "192.168.4.2"],
         "db2CfSubnets": ["main", "gpfsfe", "db2be"],
-        "db2CfIpAdddressPrefixes": ["192.168.0.4", "192.168.1.4", "192.168.3.4"],
+        "db2CfIpAdddressPrefixes": ["192.168.0.3", "192.168.1.3", "192.168.3.3"],
         "glusterFsSubnets": ["main", "gpfsfe", "gpfsbe"],
         "glusterFsIpAdddressPrefixes": ["192.168.0.1", "192.168.1.1", "192.168.2.1"],
         "witnessSubnets": ["main", "gpfsfe", "db2be", "db2fe"],
         "witnessIpAdddressPrefixes": ["192.168.0.6", "192.168.1.6", "192.168.3.6", "192.168.4.6"],
-        "jumpboxSubnets": ["main"],
-        "jumpboxIpAdddressPrefixes": ["192.168.0.5"]
+        "windowsClientSubnets": ["main", "db2fe"],
+        "windowsClientIpAdddressPrefixes": ["192.168.0.4", "192.168.4.4"]
     },
     "resources": [
-        {
-            "comments": "jumpbox public IP address",
-            "type": "Microsoft.Network/publicIPAddresses",
-            "sku": {
-                "name": "Basic",
-                "tier": "Regional"
-            },
-            "name": "jumbox_public_ip",
-            "apiVersion": "2018-02-01",
-            "location": "[variables('location')]",
-            "scale": null,
-            "properties": {
-                "publicIPAddressVersion": "IPv4",
-                "publicIPAllocationMethod": "Dynamic",
-                "idleTimeoutInMinutes": 4,
-                "dnsSettings": {
-                    "domainNameLabel": "[parameters('jumpboxPublicName')]"
-                },
-                "ipTags": []
-            },
-            "dependsOn": []
-        },
         {
             "comments": "vNET and NSG",
             "type": "Microsoft.Resources/deployments",
@@ -95,7 +74,7 @@
         {
             "comments": "db2 member NICs",
             "type": "Microsoft.Resources/deployments",
-            "name": "db2_member_nics",
+            "name": "db2MemberNics",
             "apiVersion": "2015-01-01",
             "properties": {
                     "mode": "Incremental",
@@ -122,7 +101,7 @@
                 }
             },
             "copy": {
-                "name": "db2_member_nics_copy",
+                "name": "db2MemberNicsCopy",
                 "count": "[length(variables('db2MemberSubnets'))]"
             },
             "dependsOn": ["vNetAndNsg"]            
@@ -214,16 +193,45 @@
                     ]
                 }
             },
+            "resources": [
+                {
+                    "apiVersion": "2017-12-01",
+                    "type": "extensions",
+                    "name": "initDb2MemberVm",
+                    "location": "[resourceGroup().location]",
+                    "dependsOn": [
+                        "[concat('Microsoft.Compute/virtualMachines/', 'd', copyIndex())]"
+                    ],
+                    "tags": {
+                        "displayName": "initDb2MemberVm"
+                    },
+                    "properties": {
+                        "publisher": "Microsoft.Azure.Extensions",
+                        "type": "CustomScript",
+                        "typeHandlerVersion": "2.0",
+                        "autoUpgradeMinorVersion": true,
+                        "settings": {
+                            "fileUris": [
+                                "[concat(variables('initScriptsUrl'), 'db2.sh')]",
+                                "[concat(variables('initScriptsUrl'), 'helperscripts/start_network.sh')]"
+                            ]
+                        },
+                        "protectedSettings": {
+                            "commandToExecute": "[concat('sudo bash db2.sh \"', parameters('db2bits'), '\"')]"
+                        }
+                    }
+                }
+            ],
             "copy": {
-                "name": "db2_member_vms_copy",
+                "name": "db2MemberVmsCopy",
                 "count": "[parameters('nbDb2MemberVms')]"
             },
-            "dependsOn": ["db2_member_nics_copy"]
+            "dependsOn": ["db2MemberNicsCopy"]
         },
         {
             "comments": "db2 CF NICs",
             "type": "Microsoft.Resources/deployments",
-            "name": "db2_cf_nics",
+            "name": "db2CfNics",
             "apiVersion": "2015-01-01",
             "properties": {
                     "mode": "Incremental",
@@ -242,23 +250,23 @@
                         "value": "[variables('db2CfIpAdddressPrefixes')[copyIndex()]]"
                     },
                     "vmPrefix": {
-                        "value": "d"
+                        "value": "cf"
                     },
                     "nb_vms": {
-                        "value": "[parameters('nbDb2MemberVms')]"
+                        "value": "[parameters('nbDb2CfVms')]"
                     }
                 }
             },
             "copy": {
-                "name": "db2_member_nics_copy",
+                "name": "db2CfNicsCopy",
                 "count": "[length(variables('db2MemberSubnets'))]"
             },
             "dependsOn": ["vNetAndNsg"]            
         },
         {
-            "comments": "db2 members VMs",
+            "comments": "db2 CF VMs",
             "type": "Microsoft.Compute/virtualMachines",
-            "name": "[concat('d', copyIndex())]",
+            "name": "[concat('cf', copyIndex())]",
             "apiVersion": "2017-12-01",
             "location": "[variables('location')]",
             "tags": {},
@@ -276,17 +284,17 @@
                     },
                     "osDisk": {
                         "osType": "Linux",
-                        "name": "[concat('d', copyIndex(),'_osDisk_1_', variables('uniqueString1'))]",
+                        "name": "[concat('cf', copyIndex(),'_osDisk_1_', variables('uniqueString1'))]",
                         "createOption": "FromImage",
                         "caching": "ReadWrite",
                         "managedDisk": {
-                            "id": "[concat('d', copyIndex(),'_osDisk_1_', variables('uniqueString1'))]"
+                            "id": "[concat('cf', copyIndex(),'_osDisk_1_', variables('uniqueString1'))]"
                         }
                     },
                     "dataDisks": [
                         {
                             "lun": 0,
-                            "name": "[concat('d', copyIndex(),'_dataDisk_lun0')]",
+                            "name": "[concat('cf', copyIndex(),'_dataDisk_lun0')]",
                             "createOption": "Empty",
                             "diskSizeGB": 32,
                             "caching": "None",
@@ -298,7 +306,7 @@
                     ]
                 },
                 "osProfile": {
-                    "computerName": "[concat('d', copyIndex())]",
+                    "computerName": "[concat('cf', copyIndex())]",
                     "adminUsername": "rhel",
                     "linuxConfiguration": {
                         "disablePasswordAuthentication": true,
@@ -316,25 +324,19 @@
                 "networkProfile": {
                     "networkInterfaces": [
                         {
-                            "id": "[resourceId('Microsoft.Network/networkInterfaces', concat('d', copyIndex(), '_main'))]",
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', concat('cf', copyIndex(), '_main'))]",
                             "properties": {
                                 "primary": true
                             }
                         },
                         {
-                            "id": "[resourceId('Microsoft.Network/networkInterfaces', concat('d', copyIndex(), '_gfsfe'))]",
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', concat('cf', copyIndex(), '_gfsfe'))]",
                             "properties": {
                                 "primary": false
                             }
                         },
                         {
-                            "id": "[resourceId('Microsoft.Network/networkInterfaces', concat('d', copyIndex(), '_db2be'))]",
-                            "properties": {
-                                "primary": false
-                            }
-                        },
-                        {
-                            "id": "[resourceId('Microsoft.Network/networkInterfaces', concat('d', copyIndex(), '_db2fe'))]",
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', concat('cf', copyIndex(), '_db2be'))]",
                             "properties": {
                                 "primary": false
                             }
@@ -342,16 +344,45 @@
                     ]
                 }
             },
+            "resources": [
+                {
+                    "apiVersion": "2017-12-01",
+                    "type": "extensions",
+                    "name": "initDb2CfVm",
+                    "location": "[resourceGroup().location]",
+                    "dependsOn": [
+                        "[concat('Microsoft.Compute/virtualMachines/', 'cf', copyIndex())]"
+                    ],
+                    "tags": {
+                        "displayName": "initDb2CfVm"
+                    },
+                    "properties": {
+                        "publisher": "Microsoft.Azure.Extensions",
+                        "type": "CustomScript",
+                        "typeHandlerVersion": "2.0",
+                        "autoUpgradeMinorVersion": true,
+                        "settings": {
+                            "fileUris": [
+                                "[concat(variables('initScriptsUrl'), 'db2.sh')]",
+                                "[concat(variables('initScriptsUrl'), 'helperscripts/start_network.sh')]"
+                            ]
+                        },
+                        "protectedSettings": {
+                            "commandToExecute": "[concat('sudo bash db2.sh \"', parameters('db2bits'), '\"')]"
+                        }
+                    }
+                }
+            ],
             "copy": {
-                "name": "db2_member_vms_copy",
+                "name": "db2CfVmsCopy",
                 "count": "[parameters('nbDb2MemberVms')]"
             },
-            "dependsOn": ["db2_member_nics_copy"]
+            "dependsOn": ["db2CfNicsCopy"]
         },
         {
-            "comments": "XXX glusterfs member NICs",
+            "comments": "Gluster FS member NICs",
             "type": "Microsoft.Resources/deployments",
-            "name": "db2_member_nics",
+            "name": "glusterFsNics",
             "apiVersion": "2015-01-01",
             "properties": {
                     "mode": "Incremental",
@@ -364,43 +395,43 @@
                         "value": "[parameters('vnetName')]"
                     },
                     "subnetName": {
-                        "value": "[variables('db2MemberSubnets')[copyIndex()]]"
+                        "value": "[variables('glusterFsSubnets')[copyIndex()]]"
                     },
                     "ipAdddressPrefix": {
-                        "value": "[variables('db2MemberIpAdddressPrefixes')[copyIndex()]]"
+                        "value": "[variables('glusterFsIpAdddressPrefixes')[copyIndex()]]"
                     },
                     "vmPrefix": {
                         "value": "d"
                     },
                     "nb_vms": {
-                        "value": "[parameters('nbDb2MemberVms')]"
+                        "value": "[parameters('nbGlusterFsVms')]"
                     }
                 }
             },
             "copy": {
-                "name": "db2_member_nics_copy",
-                "count": "[length(variables('db2MemberSubnets'))]"
+                "name": "glusterFsNicsCopy",
+                "count": "[length(variables('glusterFsSubnets'))]"
             },
             "dependsOn": ["vNetAndNsg"]            
         },
         {
-            "comments": "db2 members VMs",
+            "comments": "Gluster FS VMs",
             "type": "Microsoft.Compute/virtualMachines",
-            "name": "[concat('d', copyIndex())]",
+            "name": "[concat('g', copyIndex())]",
             "apiVersion": "2017-12-01",
             "location": "[variables('location')]",
             "tags": {},
             "scale": null,
             "properties": {
                 "hardwareProfile": {
-                    "vmSize": "Standard_DS3_v2_Promo"
+                    "vmSize": "Standard_DS4_v2_Promo"
                 },
                 "storageProfile": {
                     "imageReference": {
                         "publisher": "RedHat",
                         "offer": "RHEL",
-                        "sku": "7.3",
-                        "version": "7.3.2017090723"
+                        "sku": "7-RAW",
+                        "version": "7.5.2018042521"
                     },
                     "osDisk": {
                         "osType": "Linux",
@@ -408,25 +439,36 @@
                         "createOption": "FromImage",
                         "caching": "ReadWrite",
                         "managedDisk": {
-                            "id": "[concat('d', copyIndex(),'_osDisk_1_', variables('uniqueString1'))]"
+                            "id": "[concat('g', copyIndex(),'_osDisk_1_', variables('uniqueString1'))]"
                         }
                     },
                     "dataDisks": [
                         {
                             "lun": 0,
-                            "name": "[concat('d', copyIndex(),'_dataDisk_lun0')]",
+                            "name": "[concat('g', copyIndex(),'_dataDisk_lun0')]",
                             "createOption": "Empty",
-                            "diskSizeGB": 32,
+                            "diskSizeGB": 1000,
                             "caching": "None",
                             "managedDisk": {
-                                "id": "[concat('d', copyIndex(),'_dataDisk_lun0_', variables('uniqueString1'))]",
+                                "id": "[concat('g', copyIndex(),'_dataDisk_lun0_', variables('uniqueString1'))]",
+                                "storageAccountType": "Premium_LRS"
+                            }
+                        },
+                        {
+                            "lun": 1,
+                            "name": "[concat('g', copyIndex(),'_dataDisk_lun1')]",
+                            "createOption": "Empty",
+                            "diskSizeGB": 1000,
+                            "caching": "None",
+                            "managedDisk": {
+                                "id": "[concat('g', copyIndex(),'_dataDisk_lun1_', variables('uniqueString1'))]",
                                 "storageAccountType": "Premium_LRS"
                             }
                         }
                     ]
                 },
                 "osProfile": {
-                    "computerName": "[concat('d', copyIndex())]",
+                    "computerName": "[concat('g', copyIndex())]",
                     "adminUsername": "rhel",
                     "linuxConfiguration": {
                         "disablePasswordAuthentication": true,
@@ -444,25 +486,19 @@
                 "networkProfile": {
                     "networkInterfaces": [
                         {
-                            "id": "[resourceId('Microsoft.Network/networkInterfaces', concat('d', copyIndex(), '_main'))]",
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', concat('g', copyIndex(), '_main'))]",
                             "properties": {
                                 "primary": true
                             }
                         },
                         {
-                            "id": "[resourceId('Microsoft.Network/networkInterfaces', concat('d', copyIndex(), '_gfsfe'))]",
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', concat('g', copyIndex(), '_gfsfe'))]",
                             "properties": {
                                 "primary": false
                             }
                         },
                         {
-                            "id": "[resourceId('Microsoft.Network/networkInterfaces', concat('d', copyIndex(), '_db2be'))]",
-                            "properties": {
-                                "primary": false
-                            }
-                        },
-                        {
-                            "id": "[resourceId('Microsoft.Network/networkInterfaces', concat('d', copyIndex(), '_db2fe'))]",
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', concat('g', copyIndex(), '_gpfsbe'))]",
                             "properties": {
                                 "primary": false
                             }
@@ -470,16 +506,45 @@
                     ]
                 }
             },
+            "resources": [
+                {
+                    "apiVersion": "2017-12-01",
+                    "type": "extensions",
+                    "name": "initGlusterFsVm",
+                    "location": "[resourceGroup().location]",
+                    "dependsOn": [
+                        "[concat('Microsoft.Compute/virtualMachines/', 'g', copyIndex())]"
+                    ],
+                    "tags": {
+                        "displayName": "initGlusterFsVm"
+                    },
+                    "properties": {
+                        "publisher": "Microsoft.Azure.Extensions",
+                        "type": "CustomScript",
+                        "typeHandlerVersion": "2.0",
+                        "autoUpgradeMinorVersion": true,
+                        "settings": {
+                            "fileUris": [
+                                "[concat(variables('initScriptsUrl'), 'glusterfs.sh')]",
+                                "[concat(variables('initScriptsUrl'), 'helperscripts/start_network.sh')]"
+                            ]
+                        },
+                        "protectedSettings": {
+                            "commandToExecute": "[concat('sudo bash glusterfs.sh ', '')]"
+                        }
+                    }
+                }
+            ],
             "copy": {
-                "name": "db2_member_vms_copy",
-                "count": "[parameters('nbDb2MemberVms')]"
+                "name": "glusterFsVmsCopy",
+                "count": "[parameters('nbGlusterFsVms')]"
             },
-            "dependsOn": ["db2_member_nics_copy"]
+            "dependsOn": ["glusterFsNicsCopy"]
         },
         {
             "comments": "witness NICs",
             "type": "Microsoft.Resources/deployments",
-            "name": "witness_nics",
+            "name": "witnessNics",
             "apiVersion": "2015-01-01",
             "properties": {
                     "mode": "Incremental",
@@ -505,12 +570,16 @@
                     }
                 }
             },
+            "copy": {
+                "name": "witnessNicsCopy",
+                "count": "[length(variables('witnessSubnets'))]"
+            },
             "dependsOn": ["vNetAndNsg"]            
         },
         {
             "comments": "Witness VM",
             "type": "Microsoft.Compute/virtualMachines",
-            "name": "witn1",
+            "name": "witn0",
             "apiVersion": "2017-12-01",
             "location": "[variables('location')]",
             "tags": {},
@@ -528,17 +597,17 @@
                     },
                     "osDisk": {
                         "osType": "Linux",
-                        "name": "[concat('witn1_osDisk_1_', variables('uniqueString1'))]",
+                        "name": "[concat('witn0_osDisk_1_', variables('uniqueString1'))]",
                         "createOption": "FromImage",
                         "caching": "ReadWrite",
                         "managedDisk": {
-                            "id": "[concat('witn1_osDisk_1_', variables('uniqueString1'))]"
+                            "id": "[concat('witn0_osDisk_1_', variables('uniqueString1'))]"
                         }
                     },
                     "dataDisks": []
                 },
                 "osProfile": {
-                    "computerName": "witn1",
+                    "computerName": "witn0",
                     "adminUsername": "rhel",
                     "linuxConfiguration": {
                         "disablePasswordAuthentication": true,
@@ -582,40 +651,176 @@
                     ]
                 }
             },
+            "resources": [
+                {
+                    "apiVersion": "2017-12-01",
+                    "type": "extensions",
+                    "name": "initWitnessVm",
+                    "location": "[resourceGroup().location]",
+                    "dependsOn": [
+                        "[concat('Microsoft.Compute/virtualMachines/', 'witn', copyIndex())]"
+                    ],
+                    "tags": {
+                        "displayName": "initWitnessVm"
+                    },
+                    "properties": {
+                        "publisher": "Microsoft.Azure.Extensions",
+                        "type": "CustomScript",
+                        "typeHandlerVersion": "2.0",
+                        "autoUpgradeMinorVersion": true,
+                        "settings": {
+                            "fileUris": [
+                                "[concat(variables('initScriptsUrl'), 'witness.sh')]",
+                                "[concat(variables('initScriptsUrl'), 'helperscripts/start_network.sh')]"
+                            ]
+                        },
+                        "protectedSettings": {
+                            "commandToExecute": "sudo bash witness.sh"
+                        }
+                    }
+                }
+            ],
+            "dependsOn": [
+                "witnessNics"
+            ]
+        },
+        {
+            "comments": "Windows Client NICs",
+            "type": "Microsoft.Resources/deployments",
+            "name": "windowsClientNics",
+            "apiVersion": "2015-01-01",
+            "properties": {
+                    "mode": "Incremental",
+                    "templateLink": {
+                    "uri": "[concat(variables('linkedTemplatesUrl'), 'nics_template.json')]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "vnetName": {
+                        "value": "[parameters('vnetName')]"
+                    },
+                    "subnetName": {
+                        "value": "[variables('windowsClientSubnets')[copyIndex()]]"
+                    },
+                    "ipAdddressPrefix": {
+                        "value": "[variables('windowsClientIpAdddressPrefixes')[copyIndex()]]"
+                    },
+                    "vmPrefix": {
+                        "value": "wcli"
+                    },
+                    "nb_vms": {
+                        "value": 1
+                    }
+                }
+            },
+            "copy": {
+                "name": "windowsClientNicsCopy",
+                "count": "[length(variables('windowsClientSubnets'))]"
+            },
+            "dependsOn": ["vNetAndNsg"]            
+        },
+        {
+            "comments": "Windows Client VM",
+            "type": "Microsoft.Compute/virtualMachines",
+            "name": "wcli",
+            "apiVersion": "2017-12-01",
+            "location": "[variables('location')]",
+            "tags": {},
+            "scale": null,
+            "properties": {
+                "hardwareProfile": {
+                    "vmSize": "Standard_DS3_v2_Promo"
+                },
+                "storageProfile": {
+                    "imageReference": {
+                        "publisher": "MicrosoftWindowsServer",
+                        "offer": "WindowsServer",
+                        "sku": "2016-Datacenter",
+                        "version": "latest"
+                    },
+                    "osDisk": {
+                        "osType": "Windows",
+                        "name": "[concat('witn0_osDisk_1_', variables('uniqueString1'))]",
+                        "createOption": "FromImage",
+                        "caching": "ReadWrite",
+                        "managedDisk": {
+                            "id": "[concat('witn0_osDisk_1_', variables('uniqueString1'))]"
+                        }
+                    },
+                    "dataDisks": []
+                },
+                "osProfile": {
+                    "computerName": "witn0",
+                    "adminUsername": "adwin",
+                    "adminPassword": "[parameters('adwinPassword')]",
+                    "windowsConfiguration": {
+                        "provisionVMAgent": true,
+                        "enableAutomaticUpdates": true
+                    },
+                    "secrets": []
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', 'wcli0_main')]",
+                            "properties": {
+                                "primary": true
+                            }
+                        },
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', 'wcli0_db2fe')]",
+                            "properties": {
+                                "primary": false
+                            }
+                        }
+                    ]
+                }
+            },
             "dependsOn": [
                 "witness_nics"
             ]
         },
-
-
-
-
-
-
-
         {
-            "comments": "Generalized from resource: '/subscriptions/b4ed3d75-dd0d-4660-aacd-7cb2d1bed125/resourceGroups/a_180503a/providers/Microsoft.Network/networkInterfaces/jumpbox'.",
-            "type": "Microsoft.Network/networkInterfaces",
-            "name": "[parameters('networkInterfaces_jumpbox_name')]",
+            "comments": "jumpbox public IP address",
+            "type": "Microsoft.Network/publicIPAddresses",
+            "sku": {
+                "name": "Basic",
+                "tier": "Regional"
+            },
+            "name": "jumbox_public_ip",
             "apiVersion": "2018-02-01",
             "location": "[variables('location')]",
             "scale": null,
             "properties": {
-                "provisioningState": "Succeeded",
-                "resourceGuid": "35d544db-63ff-46f6-b9a3-bc6d3d272d24",
+                "publicIPAddressVersion": "IPv4",
+                "publicIPAllocationMethod": "Dynamic",
+                "idleTimeoutInMinutes": 4,
+                "dnsSettings": {
+                    "domainNameLabel": "[parameters('jumpboxPublicName')]"
+                },
+                "ipTags": []
+            },
+            "dependsOn": []
+        },
+        {
+            "comments": "jumpbox NIC",
+            "type": "Microsoft.Network/networkInterfaces",
+            "name": "jumpbox_nic",
+            "apiVersion": "2018-02-01",
+            "location": "[variables('location')]",
+            "scale": null,
+            "properties": {
                 "ipConfigurations": [
                     {
                         "name": "ipconfig1",
-                        "etag": "W/\"c66665d5-0c95-4139-9829-df92e18df308\"",
                         "properties": {
-                            "provisioningState": "Succeeded",
-                            "privateIPAddress": "192.168.1.5",
+                            "privateIPAddress": "192.168.0.5",
                             "privateIPAllocationMethod": "Static",
                             "publicIPAddress": {
-                                "id": "[resourceId('Microsoft.Network/publicIPAddresses', parameters('publicIPAddresses_jumpbox_pubip_name'))]"
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses', 'jumbox_public_ip')]"
                             },
                             "subnet": {
-                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworks_gluster_name'), parameters('subnets_client_name'))]"
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('vnetName'), 'main')]"
                             },
                             "primary": true,
                             "privateIPAddressVersion": "IPv4"
@@ -624,19 +829,106 @@
                 ],
                 "dnsSettings": {
                     "dnsServers": [],
-                    "appliedDnsServers": [],
-                    "internalDomainNameSuffix": "iwqjlgo12l1ufkh32gwtnj3hle.ax.internal.cloudapp.net"
+                    "appliedDnsServers": []
                 },
                 "enableAcceleratedNetworking": false,
                 "enableIPForwarding": false,
                 "networkSecurityGroup": {
-                    "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroups_gluster_nsg_name'))]"
+                    "id": "[resourceId('Microsoft.Network/networkSecurityGroups', concat(parameters('vnetName'), '_nsg'))]"
                 }
             },
             "dependsOn": [
-                "[resourceId('Microsoft.Network/publicIPAddresses', parameters('publicIPAddresses_jumpbox_pubip_name'))]",
-                "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworks_gluster_name'), parameters('subnets_client_name'))]",
-                "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroups_gluster_nsg_name'))]"
+                "jumbox_public_ip"
+            ]
+        },
+        {
+            "comments": "jumpbox VM",
+            "type": "Microsoft.Compute/virtualMachines",
+            "name": "jumpbox",
+            "apiVersion": "2017-12-01",
+            "location": "[variables('location')]",
+            "tags": {},
+            "scale": null,
+            "properties": {
+                "hardwareProfile": {
+                    "vmSize": "Standard_DS2_V2_Promo"
+                },
+                "storageProfile": {
+                    "imageReference": {
+                        "publisher": "RedHat",
+                        "offer": "RHEL",
+                        "sku": "7-RAW",
+                        "version": "7.5.2018042521"
+                    },
+                    "osDisk": {
+                        "osType": "Linux",
+                        "name": "[concat('jumpbox0_osDisk_1_', variables('uniqueString1'))]",
+                        "createOption": "FromImage",
+                        "caching": "ReadWrite",
+                        "managedDisk": {
+                            "id": "[concat('jumpbox0_osDisk_1_', variables('uniqueString1'))]"
+                        }
+                    },
+                    "dataDisks": []
+                },
+                "osProfile": {
+                    "computerName": "jumpbox",
+                    "adminUsername": "rhel",
+                    "linuxConfiguration": {
+                        "disablePasswordAuthentication": true,
+                        "ssh": {
+                            "publicKeys": [
+                                {
+                                    "path": "/home/rhel/.ssh/authorized_keys",
+                                    "keyData": "[concat(parameters('pubKeyValue'), '\n')]"
+                                }
+                            ]
+                        }
+                    },
+                    "secrets": []
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', 'jumpbox0_main')]",
+                            "properties": {
+                                "primary": true
+                            }
+                        }
+                    ]
+                }
+            },
+            "resources": [
+                {
+                    "apiVersion": "2017-12-01",
+                    "type": "extensions",
+                    "name": "initJumpboxVm",
+                    "location": "[resourceGroup().location]",
+                    "dependsOn": [
+                        "[concat('Microsoft.Compute/virtualMachines/', 'jumpbox')]"
+                    ],
+                    "tags": {
+                        "displayName": "initJumpboxVm"
+                    },
+                    "properties": {
+                        "publisher": "Microsoft.Azure.Extensions",
+                        "type": "CustomScript",
+                        "typeHandlerVersion": "2.0",
+                        "autoUpgradeMinorVersion": true,
+                        "settings": {
+                            "fileUris": [
+                                "[concat(variables('initScriptsUrl'), 'jumpbox.sh')]",
+                                "[concat(variables('initScriptsUrl'), 'helperscripts/start_network.sh')]"
+                            ]
+                        },
+                        "protectedSettings": {
+                            "commandToExecute": "sudo bash witness.sh"
+                        }
+                    }
+                }
+            ],
+            "dependsOn": [
+                "jumpbox_nic"
             ]
         }
     ]
