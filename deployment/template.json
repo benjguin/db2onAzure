@@ -225,7 +225,9 @@
                         "settings": {
                             "fileUris": [
                                 "[concat(variables('initScriptsUrl'), 'db2.sh')]",
-                                "[concat(variables('initScriptsUrl'), 'helperscripts/start_network.sh')]"
+                                "[concat(variables('initScriptsUrl'), 'helperscripts/startnetwork.sh')]",
+                                "[concat(variables('initScriptsUrl'), 'helperscripts/setsshkeys.sh')]",
+                                "[concat(variables('initScriptsUrl'), 'helperscripts/setsshkeys_root.sh')]"
                             ]
                         },
                         "protectedSettings": {
@@ -376,7 +378,9 @@
                         "settings": {
                             "fileUris": [
                                 "[concat(variables('initScriptsUrl'), 'db2.sh')]",
-                                "[concat(variables('initScriptsUrl'), 'helperscripts/start_network.sh')]"
+                                "[concat(variables('initScriptsUrl'), 'helperscripts/startnetwork.sh')]",
+                                "[concat(variables('initScriptsUrl'), 'helperscripts/setsshkeys.sh')]",
+                                "[concat(variables('initScriptsUrl'), 'helperscripts/setsshkeys_root.sh')]"
                             ]
                         },
                         "protectedSettings": {
@@ -538,7 +542,9 @@
                         "settings": {
                             "fileUris": [
                                 "[concat(variables('initScriptsUrl'), 'glusterfs.sh')]",
-                                "[concat(variables('initScriptsUrl'), 'helperscripts/start_network.sh')]"
+                                "[concat(variables('initScriptsUrl'), 'helperscripts/startnetwork.sh')]",
+                                "[concat(variables('initScriptsUrl'), 'helperscripts/setsshkeys.sh')]",
+                                "[concat(variables('initScriptsUrl'), 'helperscripts/setsshkeys_root.sh')]"
                             ]
                         },
                         "protectedSettings": {
@@ -683,7 +689,9 @@
                         "settings": {
                             "fileUris": [
                                 "[concat(variables('initScriptsUrl'), 'witness.sh')]",
-                                "[concat(variables('initScriptsUrl'), 'helperscripts/start_network.sh')]"
+                                "[concat(variables('initScriptsUrl'), 'helperscripts/startnetwork.sh')]",
+                                "[concat(variables('initScriptsUrl'), 'helperscripts/setsshkeys.sh')]",
+                                "[concat(variables('initScriptsUrl'), 'helperscripts/setsshkeys_root.sh')]"
                             ]
                         },
                         "protectedSettings": {
@@ -930,7 +938,9 @@
                         "settings": {
                             "fileUris": [
                                 "[concat(variables('initScriptsUrl'), 'jumpbox.sh')]",
-                                "[concat(variables('initScriptsUrl'), 'helperscripts/start_network.sh')]"
+                                "[concat(variables('initScriptsUrl'), 'helperscripts/startnetwork.sh')]",
+                                "[concat(variables('initScriptsUrl'), 'helperscripts/setsshkeys.sh')]",
+                                "[concat(variables('initScriptsUrl'), 'helperscripts/setsshkeys_root.sh')]"
                             ]
                         },
                         "protectedSettings": {
