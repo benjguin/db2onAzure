@@ -6,9 +6,12 @@ rhelPubKeyValue=$3
 rootPrivKeyValue=$4
 rootPubKeyValue=$5
 db2bits=$6
+nbDb2MemberVms=$7
+nbDb2CfVms=$8
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-${DIR}/startnetwork.sh
+sudo -n -u root -s bash ${DIR}/startnetwork.sh
 
-${DIR}/setsshkeys.sh "$userPubKeyValue" "$rhelPrivKeyValue" "$rhelPubKeyValue" "$rootPrivKeyValue" "$rootPubKeyValue"
+bash ${DIR}/setsshkeys.sh "$userPubKeyValue" "$rhelPrivKeyValue" "$rhelPubKeyValue" "$rootPrivKeyValue" "$rootPubKeyValue"
 
+sudo -n -u root -s bash ${DIR}/db2_root.sh "$db2bits"

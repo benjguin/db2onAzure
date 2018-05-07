@@ -7,6 +7,8 @@ IFS=$'\n\t'
 # -o: prevents errors in a pipeline from being masked
 # IFS new value is less likely to cause confusing bugs when looping arrays or arguments (e.g. $@)
 
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
 #Parameters
 
 usage() { 
@@ -213,6 +215,16 @@ echo "Starting deployment..."
 )
 
 if [ $?  == 0 ];
- then
+then
 	echo "Template has been successfully deployed"
+else
+	echo "Template was NOT successfully deployed"
+	exit 1
 fi
+
+jumpbox="${jumpboxPublicName}.${location}.cloudapp.azure.com"
+nbDb2MemberVms=`az group deployment show -g $rg -n "$deploymentName" --query properties.outputs.nbDb2MemberVms.value`
+nbDb2CfVms=`az group deployment show -g $rg -n "$deploymentName" --query properties.outputs.nbDb2CfVms.value`
+
+scp -o StrictHostKeyChecking=no ${DIR}/postARMscripts/fromd0_root.sh rhel@$jumpbox:/tmp/
+ssh -o StrictHostKeyChecking=no rhel@$jumpbox ${DIR}/postARMscripts/fromjumpbox.sh $nbDb2MemberVms $nbDb2CfVms

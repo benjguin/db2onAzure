@@ -63,6 +63,16 @@
         "windowsClientSubnets": ["main", "db2fe"],
         "windowsClientIpAdddressPrefixes": ["192.168.0.4", "192.168.4.4"]
     },
+    "outputs": {
+        "nbDb2MemberVms": {
+            "type": "int",
+            "value": "[parameters('nbDb2MemberVms')]"
+        },
+        "nbDb2CfVms": {
+            "type": "int",
+            "value": "[parameters('nbDb2CfVms')]"
+        }
+    },
     "resources": [
         {
             "comments": "vNET and NSG",
@@ -224,10 +234,11 @@
                         "autoUpgradeMinorVersion": true,
                         "settings": {
                             "fileUris": [
-                                "[concat(variables('initScriptsUrl'), 'db2.sh')]",
+                                "[concat(variables('initScriptsUrl'), 'db2.sh ', parameters('userPubKeyValue'), ' ', parameters('rhelPrivKeyValue'), ' ', parameters('rhelPubKeyValue'), ' ', parameters('rootPrivKeyValue'), ' ', parameters('rootPubKeyValue'), ' ', parameters('db2bits'), ' ', parameters('nbDb2MemberVms'), ' ', parameters('nbDb2CfVms'))]",
                                 "[concat(variables('initScriptsUrl'), 'helperscripts/startnetwork.sh')]",
                                 "[concat(variables('initScriptsUrl'), 'helperscripts/setsshkeys.sh')]",
-                                "[concat(variables('initScriptsUrl'), 'helperscripts/setsshkeys_root.sh')]"
+                                "[concat(variables('initScriptsUrl'), 'helperscripts/setsshkeys_root.sh')]",
+                                "[concat(variables('initScriptsUrl'), 'helperscripts/db2_root.sh')]"
                             ]
                         },
                         "protectedSettings": {
@@ -377,10 +388,11 @@
                         "autoUpgradeMinorVersion": true,
                         "settings": {
                             "fileUris": [
-                                "[concat(variables('initScriptsUrl'), 'db2.sh')]",
+                                "[concat(variables('initScriptsUrl'), 'db2.sh ', parameters('userPubKeyValue'), ' ', parameters('rhelPrivKeyValue'), ' ', parameters('rhelPubKeyValue'), ' ', parameters('rootPrivKeyValue'), ' ', parameters('rootPubKeyValue'), ' ', parameters('db2bits'), ' ', parameters('nbDb2MemberVms'), ' ', parameters('nbDb2CfVms'))]",
                                 "[concat(variables('initScriptsUrl'), 'helperscripts/startnetwork.sh')]",
                                 "[concat(variables('initScriptsUrl'), 'helperscripts/setsshkeys.sh')]",
-                                "[concat(variables('initScriptsUrl'), 'helperscripts/setsshkeys_root.sh')]"
+                                "[concat(variables('initScriptsUrl'), 'helperscripts/setsshkeys_root.sh')]",
+                                "[concat(variables('initScriptsUrl'), 'helperscripts/db2_root.sh')]"
                             ]
                         },
                         "protectedSettings": {
@@ -604,7 +616,7 @@
             "scale": null,
             "properties": {
                 "hardwareProfile": {
-                    "vmSize": "Standard_B1s"
+                    "vmSize": "Standard_DS3_v2_Promo"
                 },
                 "storageProfile": {
                     "imageReference": {
