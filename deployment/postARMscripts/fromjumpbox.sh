@@ -24,7 +24,7 @@ EOSSH
 scp 192.168.0.20:/tmp/iscsidisks.txt .
 
 ssh -o StrictHostKeyChecking=no 192.168.0.20 sudo -n -u root -s bash /tmp/fromd0getwwids_root.sh
-scp 192.168.0.20:/tmp/initwwids.sh /tmp/initwwids.sh
+scp -o StrictHostKeyChecking=no 192.168.0.20:/tmp/initwwids.sh /tmp/initwwids.sh
 source /tmp/initwwids.sh
 
 for db2srv in "${db2servers[@]}"
