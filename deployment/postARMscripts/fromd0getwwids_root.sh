@@ -7,6 +7,9 @@
 # Disk /dev/mapper/36001405bfc71ff861174f2bbb0bfea37: 536.9 GB, 536870912000 bytes, 1048576000 sectors
 # Disk /dev/mapper/36001405645b2e72c56142ef97932cb95: 10.7 GB, 10737418240 bytes, 20971520 sectors
 
+# iSCSI servers were configured since service was configured
+service multipathd restart 
+
 wwiddb2data1=`fdisk -l | grep /dev/mapper/3 | grep ': 2' | awk '{sub(/\/dev\/mapper\//,""); sub(/:/,""); print $2}'`
 wwiddb2log1=`fdisk -l | grep /dev/mapper/3 | grep ': 5' | awk '{sub(/\/dev\/mapper\//,""); sub(/:/,""); print $2}'`
 wwiddb2shared=`fdisk -l | grep /dev/mapper/3 | grep ': 1' | head -1 | awk '{sub(/\/dev\/mapper\//,""); sub(/:/,""); print $2}'`

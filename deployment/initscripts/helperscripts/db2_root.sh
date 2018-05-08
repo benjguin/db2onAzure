@@ -115,9 +115,13 @@ EOF
 done
 
 #format data disk and mount it
-#TODO: data disk may be on sdb or sdc
-#dataon=sdb
-dataon=sdc
+if [ $(ls -ls /dev/sd* | grep '/dev/sdb1' | wc -l) -eq 1 ]
+then
+    dataon=sdc
+else
+    dataon=sdb
+fi
+
 printf "n\np\n1\n\n\np\nw\n" | fdisk /dev/$dataon
 printf "\n" | mkfs -t ext4 /dev/${dataon}1
 mkdir /data1
@@ -183,7 +187,6 @@ multipath -l
 #iscsiadm -m discovery -t sendtargets -p 192.168.1.10
 iscsiadm -m discovery -t sendtargets -p 192.168.1.30
 iscsiadm -m node -L automatic 
-# TODO: a timeout happens on an IP V6 address for w1 iSCSI target, no consequence
 iscsiadm -m session 
 multipath -l
 fdisk -l | grep /dev/mapper/3

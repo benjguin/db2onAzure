@@ -42,6 +42,7 @@ done
 scp -o StrictHostKeyChecking=no /tmp/fromd0_root.sh 192.168.0.20:/tmp/
 
 
-#TODO wait for the reboot to finish
+# wait for the reboot to finish
+sleep 4m
 
 ssh -o StrictHostKeyChecking=no 192.168.0.20 sudo -n -u root -s bash /tmp/fromd0_root.sh $nbDb2MemberVms $nbDb2CfVms $wwiddb2data1 $wwiddb2log1 $wwiddb2shared $wwiddb2tieb
