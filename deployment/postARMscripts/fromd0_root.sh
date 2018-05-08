@@ -2,6 +2,10 @@
 
 nbDb2MemberVms=$1
 nbDb2CfVms=$2
+wwiddb2data1=$3
+wwiddb2log1=$4
+wwiddb2shared=$5
+wwiddb2tieb=$6
 
 # write a response file
 
@@ -113,10 +117,12 @@ host1.CLUSTER_INTERCONNECT_NETNAME       = cf${i}-eth2
 EOF
 done
 
-# TODO: automate the following, starting from the db2server.rsp in this repo.
-# update based on ll /dev/mapper on d1
 # see <http://www-01.ibm.com/support/docview.wss?uid=swg21969333>
-ll /dev/mapper
+
+devdb2shared=`ll /dev/mapper | grep $wwiddb2shared | awk '{sub(/\.\./,"/dev"); print $11}'`
+devdb2data1=`ll /dev/mapper | grep $wwiddb2data1 | awk '{sub(/\.\./,"/dev"); print $11}'`
+devdb2log1=`ll /dev/mapper | grep $wwiddb2log1 | awk '{sub(/\.\./,"/dev"); print $11}'`
+devdb2tieb=`ll /dev/mapper | grep $wwiddb2tieb | awk '{sub(/\.\./,"/dev"); print $11}'`
 
 cat >> /root/db2server.rsp << 'EOF'
 
@@ -124,18 +130,18 @@ cat >> /root/db2server.rsp << 'EOF'
 * ----------------------------------------------
 *  Shared file system settings
 * ----------------------------------------------
-INSTANCE_SHARED_DEVICE_PATH       = /dev/dm-2
+INSTANCE_SHARED_DEVICE_PATH       = $devdb2shared
 INSTANCE_SHARED_MOUNT       = /db2sd_1804a
 DATA_SHARED_MOUNT       = /db2fs/datafs1
 LOG_SHARED_MOUNT       = /db2fs/logfs1
-DATA_SHARED_DEVICE_PATH       = /dev/dm-1
-LOG_SHARED_DEVICE_PATH       = /dev/dm-0
+DATA_SHARED_DEVICE_PATH       = $devdb2data1
+LOG_SHARED_DEVICE_PATH       = $devdb2log1
 
 
 * ----------------------------------------------
 *  Tiebreaker settings
 * ----------------------------------------------
-DB2_CLUSTER_SERVICES_TIEBREAKER_DEVICE_PATH       = /dev/dm-3
+DB2_CLUSTER_SERVICES_TIEBREAKER_DEVICE_PATH       = $devdb2tieb
 EOF
 
 tentativenum=001

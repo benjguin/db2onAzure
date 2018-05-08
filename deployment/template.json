@@ -556,7 +556,8 @@
                                 "[concat(variables('initScriptsUrl'), 'glusterfs.sh')]",
                                 "[concat(variables('initScriptsUrl'), 'helperscripts/startnetwork.sh')]",
                                 "[concat(variables('initScriptsUrl'), 'helperscripts/setsshkeys.sh')]",
-                                "[concat(variables('initScriptsUrl'), 'helperscripts/setsshkeys_root.sh')]"
+                                "[concat(variables('initScriptsUrl'), 'helperscripts/setsshkeys_root.sh')]",
+                                "[concat(variables('initScriptsUrl'), 'helperscripts/installconfiggluster_root')]"
                             ]
                         },
                         "protectedSettings": {

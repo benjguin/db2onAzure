@@ -226,5 +226,9 @@ jumpbox="${jumpboxPublicName}.${location}.cloudapp.azure.com"
 nbDb2MemberVms=`az group deployment show -g $rg -n "$deploymentName" --query properties.outputs.nbDb2MemberVms.value`
 nbDb2CfVms=`az group deployment show -g $rg -n "$deploymentName" --query properties.outputs.nbDb2CfVms.value`
 
+scp -o StrictHostKeyChecking=no ${DIR}/postARMscripts/fromjumbox.sh rhel@$jumpbox:/tmp/
 scp -o StrictHostKeyChecking=no ${DIR}/postARMscripts/fromd0_root.sh rhel@$jumpbox:/tmp/
-ssh -o StrictHostKeyChecking=no rhel@$jumpbox ${DIR}/postARMscripts/fromjumpbox.sh $nbDb2MemberVms $nbDb2CfVms
+scp -o StrictHostKeyChecking=no ${DIR}/postARMscripts/fromd0getwwids_root.sh rhel@$jumpbox:/tmp/
+scp -o StrictHostKeyChecking=no ${DIR}/postARMscripts/fromg0_root.sh rhel@$jumpbox:/tmp/
+
+ssh -o StrictHostKeyChecking=no rhel@$jumpbox bash /tmp/fromjumpbox.sh $nbDb2MemberVms $nbDb2CfVms
