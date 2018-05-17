@@ -78,7 +78,6 @@
                     {
                         "name": "allow-ssh",
                         "properties": {
-                            "provisioningState": "Succeeded",
                             "description": "ssh",
                             "protocol": "Tcp",
                             "sourcePortRange": "*",
@@ -97,7 +96,6 @@
                     {
                         "name": "allow-rdp",
                         "properties": {
-                            "provisioningState": "Succeeded",
                             "description": "RDP",
                             "protocol": "Tcp",
                             "sourcePortRange": "*",
@@ -116,7 +114,6 @@
                     {
                         "name": "allow-iscsi",
                         "properties": {
-                            "provisioningState": "Succeeded",
                             "description": "iSCSI",
                             "protocol": "Tcp",
                             "sourcePortRange": "*",
@@ -135,7 +132,6 @@
                     {
                         "name": "allow-gluster-bricks",
                         "properties": {
-                            "provisioningState": "Succeeded",
                             "description": "Gluster-bricks",
                             "protocol": "Tcp",
                             "sourcePortRange": "*",
@@ -154,7 +150,6 @@
                     {
                         "name": "allow-gluster-daemon",
                         "properties": {
-                            "provisioningState": "Succeeded",
                             "description": "Gluster-daemon",
                             "protocol": "*",
                             "sourcePortRange": "*",
@@ -173,7 +168,6 @@
                     {
                         "name": "allow-rpcbind",
                         "properties": {
-                            "provisioningState": "Succeeded",
                             "description": "RPCbind",
                             "protocol": "*",
                             "sourcePortRange": "*",
@@ -194,7 +188,6 @@
                     {
                         "name": "AllowVnetInBound",
                         "properties": {
-                            "provisioningState": "Succeeded",
                             "description": "Allow inbound traffic from all VMs in VNET",
                             "protocol": "*",
                             "sourcePortRange": "*",
@@ -213,7 +206,6 @@
                     {
                         "name": "AllowAzureLoadBalancerInBound",
                         "properties": {
-                            "provisioningState": "Succeeded",
                             "description": "Allow inbound traffic from azure load balancer",
                             "protocol": "*",
                             "sourcePortRange": "*",
@@ -232,7 +224,6 @@
                     {
                         "name": "DenyAllInBound",
                         "properties": {
-                            "provisioningState": "Succeeded",
                             "description": "Deny all inbound traffic",
                             "protocol": "*",
                             "sourcePortRange": "*",
@@ -251,7 +242,6 @@
                     {
                         "name": "AllowVnetOutBound",
                         "properties": {
-                            "provisioningState": "Succeeded",
                             "description": "Allow outbound traffic from all VMs to all VMs in VNET",
                             "protocol": "*",
                             "sourcePortRange": "*",
@@ -270,7 +260,6 @@
                     {
                         "name": "AllowInternetOutBound",
                         "properties": {
-                            "provisioningState": "Succeeded",
                             "description": "Allow outbound traffic from all VMs to Internet",
                             "protocol": "*",
                             "sourcePortRange": "*",
@@ -289,7 +278,6 @@
                     {
                         "name": "DenyAllOutBound",
                         "properties": {
-                            "provisioningState": "Succeeded",
                             "description": "Deny all outbound traffic",
                             "protocol": "*",
                             "sourcePortRange": "*",

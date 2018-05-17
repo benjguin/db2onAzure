@@ -149,11 +149,10 @@
                     },
                     "osDisk": {
                         "osType": "Linux",
-                        "name": "[concat('d', copyIndex(),'_osDisk_1_', variables('uniqueString1'))]",
+                        "name": "[concat('d', copyIndex(),'_osDisk')]",
                         "createOption": "FromImage",
                         "caching": "ReadWrite",
                         "managedDisk": {
-                            "id": "[resourceId('Microsoft.Compute/disks', concat('d', copyIndex(),'_osDisk_1_', variables('uniqueString1')))]"
                         }
                     },
                     "dataDisks": [
@@ -164,7 +163,6 @@
                             "diskSizeGB": 32,
                             "caching": "None",
                             "managedDisk": {
-                                "id": "[resourceId('Microsoft.Compute/disks', concat('d', copyIndex(),'_dataDisk_lun0_', variables('uniqueString1')))]",
                                 "storageAccountType": "Premium_LRS"
                             }
                         }
@@ -309,11 +307,10 @@
                     },
                     "osDisk": {
                         "osType": "Linux",
-                        "name": "[concat('cf', copyIndex(),'_osDisk_1_', variables('uniqueString1'))]",
+                        "name": "[concat('cf', copyIndex(),'_osDisk')]",
                         "createOption": "FromImage",
                         "caching": "ReadWrite",
                         "managedDisk": {
-                            "id": "[resourceId('Microsoft.Compute/disks', concat('cf', copyIndex(),'_osDisk_1_', variables('uniqueString1')))]"
                         }
                     },
                     "dataDisks": [
@@ -324,7 +321,6 @@
                             "diskSizeGB": 32,
                             "caching": "None",
                             "managedDisk": {
-                                "id": "[resourceId('Microsoft.Compute/disks', concat('d', copyIndex(),'_dataDisk_lun0_', variables('uniqueString1')))]",
                                 "storageAccountType": "Premium_LRS"
                             }
                         }
@@ -463,11 +459,10 @@
                     },
                     "osDisk": {
                         "osType": "Linux",
-                        "name": "[concat('d', copyIndex(),'_osDisk_1_', variables('uniqueString1'))]",
+                        "name": "[concat('d', copyIndex(),'_osDisk')]",
                         "createOption": "FromImage",
                         "caching": "ReadWrite",
                         "managedDisk": {
-                            "id": "[resourceId('Microsoft.Compute/disks', concat('g', copyIndex(),'_osDisk_1_', variables('uniqueString1')))]"
                         }
                     },
                     "dataDisks": [
@@ -478,7 +473,6 @@
                             "diskSizeGB": 1000,
                             "caching": "None",
                             "managedDisk": {
-                                "id": "[resourceId('Microsoft.Compute/disks', concat('g', copyIndex(),'_dataDisk_lun0_', variables('uniqueString1')))]",
                                 "storageAccountType": "Premium_LRS"
                             }
                         },
@@ -489,7 +483,6 @@
                             "diskSizeGB": 1000,
                             "caching": "None",
                             "managedDisk": {
-                                "id": "[[resourceId('Microsoft.Compute/disks', concat('g', copyIndex(),'_dataDisk_lun1_', variables('uniqueString1')))]",
                                 "storageAccountType": "Premium_LRS"
                             }
                         }
@@ -628,11 +621,10 @@
                     },
                     "osDisk": {
                         "osType": "Linux",
-                        "name": "[concat('witn0_osDisk_1_', variables('uniqueString1'))]",
+                        "name": "[concat('witn0_osDisk')]",
                         "createOption": "FromImage",
                         "caching": "ReadWrite",
                         "managedDisk": {
-                            "id": "[resourceId('Microsoft.Compute/disks', concat('witn0_osDisk_1_', variables('uniqueString1')))]"
                         }
                     },
                     "dataDisks": []
@@ -773,11 +765,10 @@
                     },
                     "osDisk": {
                         "osType": "Windows",
-                        "name": "[concat('witn0_osDisk_1_', variables('uniqueString1'))]",
+                        "name": "[concat('wcli0_osDisk')]",
                         "createOption": "FromImage",
                         "caching": "ReadWrite",
                         "managedDisk": {
-                            "id": "[resourceId('Microsoft.Compute/disks', concat('witn0_osDisk_1_', variables('uniqueString1')))]"
                         }
                     },
                     "dataDisks": []
@@ -895,11 +886,10 @@
                     },
                     "osDisk": {
                         "osType": "Linux",
-                        "name": "[concat('jumpbox0_osDisk_1_', variables('uniqueString1'))]",
+                        "name": "[concat('jumpbox0_osDisk')]",
                         "createOption": "FromImage",
                         "caching": "ReadWrite",
                         "managedDisk": {
-                            "id": "[resourceId('Microsoft.Compute/disks', concat('jumpbox0_osDisk_1_', variables('uniqueString1')))]"
                         }
                     },
                     "dataDisks": []

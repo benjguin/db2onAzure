@@ -41,7 +41,7 @@
                             "privateIPAddress": "[concat(parameters('ipAdddressPrefix'), copyIndex())]",
                             "privateIPAllocationMethod": "Static",
                             "subnet": {
-                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets/', parameters('vnetName'), parameters('subnetName'))]"
+                                "id": "[resourceId(resourceGroup().name, 'Microsoft.Network/virtualNetworks/subnets/', parameters('vnetName'), parameters('subnetName'))]"
                             },
                             "primary": true,
                             "privateIPAddressVersion": "IPv4"
@@ -55,17 +55,14 @@
                 "enableAcceleratedNetworking": false,
                 "enableIPForwarding": false,
                 "networkSecurityGroup": {
-                    "id": "[resourceId('Microsoft.Network/networkSecurityGroups', concat(parameters('vnetName'), '_nsg'))]"
+                    "id": "[resourceId(resourceGroup().name, 'Microsoft.Network/networkSecurityGroups', concat(parameters('vnetName'), '_nsg'))]"
                 }
             },
             "copy": {
                 "name": "[concat('db2_member_nics_',parameters('subnetName') , '_copy')]",
                 "count": "[parameters('nb_vms')]"
             },
-            "dependsOn": [
-                "[resourceId('Microsoft.Network/virtualNetworks/', parameters('vnetName'), parameters('subnetName'))]",
-                "[resourceId('Microsoft.Network/networkSecurityGroups', concat(parameters('vnetName'), '_nsg'))]"
-            ]
+            "dependsOn": []
         }
     ]
 }
