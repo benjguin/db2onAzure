@@ -41,7 +41,7 @@
                             "privateIPAddress": "[concat(parameters('ipAdddressPrefix'), copyIndex())]",
                             "privateIPAllocationMethod": "Static",
                             "subnet": {
-                                "id": "[resourceId('Microsoft.Network/virtualNetworks/', concat(parameters('vnetName'), '/subnets/', parameters('subnetName')))]"
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets/', parameters('vnetName'), parameters('subnetName'))]"
                             },
                             "primary": true,
                             "privateIPAddressVersion": "IPv4"
@@ -63,7 +63,7 @@
                 "count": "[parameters('nb_vms')]"
             },
             "dependsOn": [
-                "[resourceId('Microsoft.Network/virtualNetworks/', concat(parameters('vnetName'), '/subnets/', parameters('subnetName')))]",
+                "[resourceId('Microsoft.Network/virtualNetworks/', parameters('vnetName'), parameters('subnetName'))]",
                 "[resourceId('Microsoft.Network/networkSecurityGroups', concat(parameters('vnetName'), '_nsg'))]"
             ]
         }
