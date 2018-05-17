@@ -21,7 +21,8 @@ usage() {
     echo "- adwinPassword (-p): password for the 'adwin' user on Windows boxes"
     echo "- db2bits (-d): location where the 'v11.1_linuxx64_server_t.tar.gz' file can be downloaded from"
     echo "- gitrawurl (-u): folder where this repo is, with a trailing /. E.g.: https://raw.githubusercontent.com/benjguin/db2onAzure/master/"
-    echo "- jumpboxPublicName (-j): folder where this repo is, with a trailing /. E.g.: https://raw.githubusercontent.com/benjguin/db2onAzure/master/"
+    echo "- jumpboxPublicName (-j): jumpbox public DNS name. The full DNS name will be <jumpboxPublicName>.<location>.cloudapp.azure.com."
+	echo "- temp local folder (-t) for ssh keys and other files, with a trailing /."
     echo ""
     echo "Usage: $0 -s <subscription> -g <resourceGroupName> -l <location> -n <deploymentName> -k pubKeyPath -p adwinPassword -d db2bits -u gitrawurl" 1>&2
     exit 1
@@ -35,9 +36,10 @@ declare adwinPassword=""
 declare db2bits=""
 declare gitrawurl=""
 declare jumpboxPublicName=""
+declare tempLocalFolder=""
 
 # Initialize parameters specified from command line
-while getopts ":d:g:k:l:n:p:s:u:" arg; do
+while getopts ":d:g:j:k:l:n:p:s:t:u:" arg; do
 	case "${arg}" in
 		d)
 			db2bits=${OPTARG}
@@ -62,6 +64,9 @@ while getopts ":d:g:k:l:n:p:s:u:" arg; do
 			;;
 		s)
 			subscription=${OPTARG}
+			;;
+		t)
+			tempLocalFolder=${OPTARG}
 			;;
 		u)
 			gitrawurl=${OPTARG}
@@ -137,6 +142,11 @@ fi
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
+if [ -z "$tempLocalFolder" ]; then
+	echo "$tempLocalFolder not found, defaulting to current folder"
+	tempLocalFolder="${DIR}/"
+fi
+
 #templateFile Path - template file to be used
 templateFilePath="${DIR}/template.json"
 
@@ -174,7 +184,7 @@ az account set -s "$subscription"
 set +e
 
 #Check for existing RG
-az group show $rg 1> /dev/null
+az group show -g $rg 1> /dev/null
 
 if [ $? != 0 ]; then
 	echo "Resource group with name ${rg} could not be found. Creating new resource group.."
@@ -187,18 +197,24 @@ if [ $? != 0 ]; then
 	echo "Using existing resource group..."
 fi
 
+if [ ! -f "${tempLocalFolder}/rhelid_rsa" ]; then
+	echo 'generating ssh keys'
+	# for production, Azure key vaults or othe means should be leveraged
+	ssh-keygen -t rsa -f ${tempLocalFolder}rhelid_rsa -q -N ""
+	ssh-keygen -t rsa -f ${tempLocalFolder}rootid_rsa -q -N ""
+else
+	echo "reusing ssh key files available in folder ${tempLocalFolder}"
+fi
+
+rhelPrivKeyValue=`cat ${tempLocalFolder}rhelid_rsa`
+rhelPubKeyValue=`cat ${tempLocalFolder}rhelid_rsa.pub`
+rootPrivKeyValue=`cat ${tempLocalFolder}rootid_rsa`
+rootPubKeyValue=`cat ${tempLocalFolder}rootid_rsa.pub`
+
 #Start deployment
 echo "Starting deployment..."
 (
 	set -x
-
-	# for production, Azure key vaults or othe means should be leveraged
-	ssh-keygen -t rsa -f ${DIR}/rhelid_rsa -q -N ""
-	ssh-keygen -t rsa -f ${DIR}/rootid_rsa -q -N ""
-	rhelPrivKeyValue=`cat ${DIR}/rhelid_rsa`
-	rhelPubKeyValue=`cat ${DIR}/rhelid_rsa.pub`
-	rootPrivKeyValue=`cat ${DIR}/rootid_rsa`
-	rootPubKeyValue=`cat ${DIR}/rootid_rsa.pub`
 
 	az group deployment create --name "$deploymentName" --resource-group "$rg" --template-file "$templateFilePath" \
         --parameters "@${parametersFilePath}" \
@@ -207,11 +223,6 @@ echo "Starting deployment..."
 		--parameters rootPrivKeyValue="$rootPrivKeyValue" rootPubKeyValue="$rootPubKeyValue" \
 		--parameters adwinPassword="$adwinPassword" \
 		--parameters db2bits="$db2bits" gitrawurl="$gitrawurl" jumpboxPublicName="$jumpboxPublicName"
-	
-	rm -f ${DIR}/rhelid_rsa
-	rm -f ${DIR}/rhelid_rsa.pub
-	rm -f ${DIR}/rootid_rsa
-	rm -f ${DIR}/rootid_rsa.pub
 )
 
 if [ $?  == 0 ];
@@ -221,6 +232,11 @@ else
 	echo "Template was NOT successfully deployed"
 	exit 1
 fi
+
+#rm -f ${DIR}/rhelid_rsa
+#rm -f ${DIR}/rhelid_rsa.pub
+#rm -f ${DIR}/rootid_rsa
+#rm -f ${DIR}/rootid_rsa.pub
 
 jumpbox="${jumpboxPublicName}.${location}.cloudapp.azure.com"
 nbDb2MemberVms=`az group deployment show -g $rg -n "$deploymentName" --query properties.outputs.nbDb2MemberVms.value`

@@ -96,7 +96,7 @@
         {
             "comments": "db2 member NICs",
             "type": "Microsoft.Resources/deployments",
-            "name": "db2MemberNics",
+            "name": "[concat('db2MemberNic', copyIndex())]",
             "apiVersion": "2015-01-01",
             "properties": {
                     "mode": "Incremental",
@@ -153,7 +153,7 @@
                         "createOption": "FromImage",
                         "caching": "ReadWrite",
                         "managedDisk": {
-                            "id": "[concat('d', copyIndex(),'_osDisk_1_', variables('uniqueString1'))]"
+                            "id": "[resourceId('Microsoft.Compute/disks', concat('d', copyIndex(),'_osDisk_1_', variables('uniqueString1')))]"
                         }
                     },
                     "dataDisks": [
@@ -164,7 +164,7 @@
                             "diskSizeGB": 32,
                             "caching": "None",
                             "managedDisk": {
-                                "id": "[concat('d', copyIndex(),'_dataDisk_lun0_', variables('uniqueString1'))]",
+                                "id": "[resourceId('Microsoft.Compute/disks', concat('d', copyIndex(),'_dataDisk_lun0_', variables('uniqueString1')))]",
                                 "storageAccountType": "Premium_LRS"
                             }
                         }
@@ -219,7 +219,7 @@
                 {
                     "apiVersion": "2017-12-01",
                     "type": "extensions",
-                    "name": "initDb2MemberVm",
+                    "name": "[concat('initDb2MemberVm', copyIndex())]",
                     "location": "[resourceGroup().location]",
                     "dependsOn": [
                         "[concat('Microsoft.Compute/virtualMachines/', 'd', copyIndex())]"
@@ -256,7 +256,7 @@
         {
             "comments": "db2 CF NICs",
             "type": "Microsoft.Resources/deployments",
-            "name": "db2CfNics",
+            "name": "[concat('db2CfNic', copyIndex())]",
             "apiVersion": "2015-01-01",
             "properties": {
                     "mode": "Incremental",
@@ -313,7 +313,7 @@
                         "createOption": "FromImage",
                         "caching": "ReadWrite",
                         "managedDisk": {
-                            "id": "[concat('cf', copyIndex(),'_osDisk_1_', variables('uniqueString1'))]"
+                            "id": "[resourceId('Microsoft.Compute/disks', concat('cf', copyIndex(),'_osDisk_1_', variables('uniqueString1')))]"
                         }
                     },
                     "dataDisks": [
@@ -324,7 +324,7 @@
                             "diskSizeGB": 32,
                             "caching": "None",
                             "managedDisk": {
-                                "id": "[concat('d', copyIndex(),'_dataDisk_lun0_', variables('uniqueString1'))]",
+                                "id": "[resourceId('Microsoft.Compute/disks', concat('d', copyIndex(),'_dataDisk_lun0_', variables('uniqueString1')))]",
                                 "storageAccountType": "Premium_LRS"
                             }
                         }
@@ -373,7 +373,7 @@
                 {
                     "apiVersion": "2017-12-01",
                     "type": "extensions",
-                    "name": "initDb2CfVm",
+                    "name": "[concat('initDb2CfVm', copyIndex())]",
                     "location": "[resourceGroup().location]",
                     "dependsOn": [
                         "[concat('Microsoft.Compute/virtualMachines/', 'cf', copyIndex())]"
@@ -410,7 +410,7 @@
         {
             "comments": "Gluster FS member NICs",
             "type": "Microsoft.Resources/deployments",
-            "name": "glusterFsNics",
+            "name": "[concat('glusterFsNic', copyIndex())]",
             "apiVersion": "2015-01-01",
             "properties": {
                     "mode": "Incremental",
@@ -467,7 +467,7 @@
                         "createOption": "FromImage",
                         "caching": "ReadWrite",
                         "managedDisk": {
-                            "id": "[concat('g', copyIndex(),'_osDisk_1_', variables('uniqueString1'))]"
+                            "id": "[resourceId('Microsoft.Compute/disks', concat('g', copyIndex(),'_osDisk_1_', variables('uniqueString1')))]"
                         }
                     },
                     "dataDisks": [
@@ -478,7 +478,7 @@
                             "diskSizeGB": 1000,
                             "caching": "None",
                             "managedDisk": {
-                                "id": "[concat('g', copyIndex(),'_dataDisk_lun0_', variables('uniqueString1'))]",
+                                "id": "[resourceId('Microsoft.Compute/disks', concat('g', copyIndex(),'_dataDisk_lun0_', variables('uniqueString1')))]",
                                 "storageAccountType": "Premium_LRS"
                             }
                         },
@@ -489,7 +489,7 @@
                             "diskSizeGB": 1000,
                             "caching": "None",
                             "managedDisk": {
-                                "id": "[concat('g', copyIndex(),'_dataDisk_lun1_', variables('uniqueString1'))]",
+                                "id": "[[resourceId('Microsoft.Compute/disks', concat('g', copyIndex(),'_dataDisk_lun1_', variables('uniqueString1')))]",
                                 "storageAccountType": "Premium_LRS"
                             }
                         }
@@ -538,7 +538,7 @@
                 {
                     "apiVersion": "2017-12-01",
                     "type": "extensions",
-                    "name": "initGlusterFsVm",
+                    "name": "[concat('initGlusterFsVm', copyIndex())]",
                     "location": "[resourceGroup().location]",
                     "dependsOn": [
                         "[concat('Microsoft.Compute/virtualMachines/', 'g', copyIndex())]"
@@ -575,7 +575,7 @@
         {
             "comments": "witness NICs",
             "type": "Microsoft.Resources/deployments",
-            "name": "witnessNics",
+            "name": "[concat('witnessNic', copyIndex())]",
             "apiVersion": "2015-01-01",
             "properties": {
                     "mode": "Incremental",
@@ -632,7 +632,7 @@
                         "createOption": "FromImage",
                         "caching": "ReadWrite",
                         "managedDisk": {
-                            "id": "[concat('witn0_osDisk_1_', variables('uniqueString1'))]"
+                            "id": "[resourceId('Microsoft.Compute/disks', concat('witn0_osDisk_1_', variables('uniqueString1')))]"
                         }
                     },
                     "dataDisks": []
@@ -689,7 +689,7 @@
                     "name": "initWitnessVm",
                     "location": "[resourceGroup().location]",
                     "dependsOn": [
-                        "[concat('Microsoft.Compute/virtualMachines/', 'witn', copyIndex())]"
+                        "[concat('Microsoft.Compute/virtualMachines/', 'witn0')]"
                     ],
                     "tags": {
                         "displayName": "initWitnessVm"
@@ -714,13 +714,13 @@
                 }
             ],
             "dependsOn": [
-                "witnessNics"
+                "witnessNicsCopy"
             ]
         },
         {
             "comments": "Windows Client NICs",
             "type": "Microsoft.Resources/deployments",
-            "name": "windowsClientNics",
+            "name": "[concat('windowsClientNic', copyIndex())]",
             "apiVersion": "2015-01-01",
             "properties": {
                     "mode": "Incremental",
@@ -777,7 +777,7 @@
                         "createOption": "FromImage",
                         "caching": "ReadWrite",
                         "managedDisk": {
-                            "id": "[concat('witn0_osDisk_1_', variables('uniqueString1'))]"
+                            "id": "[resourceId('Microsoft.Compute/disks', concat('witn0_osDisk_1_', variables('uniqueString1')))]"
                         }
                     },
                     "dataDisks": []
@@ -810,7 +810,7 @@
                 }
             },
             "dependsOn": [
-                "witness_nics"
+                "windowsClientNicsCopy"
             ]
         },
         {
@@ -899,7 +899,7 @@
                         "createOption": "FromImage",
                         "caching": "ReadWrite",
                         "managedDisk": {
-                            "id": "[concat('jumpbox0_osDisk_1_', variables('uniqueString1'))]"
+                            "id": "[resourceId('Microsoft.Compute/disks', concat('jumpbox0_osDisk_1_', variables('uniqueString1')))]"
                         }
                     },
                     "dataDisks": []
