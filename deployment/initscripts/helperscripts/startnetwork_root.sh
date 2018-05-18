@@ -3,18 +3,25 @@
 #adapted from https://docs.microsoft.com/en-us/azure/virtual-machines/linux/multiple-nics
 
 ifconfig
+echo "dhclient"
 dhclient
 ifconfig
 
+# {DBG-ifconfig after dhclient{
+echo "DBG-ifconfig after dhclient"
+sleep 10s
+ifconfig
+# }DBG-ifconfig after dhclient}
+
 nbnics=`ls -als /sys/class/net/  | grep eth | wc -l`
 
-for (( ni=0; ni<$nbnics; ni++ ))
+for (( ni=1; ni<$nbnics; ni++ ))
 do
-    echo "DBG-ni: $ni"
+    echo "TRACE-ni: $ni"
     ifconfig eth${ni}
 
     eth_ip=`ifconfig eth${ni} | awk '$1 == "inet" {print $2}'`
-    IFS="." read -ra eth_ipparts <<< "$ethxip"
+    IFS="." read -ra eth_ipparts <<< "$eth_ip"
     eth_subnetip=`echo ${eth_ipparts[2]}`
     lastip=`echo ${eth_ipparts[3]}`
 
@@ -33,7 +40,7 @@ NM_CONTROLLED=no
 EOF
     fi
 
-    cat > /etc/sysconfig/network-scripts/rule-eth${ni}1 << EOF
+    cat > /etc/sysconfig/network-scripts/rule-eth${ni} << EOF
 from 192.168.$eth_subnetip.$lastip/32 table eth${ni}-rt
 to 192.168.$eth_subnetip.$lastip/32 table eth${ni}-rt
 EOF
