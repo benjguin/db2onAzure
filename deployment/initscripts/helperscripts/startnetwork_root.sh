@@ -10,7 +10,7 @@ ifconfig
 
 nbnics=`ls -als /sys/class/net/  | grep eth | wc -l`
 
-for (( ni=1; ni<$nbnics; ni++ ))
+for (( ni=0; ni<$nbnics; ni++ ))
 do
     echo "TRACE-ni: $ni"
     ifconfig eth${ni}

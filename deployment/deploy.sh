@@ -239,12 +239,12 @@ fi
 #rm -f ${DIR}/rootid_rsa.pub
 
 jumpbox="${jumpboxPublicName}.${location}.cloudapp.azure.com"
-nbDb2MemberVms=`az group deployment show -g $rg -n "$deploymentName" --query properties.outputs.nbDb2MemberVms.value`
-nbDb2CfVms=`az group deployment show -g $rg -n "$deploymentName" --query properties.outputs.nbDb2CfVms.value`
+nbDb2MemberVms=`az group deployment show -g $rg -n "$deploymentName" --query properties.outputs.nbDb2MemberVms.value --output json`
+nbDb2CfVms=`az group deployment show -g $rg -n "$deploymentName" --query properties.outputs.nbDb2CfVms.value --output json`
 
-scp -o StrictHostKeyChecking=no ${DIR}/postARMscripts/fromjumbox.sh rhel@$jumpbox:/tmp/
+scp -o StrictHostKeyChecking=no ${DIR}/postARMscripts/fromjumpbox.sh rhel@$jumpbox:/tmp/
 scp -o StrictHostKeyChecking=no ${DIR}/postARMscripts/fromd0_root.sh rhel@$jumpbox:/tmp/
 scp -o StrictHostKeyChecking=no ${DIR}/postARMscripts/fromd0getwwids_root.sh rhel@$jumpbox:/tmp/
 scp -o StrictHostKeyChecking=no ${DIR}/postARMscripts/fromg0_root.sh rhel@$jumpbox:/tmp/
 
-ssh -o StrictHostKeyChecking=no rhel@$jumpbox bash /tmp/fromjumpbox.sh $nbDb2MemberVms $nbDb2CfVms
+ssh -o StrictHostKeyChecking=no rhel@$jumpbox "bash -v /tmp/fromjumpbox.sh $nbDb2MemberVms $nbDb2CfVms &> >(tee -a /tmp/postARM.log)"

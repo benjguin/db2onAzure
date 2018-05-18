@@ -3,8 +3,8 @@
 nbDb2MemberVms=$1
 nbDb2CfVms=$2
 
-scp -o StrictHostKeyChecking=no /tmp/fromg0_root.sh 192.168.0.10:/tmp/
-ssh -o StrictHostKeyChecking=no 192.168.0.10 sudo -n -u root -s bash /tmp/fromg0_root.sh
+scp /tmp/fromg0_root.sh 192.168.0.10:/tmp/
+ssh 192.168.0.10 sudo -n -u root -s bash /tmp/fromg0_root.sh
 
 
 db2servers=()
@@ -18,18 +18,18 @@ do
     db2servers+=(192.168.0.3$i)
 done
 
-ssh -o StrictHostKeyChecking=no 192.168.0.20 << 'EOSSH'
+ssh -tt 192.168.0.20 << 'EOSSH'
 sudo -n -u root -s fdisk -l | grep /dev/mapper/3 > /tmp/iscsidisks.txt
 EOSSH
 scp 192.168.0.20:/tmp/iscsidisks.txt .
 
-ssh -o StrictHostKeyChecking=no 192.168.0.20 sudo -n -u root -s bash /tmp/fromd0getwwids_root.sh
-scp -o StrictHostKeyChecking=no 192.168.0.20:/tmp/initwwids.sh /tmp/initwwids.sh
+ssh 192.168.0.20 sudo -n -u root -s bash /tmp/fromd0getwwids_root.sh
+scp 192.168.0.20:/tmp/initwwids.sh /tmp/initwwids.sh
 source /tmp/initwwids.sh
 
 for db2srv in "${db2servers[@]}"
 do
-ssh -o StrictHostKeyChecking=no $db2srv << 'EOSSH'
+ssh -tt $db2srv << 'EOSSH'
 sudo sed -i "s/36001405149ee39c319845aaa710099a7/${wwiddb2data1}/g" /etc/multipath.conf
 sudo sed -i "s/36001405bfc71ff861174f2bbb0bfea37/${wwiddb2log1}/g" /etc/multipath.conf
 sudo sed -i "s/36001405484ba6ab80934f2290a2b579f/${wwiddb2shared}/g" /etc/multipath.conf
@@ -39,10 +39,23 @@ sudo -n -u root -s shutdown -r now
 EOSSH
 done
 
-scp -o StrictHostKeyChecking=no /tmp/fromd0_root.sh 192.168.0.20:/tmp/
+# wait for the reboots to finish
+for db2srv in "${db2servers[@]}"
+do
+    echo "waiting for $db2srv to reboot"
+    stay="true"
+    while [ "$stay" == "true" ]
+    do
+        x=`ssh $db2srv whoami | grep rhel | wc -l`
+        if [ "$x" == "1" ]
+        then
+            stay="false"
+        else
+            echo "waiting for 30 seconds ..."
+            sleep 30s
+        fi
+    done
+done
 
-
-# wait for the reboot to finish
-sleep 4m
-
-ssh -o StrictHostKeyChecking=no 192.168.0.20 sudo -n -u root -s bash /tmp/fromd0_root.sh $nbDb2MemberVms $nbDb2CfVms $wwiddb2data1 $wwiddb2log1 $wwiddb2shared $wwiddb2tieb
+scp /tmp/fromd0_root.sh 192.168.0.20:/tmp/
+ssh 192.168.0.20 sudo -n -u root -s bash /tmp/fromd0_root.sh $nbDb2MemberVms $nbDb2CfVms $wwiddb2data1 $wwiddb2log1 $wwiddb2shared $wwiddb2tieb

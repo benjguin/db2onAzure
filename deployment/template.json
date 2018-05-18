@@ -48,7 +48,7 @@
         }
     },
     "variables": {
-        "templateVersion": "v180518c",
+        "templateVersion": "v180518d",
         "location": "[resourceGroup().location]",
         "linkedTemplatesUrl": "[concat(parameters('gitrawurl'),'deployment/linkedtemplates/')]",
         "initScriptsUrl": "[concat(parameters('gitrawurl'),'deployment/initscripts/')]",
