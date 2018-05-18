@@ -49,7 +49,6 @@
     },
     "variables": {
         "location": "[resourceGroup().location]",
-        "uniqueString1": "[uniqueString(resourceGroup().id, '1')]",
         "linkedTemplatesUrl": "[concat(parameters('gitrawurl'),'deployment/linkedtemplates/')]",
         "initScriptsUrl": "[concat(parameters('gitrawurl'),'deployment/initscripts/')]",
         "db2MemberSubnets": ["main", "gfsfe", "db2be", "db2fe"],
@@ -63,10 +62,10 @@
         "windowsClientSubnets": ["main", "db2fe"],
         "windowsClientIpAdddressPrefixes": ["192.168.0.4", "192.168.4.4"],
         "userAndKeysArgs": "[concat('\"', parameters('userPubKeyValue'), '\" \"', parameters('rhelPrivKeyValue'), '\" \"', parameters('rhelPubKeyValue'), '\" \"', parameters('rootPrivKeyValue'), '\" \"', parameters('rootPubKeyValue'), '\"')]",
-        "commandOnDb2": "[concat('db2.sh ', variables('userAndKeysArgs'), ' \"', parameters('db2bits'), '\"')]",
-        "commandOnGlusterfs": "[concat('glusterfs.sh ', variables('userAndKeysArgs'))]",
-        "commandOnWitness": "[concat('witness.sh ', variables('userAndKeysArgs'))]",
-        "commandOnJumpbox": "[concat('jumpbox.sh ', variables('userAndKeysArgs'))]"
+        "commandOnDb2": "[concat('/bin/bash db2.sh ', variables('userAndKeysArgs'), ' \"', parameters('db2bits'), '\"')]",
+        "commandOnGlusterfs": "[concat('/bin/bash glusterfs.sh ', variables('userAndKeysArgs'))]",
+        "commandOnWitness": "[concat('/bin/bash witness.sh ', variables('userAndKeysArgs'))]",
+        "commandOnJumpbox": "[concat('/bin/bash jumpbox.sh ', variables('userAndKeysArgs'))]"
     },
     "outputs": {
         "nbDb2MemberVms": {
@@ -97,6 +96,159 @@
                 }
             },
             "dependsOn": []            
+        },
+        {
+            "comments": "jumpbox public IP address",
+            "type": "Microsoft.Network/publicIPAddresses",
+            "sku": {
+                "name": "Basic",
+                "tier": "Regional"
+            },
+            "name": "jumbox_public_ip",
+            "apiVersion": "2018-02-01",
+            "location": "[variables('location')]",
+            "scale": null,
+            "properties": {
+                "publicIPAddressVersion": "IPv4",
+                "publicIPAllocationMethod": "Dynamic",
+                "idleTimeoutInMinutes": 4,
+                "dnsSettings": {
+                    "domainNameLabel": "[parameters('jumpboxPublicName')]"
+                },
+                "ipTags": []
+            },
+            "dependsOn": []
+        },
+        {
+            "comments": "jumpbox NIC",
+            "type": "Microsoft.Network/networkInterfaces",
+            "name": "jumpbox0_main",
+            "apiVersion": "2018-02-01",
+            "location": "[variables('location')]",
+            "scale": null,
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "ipconfig1",
+                        "properties": {
+                            "privateIPAddress": "192.168.0.5",
+                            "privateIPAllocationMethod": "Static",
+                            "publicIPAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses', 'jumbox_public_ip')]"
+                            },
+                            "subnet": {
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('vnetName'), 'main')]"
+                            },
+                            "primary": true,
+                            "privateIPAddressVersion": "IPv4"
+                        }
+                    }
+                ],
+                "dnsSettings": {
+                    "dnsServers": [],
+                    "appliedDnsServers": []
+                },
+                "enableAcceleratedNetworking": false,
+                "enableIPForwarding": false,
+                "networkSecurityGroup": {
+                    "id": "[resourceId('Microsoft.Network/networkSecurityGroups', concat(parameters('vnetName'), '_nsg'))]"
+                }
+            },
+            "dependsOn": [
+                "jumbox_public_ip",
+                "vNetAndNsg"
+            ]
+        },
+        {
+            "comments": "jumpbox VM",
+            "type": "Microsoft.Compute/virtualMachines",
+            "name": "jumpbox",
+            "apiVersion": "2017-12-01",
+            "location": "[variables('location')]",
+            "tags": {},
+            "scale": null,
+            "properties": {
+                "hardwareProfile": {
+                    "vmSize": "Standard_DS2_V2_Promo"
+                },
+                "storageProfile": {
+                    "imageReference": {
+                        "publisher": "RedHat",
+                        "offer": "RHEL",
+                        "sku": "7-RAW",
+                        "version": "7.5.2018042521"
+                    },
+                    "osDisk": {
+                        "osType": "Linux",
+                        "name": "[concat('jumpbox0_osDisk')]",
+                        "createOption": "FromImage",
+                        "caching": "ReadWrite",
+                        "managedDisk": {
+                        }
+                    },
+                    "dataDisks": []
+                },
+                "osProfile": {
+                    "computerName": "jumpbox",
+                    "adminUsername": "rhel",
+                    "linuxConfiguration": {
+                        "disablePasswordAuthentication": true,
+                        "ssh": {
+                            "publicKeys": [
+                                {
+                                    "path": "/home/rhel/.ssh/authorized_keys",
+                                    "keyData": "[concat(parameters('userPubKeyValue'), '\n')]"
+                                }
+                            ]
+                        }
+                    },
+                    "secrets": []
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', 'jumpbox0_main')]",
+                            "properties": {
+                                "primary": true
+                            }
+                        }
+                    ]
+                }
+            },
+            "resources": [
+                {
+                    "apiVersion": "2017-12-01",
+                    "type": "extensions",
+                    "name": "initJumpboxVm",
+                    "location": "[resourceGroup().location]",
+                    "dependsOn": [
+                        "[concat('Microsoft.Compute/virtualMachines/', 'jumpbox')]"
+                    ],
+                    "tags": {
+                        "displayName": "initJumpboxVm"
+                    },
+                    "properties": {
+                        "publisher": "Microsoft.Azure.Extensions",
+                        "type": "CustomScript",
+                        "typeHandlerVersion": "2.0",
+                        "autoUpgradeMinorVersion": true,
+                        "settings": {
+                            "fileUris": [
+                                "[concat(variables('initScriptsUrl'), 'jumpbox.sh')]",
+                                "[concat(variables('initScriptsUrl'), 'helperscripts/startnetwork.sh')]",
+                                "[concat(variables('initScriptsUrl'), 'helperscripts/setsshkeys.sh')]",
+                                "[concat(variables('initScriptsUrl'), 'helperscripts/setsshkeys_root.sh')]"
+                            ]
+                        },
+                        "protectedSettings": {
+                            "commandToExecute": "[variables('commandOnJumpbox')]"
+                        }
+                    }
+                }
+            ],
+            "dependsOn": [
+                "jumpbox0_main"
+            ]
         },
         {
             "comments": "db2 member NICs",
@@ -807,158 +959,6 @@
             },
             "dependsOn": [
                 "windowsClientNicsCopy"
-            ]
-        },
-        {
-            "comments": "jumpbox public IP address",
-            "type": "Microsoft.Network/publicIPAddresses",
-            "sku": {
-                "name": "Basic",
-                "tier": "Regional"
-            },
-            "name": "jumbox_public_ip",
-            "apiVersion": "2018-02-01",
-            "location": "[variables('location')]",
-            "scale": null,
-            "properties": {
-                "publicIPAddressVersion": "IPv4",
-                "publicIPAllocationMethod": "Dynamic",
-                "idleTimeoutInMinutes": 4,
-                "dnsSettings": {
-                    "domainNameLabel": "[parameters('jumpboxPublicName')]"
-                },
-                "ipTags": []
-            },
-            "dependsOn": []
-        },
-        {
-            "comments": "jumpbox NIC",
-            "type": "Microsoft.Network/networkInterfaces",
-            "name": "jumpbox_nic",
-            "apiVersion": "2018-02-01",
-            "location": "[variables('location')]",
-            "scale": null,
-            "properties": {
-                "ipConfigurations": [
-                    {
-                        "name": "ipconfig1",
-                        "properties": {
-                            "privateIPAddress": "192.168.0.5",
-                            "privateIPAllocationMethod": "Static",
-                            "publicIPAddress": {
-                                "id": "[resourceId('Microsoft.Network/publicIPAddresses', 'jumbox_public_ip')]"
-                            },
-                            "subnet": {
-                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('vnetName'), 'main')]"
-                            },
-                            "primary": true,
-                            "privateIPAddressVersion": "IPv4"
-                        }
-                    }
-                ],
-                "dnsSettings": {
-                    "dnsServers": [],
-                    "appliedDnsServers": []
-                },
-                "enableAcceleratedNetworking": false,
-                "enableIPForwarding": false,
-                "networkSecurityGroup": {
-                    "id": "[resourceId('Microsoft.Network/networkSecurityGroups', concat(parameters('vnetName'), '_nsg'))]"
-                }
-            },
-            "dependsOn": [
-                "jumbox_public_ip"
-            ]
-        },
-        {
-            "comments": "jumpbox VM",
-            "type": "Microsoft.Compute/virtualMachines",
-            "name": "jumpbox",
-            "apiVersion": "2017-12-01",
-            "location": "[variables('location')]",
-            "tags": {},
-            "scale": null,
-            "properties": {
-                "hardwareProfile": {
-                    "vmSize": "Standard_DS2_V2_Promo"
-                },
-                "storageProfile": {
-                    "imageReference": {
-                        "publisher": "RedHat",
-                        "offer": "RHEL",
-                        "sku": "7-RAW",
-                        "version": "7.5.2018042521"
-                    },
-                    "osDisk": {
-                        "osType": "Linux",
-                        "name": "[concat('jumpbox0_osDisk')]",
-                        "createOption": "FromImage",
-                        "caching": "ReadWrite",
-                        "managedDisk": {
-                        }
-                    },
-                    "dataDisks": []
-                },
-                "osProfile": {
-                    "computerName": "jumpbox",
-                    "adminUsername": "rhel",
-                    "linuxConfiguration": {
-                        "disablePasswordAuthentication": true,
-                        "ssh": {
-                            "publicKeys": [
-                                {
-                                    "path": "/home/rhel/.ssh/authorized_keys",
-                                    "keyData": "[concat(parameters('rhelPubKeyValue'), '\n')]"
-                                }
-                            ]
-                        }
-                    },
-                    "secrets": []
-                },
-                "networkProfile": {
-                    "networkInterfaces": [
-                        {
-                            "id": "[resourceId('Microsoft.Network/networkInterfaces', 'jumpbox0_main')]",
-                            "properties": {
-                                "primary": true
-                            }
-                        }
-                    ]
-                }
-            },
-            "resources": [
-                {
-                    "apiVersion": "2017-12-01",
-                    "type": "extensions",
-                    "name": "initJumpboxVm",
-                    "location": "[resourceGroup().location]",
-                    "dependsOn": [
-                        "[concat('Microsoft.Compute/virtualMachines/', 'jumpbox')]"
-                    ],
-                    "tags": {
-                        "displayName": "initJumpboxVm"
-                    },
-                    "properties": {
-                        "publisher": "Microsoft.Azure.Extensions",
-                        "type": "CustomScript",
-                        "typeHandlerVersion": "2.0",
-                        "autoUpgradeMinorVersion": true,
-                        "settings": {
-                            "fileUris": [
-                                "[concat(variables('initScriptsUrl'), 'jumpbox.sh')]",
-                                "[concat(variables('initScriptsUrl'), 'helperscripts/startnetwork.sh')]",
-                                "[concat(variables('initScriptsUrl'), 'helperscripts/setsshkeys.sh')]",
-                                "[concat(variables('initScriptsUrl'), 'helperscripts/setsshkeys_root.sh')]"
-                            ]
-                        },
-                        "protectedSettings": {
-                            "commandToExecute": "[variables('commandOnJumpbox')]"
-                        }
-                    }
-                }
-            ],
-            "dependsOn": [
-                "jumpbox_nic"
             ]
         }
     ]

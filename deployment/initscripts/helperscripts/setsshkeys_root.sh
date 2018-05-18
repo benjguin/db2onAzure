@@ -5,7 +5,12 @@ rootPubKeyValue=$2
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-mkdir /root/.ssh
+nbfound=`ls -d ~/.ssh | wc -l`
+if [ "$nbfound" == "0" ]
+then
+    mkdir /root/.ssh
+fi
+
 chmod 700 /root/.ssh
 cat > /root/.ssh/config << 'EOF' 
 Host *
