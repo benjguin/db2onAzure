@@ -48,7 +48,7 @@
         }
     },
     "variables": {
-        "templateVersion": "v180518b",
+        "templateVersion": "v180518c",
         "location": "[resourceGroup().location]",
         "linkedTemplatesUrl": "[concat(parameters('gitrawurl'),'deployment/linkedtemplates/')]",
         "initScriptsUrl": "[concat(parameters('gitrawurl'),'deployment/initscripts/')]",
@@ -441,7 +441,7 @@
             },
             "copy": {
                 "name": "db2CfNicsCopy",
-                "count": "[length(variables('db2MemberSubnets'))]"
+                "count": "[length(variables('db2CfSubnets'))]"
             },
             "dependsOn": ["vNetAndNsg"]            
         },
@@ -558,7 +558,7 @@
             ],
             "copy": {
                 "name": "db2CfVmsCopy",
-                "count": "[parameters('nbDb2MemberVms')]"
+                "count": "[parameters('nbDb2CfVms')]"
             },
             "dependsOn": ["db2CfNicsCopy"]
         },
@@ -618,7 +618,7 @@
                     },
                     "osDisk": {
                         "osType": "Linux",
-                        "name": "[concat('d', copyIndex(),'_osDisk')]",
+                        "name": "[concat('g', copyIndex(),'_osDisk')]",
                         "createOption": "FromImage",
                         "caching": "ReadWrite",
                         "managedDisk": {
