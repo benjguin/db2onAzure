@@ -12,7 +12,7 @@ if [ `hostname` == "jumpbox" ]
 then
     echo $userPubKeyValue >> /root/.ssh/authorized_keys
 else
-    sudo -n -u root -s bash setsshkeys_root.sh "$rootPrivKeyValue" "rootPubKeyValue"
+    sudo -n -u root bash -c "bash setsshkeys_root.sh \"$rootPrivKeyValue\" \"rootPubKeyValue\""
 fi
 
 echo $rhelPubKeyValue >> ~/.ssh/authorized_keys

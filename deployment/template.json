@@ -235,7 +235,7 @@
                         "settings": {
                             "fileUris": [
                                 "[concat(variables('initScriptsUrl'), 'jumpbox.sh')]",
-                                "[concat(variables('initScriptsUrl'), 'helperscripts/startnetwork.sh')]",
+                                "[concat(variables('initScriptsUrl'), 'helperscripts/startnetwork_root.sh')]",
                                 "[concat(variables('initScriptsUrl'), 'helperscripts/setsshkeys.sh')]",
                                 "[concat(variables('initScriptsUrl'), 'helperscripts/setsshkeys_root.sh')]"
                             ]
@@ -390,7 +390,7 @@
                         "settings": {
                             "fileUris": [
                                 "[concat(variables('initScriptsUrl'), 'db2.sh')]",
-                                "[concat(variables('initScriptsUrl'), 'helperscripts/startnetwork.sh')]",
+                                "[concat(variables('initScriptsUrl'), 'helperscripts/startnetwork_root.sh')]",
                                 "[concat(variables('initScriptsUrl'), 'helperscripts/setsshkeys.sh')]",
                                 "[concat(variables('initScriptsUrl'), 'helperscripts/setsshkeys_root.sh')]",
                                 "[concat(variables('initScriptsUrl'), 'helperscripts/db2_root.sh')]"
@@ -542,7 +542,7 @@
                         "settings": {
                             "fileUris": [
                                 "[concat(variables('initScriptsUrl'), 'db2.sh')]",
-                                "[concat(variables('initScriptsUrl'), 'helperscripts/startnetwork.sh')]",
+                                "[concat(variables('initScriptsUrl'), 'helperscripts/startnetwork_root.sh')]",
                                 "[concat(variables('initScriptsUrl'), 'helperscripts/setsshkeys.sh')]",
                                 "[concat(variables('initScriptsUrl'), 'helperscripts/setsshkeys_root.sh')]",
                                 "[concat(variables('initScriptsUrl'), 'helperscripts/db2_root.sh')]"
@@ -704,7 +704,7 @@
                         "settings": {
                             "fileUris": [
                                 "[concat(variables('initScriptsUrl'), 'glusterfs.sh')]",
-                                "[concat(variables('initScriptsUrl'), 'helperscripts/startnetwork.sh')]",
+                                "[concat(variables('initScriptsUrl'), 'helperscripts/startnetwork_root.sh')]",
                                 "[concat(variables('initScriptsUrl'), 'helperscripts/setsshkeys.sh')]",
                                 "[concat(variables('initScriptsUrl'), 'helperscripts/setsshkeys_root.sh')]",
                                 "[concat(variables('initScriptsUrl'), 'helperscripts/installconfiggluster_root.sh')]"
@@ -851,7 +851,7 @@
                         "settings": {
                             "fileUris": [
                                 "[concat(variables('initScriptsUrl'), 'witness.sh')]",
-                                "[concat(variables('initScriptsUrl'), 'helperscripts/startnetwork.sh')]",
+                                "[concat(variables('initScriptsUrl'), 'helperscripts/startnetwork_root.sh')]",
                                 "[concat(variables('initScriptsUrl'), 'helperscripts/setsshkeys.sh')]",
                                 "[concat(variables('initScriptsUrl'), 'helperscripts/setsshkeys_root.sh')]"
                             ]
