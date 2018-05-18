@@ -2,11 +2,17 @@
 
 #adapted from https://docs.microsoft.com/en-us/azure/virtual-machines/linux/multiple-nics
 
+ifconfig
 dhclient
+ifconfig
+
 nbnics=`ls -als /sys/class/net/  | grep eth | wc -l`
 
 for (( ni=0; ni<$nbnics; ni++ ))
 do
+    echo "DBG-ni: $ni"
+    ifconfig eth${ni}
+
     eth_ip=`ifconfig eth${ni} | awk '$1 == "inet" {print $2}'`
     IFS="." read -ra eth_ipparts <<< "$ethxip"
     eth_subnetip=`echo ${eth_ipparts[2]}`
