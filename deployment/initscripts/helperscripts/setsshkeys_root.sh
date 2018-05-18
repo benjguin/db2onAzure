@@ -12,11 +12,13 @@ then
 fi
 
 chmod 700 /root/.ssh
+
 cat > /root/.ssh/config << 'EOF' 
 Host *
     StrictHostKeyChecking no
 EOF
 chmod 400 /root/.ssh/config
+
 touch /root/.ssh/authorized_keys
 chmod 600 /root/.ssh/authorized_keys
 echo $rootPubKeyValue >> /root/.ssh/authorized_keys
