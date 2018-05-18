@@ -52,16 +52,21 @@
         "uniqueString1": "[uniqueString(resourceGroup().id, '1')]",
         "linkedTemplatesUrl": "[concat(parameters('gitrawurl'),'deployment/linkedtemplates/')]",
         "initScriptsUrl": "[concat(parameters('gitrawurl'),'deployment/initscripts/')]",
-        "db2MemberSubnets": ["main", "gpfsfe", "db2be", "db2fe"],
+        "db2MemberSubnets": ["main", "gfsfe", "db2be", "db2fe"],
         "db2MemberIpAdddressPrefixes": ["192.168.0.2", "192.168.1.2", "192.168.3.2", "192.168.4.2"],
-        "db2CfSubnets": ["main", "gpfsfe", "db2be"],
+        "db2CfSubnets": ["main", "gfsfe", "db2be"],
         "db2CfIpAdddressPrefixes": ["192.168.0.3", "192.168.1.3", "192.168.3.3"],
-        "glusterFsSubnets": ["main", "gpfsfe", "gpfsbe"],
+        "glusterFsSubnets": ["main", "gfsfe", "gfsbe"],
         "glusterFsIpAdddressPrefixes": ["192.168.0.1", "192.168.1.1", "192.168.2.1"],
-        "witnessSubnets": ["main", "gpfsfe", "db2be", "db2fe"],
+        "witnessSubnets": ["main", "gfsfe", "db2be", "db2fe"],
         "witnessIpAdddressPrefixes": ["192.168.0.6", "192.168.1.6", "192.168.3.6", "192.168.4.6"],
         "windowsClientSubnets": ["main", "db2fe"],
-        "windowsClientIpAdddressPrefixes": ["192.168.0.4", "192.168.4.4"]
+        "windowsClientIpAdddressPrefixes": ["192.168.0.4", "192.168.4.4"],
+        "userAndKeysArgs": "[concat('\"', parameters('userPubKeyValue'), '\" \"', parameters('rhelPrivKeyValue'), '\" \"', parameters('rhelPubKeyValue'), '\" \"', parameters('rootPrivKeyValue'), '\" \"', parameters('rootPubKeyValue'), '\"')]",
+        "commandOnDb2": "[concat('db2.sh ', variables('userAndKeysArgs'), ' \"', parameters('db2bits'), '\"')]",
+        "commandOnGlusterfs": "[concat('glusterfs.sh ', variables('userAndKeysArgs'))]",
+        "commandOnWitness": "[concat('witness.sh ', variables('userAndKeysArgs'))]",
+        "commandOnJumpbox": "[concat('jumpbox.sh ', variables('userAndKeysArgs'))]"
     },
     "outputs": {
         "nbDb2MemberVms": {
@@ -232,7 +237,7 @@
                         "autoUpgradeMinorVersion": true,
                         "settings": {
                             "fileUris": [
-                                "[concat(variables('initScriptsUrl'), 'db2.sh ', parameters('userPubKeyValue'), ' ', parameters('rhelPrivKeyValue'), ' ', parameters('rhelPubKeyValue'), ' ', parameters('rootPrivKeyValue'), ' ', parameters('rootPubKeyValue'), ' ', parameters('db2bits'), ' ', parameters('nbDb2MemberVms'), ' ', parameters('nbDb2CfVms'))]",
+                                "[concat(variables('initScriptsUrl'), 'db2.sh')]",
                                 "[concat(variables('initScriptsUrl'), 'helperscripts/startnetwork.sh')]",
                                 "[concat(variables('initScriptsUrl'), 'helperscripts/setsshkeys.sh')]",
                                 "[concat(variables('initScriptsUrl'), 'helperscripts/setsshkeys_root.sh')]",
@@ -240,7 +245,7 @@
                             ]
                         },
                         "protectedSettings": {
-                            "commandToExecute": "[concat('sudo bash db2.sh \"', parameters('db2bits'), '\"')]"
+                            "commandToExecute": "[variables('commandondb2')]"
                         }
                     }
                 }
@@ -384,7 +389,7 @@
                         "autoUpgradeMinorVersion": true,
                         "settings": {
                             "fileUris": [
-                                "[concat(variables('initScriptsUrl'), 'db2.sh ', parameters('userPubKeyValue'), ' ', parameters('rhelPrivKeyValue'), ' ', parameters('rhelPubKeyValue'), ' ', parameters('rootPrivKeyValue'), ' ', parameters('rootPubKeyValue'), ' ', parameters('db2bits'), ' ', parameters('nbDb2MemberVms'), ' ', parameters('nbDb2CfVms'))]",
+                                "[concat(variables('initScriptsUrl'), 'db2.sh')]",
                                 "[concat(variables('initScriptsUrl'), 'helperscripts/startnetwork.sh')]",
                                 "[concat(variables('initScriptsUrl'), 'helperscripts/setsshkeys.sh')]",
                                 "[concat(variables('initScriptsUrl'), 'helperscripts/setsshkeys_root.sh')]",
@@ -392,7 +397,7 @@
                             ]
                         },
                         "protectedSettings": {
-                            "commandToExecute": "[concat('sudo bash db2.sh \"', parameters('db2bits'), '\"')]"
+                            "commandToExecute": "[variables('commandOnDb2')]"
                         }
                     }
                 }
@@ -425,7 +430,7 @@
                         "value": "[variables('glusterFsIpAdddressPrefixes')[copyIndex()]]"
                     },
                     "vmPrefix": {
-                        "value": "d"
+                        "value": "g"
                     },
                     "nb_vms": {
                         "value": "[parameters('nbGlusterFsVms')]"
@@ -519,7 +524,7 @@
                             }
                         },
                         {
-                            "id": "[resourceId('Microsoft.Network/networkInterfaces', concat('g', copyIndex(), '_gpfsbe'))]",
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', concat('g', copyIndex(), '_gfsbe'))]",
                             "properties": {
                                 "primary": false
                             }
@@ -550,11 +555,11 @@
                                 "[concat(variables('initScriptsUrl'), 'helperscripts/startnetwork.sh')]",
                                 "[concat(variables('initScriptsUrl'), 'helperscripts/setsshkeys.sh')]",
                                 "[concat(variables('initScriptsUrl'), 'helperscripts/setsshkeys_root.sh')]",
-                                "[concat(variables('initScriptsUrl'), 'helperscripts/installconfiggluster_root')]"
+                                "[concat(variables('initScriptsUrl'), 'helperscripts/installconfiggluster_root.sh')]"
                             ]
                         },
                         "protectedSettings": {
-                            "commandToExecute": "[concat('sudo bash glusterfs.sh ', '')]"
+                            "commandToExecute": "[variables('commandOnGlusterfs')]"
                         }
                     }
                 }
@@ -654,7 +659,7 @@
                             }
                         },
                         {
-                            "id": "[resourceId('Microsoft.Network/networkInterfaces', 'witn0_gpfsfe')]",
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', 'witn0_gfsfe')]",
                             "properties": {
                                 "primary": false
                             }
@@ -700,7 +705,7 @@
                             ]
                         },
                         "protectedSettings": {
-                            "commandToExecute": "sudo bash witness.sh"
+                            "commandToExecute": "[variables('commandOnWitness')]"
                         }
                     }
                 }
@@ -947,7 +952,7 @@
                             ]
                         },
                         "protectedSettings": {
-                            "commandToExecute": "sudo bash witness.sh"
+                            "commandToExecute": "[variables('commandOnJumpbox')]"
                         }
                     }
                 }

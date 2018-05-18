@@ -184,9 +184,9 @@ az account set -s "$subscription"
 set +e
 
 #Check for existing RG
-az group show -g $rg 1> /dev/null
+searchresult=`az group show -g $rg | wc -l`
 
-if [ $? != 0 ]; then
+if [ "$searchresult" == "0" ]; then
 	echo "Resource group with name ${rg} could not be found. Creating new resource group.."
 	set -e
 	(
