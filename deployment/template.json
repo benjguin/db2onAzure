@@ -62,11 +62,11 @@
         "windowsClientSubnets": ["main", "db2fe"],
         "windowsClientIpAdddressPrefixes": ["192.168.0.4", "192.168.4.4"],
         "comnmandUserAndKeysArgs": "[concat('\"', parameters('userPubKeyValue'), '\" \"', parameters('rhelPrivKeyValue'), '\" \"', parameters('rhelPubKeyValue'), '\" \"', parameters('rootPrivKeyValue'), '\" \"', parameters('rootPubKeyValue'), '\"')]",
-        "commandLogs": " &> /tmp/custom-scripts-from-ARM.log",
-        "commandOnDb2": "[concat('bash db2.sh ', variables('comnmandUserAndKeysArgs'), ' \"', parameters('db2bits'), '\"', variables('commandLogs'))]",
-        "commandOnGlusterfs": "[concat('bash glusterfs.sh ', variables('comnmandUserAndKeysArgs'), variables('commandLogs'))]",
-        "commandOnWitness": "[concat('bash witness.sh ', variables('comnmandUserAndKeysArgs'), variables('commandLogs'))]",
-        "commandOnJumpbox": "[concat('bash jumpbox.sh ', variables('comnmandUserAndKeysArgs'), variables('commandLogs'))]"
+        "commandLogs": " &> >(tee -a /tmp/custom-scripts-from-ARM.log)",
+        "commandOnDb2": "[concat('bash -v db2.sh ', variables('comnmandUserAndKeysArgs'), ' \"', parameters('db2bits'), '\"', variables('commandLogs'))]",
+        "commandOnGlusterfs": "[concat('bash -v glusterfs.sh ', variables('comnmandUserAndKeysArgs'), variables('commandLogs'))]",
+        "commandOnWitness": "[concat('bash -v witness.sh ', variables('comnmandUserAndKeysArgs'), variables('commandLogs'))]",
+        "commandOnJumpbox": "[concat('bash -v jumpbox.sh ', variables('comnmandUserAndKeysArgs'), variables('commandLogs'))]"
     },
     "outputs": {
         "nbDb2MemberVms": {

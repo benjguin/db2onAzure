@@ -22,5 +22,5 @@ chmod 644 ~/.ssh/id_rsa.pub
 
 if [ `hostname` != "jumpbox" ]
 then
-    sudo -n -u root bash -c "bash setsshkeys_root.sh \"$rootPrivKeyValue\" \"rootPubKeyValue\""
+    sudo -n -u root bash -c "bash -v setsshkeys_root.sh \"$rootPrivKeyValue\" \"rootPubKeyValue\""
 fi
