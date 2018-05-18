@@ -16,9 +16,9 @@ EOF
 #Install stuff
 yum update -y
 cat > /etc/yum.repos.d/Gluster.repo <<'EOF'
-[gluster38]
-name=Gluster 3.8
-baseurl=http://mirror.centos.org/centos/7/storage/$basearch/gluster-3.8/
+[gluster312]
+name=Gluster 3.12
+baseurl=http://mirror.centos.org/centos/7/storage/$basearch/gluster-3.12/
 gpgcheck=0
 enabled=1
 EOF

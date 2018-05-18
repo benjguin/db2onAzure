@@ -5,13 +5,8 @@
 ifconfig
 echo "dhclient"
 dhclient
+sleep 10s #get IP addresses from DHCP
 ifconfig
-
-# {DBG-ifconfig after dhclient{
-echo "DBG-ifconfig after dhclient"
-sleep 10s
-ifconfig
-# }DBG-ifconfig after dhclient}
 
 nbnics=`ls -als /sys/class/net/  | grep eth | wc -l`
 
