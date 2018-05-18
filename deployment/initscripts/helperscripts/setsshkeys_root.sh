@@ -1,7 +1,5 @@
 #!/bin/bash
 
-#!/bin/bash
-
 userPubKeyValue=$1
 rhelPrivKeyValue=$2
 rhelPubKeyValue=$3
@@ -17,9 +15,9 @@ EOF
 chown rhel:rhel /home/rhel/.ssh/config
 chmod 400 /home/rhel/.ssh/config
 
-echo $rhelPubKeyValue >> /home/rhel/.ssh/authorized_keys
-echo $rhelPrivKeyValue > /home/rhel/.ssh/id_rsa
-echo $rhelPubKeyValue > /home/rhel/.ssh/id_rsa.pub
+echo "$rhelPubKeyValue" >> /home/rhel/.ssh/authorized_keys
+echo "$rhelPrivKeyValue" | base64 -d > /home/rhel/.ssh/id_rsa
+echo "$rhelPubKeyValue" > /home/rhel/.ssh/id_rsa.pub
 chown rhel:rhel /home/rhel/.ssh/authorized_keys
 chown rhel:rhel /home/rhel/.ssh/id_rsa
 chown rhel:rhel /home/rhel/.ssh/id_rsa.pub
@@ -28,7 +26,7 @@ chmod 644 /home/rhel/.ssh/id_rsa.pub
 
 if [ "$rootPrivKeyValue" != "x" ]
 then
-    nbfound=`ls -d ~/.ssh | wc -l`
+    nbfound=`ls -d /root/.ssh | wc -l`
     if [ "$nbfound" == "0" ]
     then
         mkdir /root/.ssh
@@ -44,9 +42,9 @@ EOF
 
     touch /root/.ssh/authorized_keys
     chmod 600 /root/.ssh/authorized_keys
-    echo $rootPubKeyValue >> /root/.ssh/authorized_keys
-    echo $rootPrivKeyValue > /root/.ssh/id_rsa
-    echo $rootPubKeyValue > /root/.ssh/id_rsa.pub
+    echo "$rootPubKeyValue" >> /root/.ssh/authorized_keys
+    echo "$rootPrivKeyValue" | base64 -d > /root/.ssh/id_rsa
+    echo "$rootPubKeyValue" > /root/.ssh/id_rsa.pub
     chmod 600 /root/.ssh/id_rsa
     chmod 644 /root/.ssh/id_rsa.pub
 fi

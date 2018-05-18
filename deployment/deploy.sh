@@ -206,9 +206,9 @@ else
 	echo "reusing ssh key files available in folder ${tempLocalFolder}"
 fi
 
-rhelPrivKeyValue=`cat ${tempLocalFolder}rhelid_rsa`
+rhelPrivKeyValue=`base64 ${tempLocalFolder}rhelid_rsa`
 rhelPubKeyValue=`cat ${tempLocalFolder}rhelid_rsa.pub`
-rootPrivKeyValue=`cat ${tempLocalFolder}rootid_rsa`
+rootPrivKeyValue=`base64 ${tempLocalFolder}rootid_rsa`
 rootPubKeyValue=`cat ${tempLocalFolder}rootid_rsa.pub`
 
 #Start deployment
