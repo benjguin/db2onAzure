@@ -4,7 +4,7 @@ nbDb2MemberVms=$1
 nbDb2CfVms=$2
 
 scp /tmp/fromg0_root.sh 192.168.0.10:/tmp/
-ssh 192.168.0.10 sudo -n -u root -s bash /tmp/fromg0_root.sh
+ssh 192.168.0.10 sudo -n -u root -s "bash -v /tmp/fromg0_root.sh"
 
 
 db2servers=()
@@ -19,11 +19,11 @@ do
 done
 
 ssh -tt 192.168.0.20 << 'EOSSH'
-sudo -n -u root -s fdisk -l | grep /dev/mapper/3 > /tmp/iscsidisks.txt
+sudo -n -u root bash -c "fdisk -l | grep /dev/mapper/3 > /tmp/iscsidisks.txt"
 EOSSH
 scp 192.168.0.20:/tmp/iscsidisks.txt .
 
-ssh 192.168.0.20 sudo -n -u root -s bash /tmp/fromd0getwwids_root.sh
+ssh 192.168.0.20 sudo -n -u root -s "bash -v /tmp/fromd0getwwids_root.sh"
 scp 192.168.0.20:/tmp/initwwids.sh /tmp/initwwids.sh
 source /tmp/initwwids.sh
 
@@ -35,7 +35,7 @@ sudo sed -i "s/36001405bfc71ff861174f2bbb0bfea37/${wwiddb2log1}/g" /etc/multipat
 sudo sed -i "s/36001405484ba6ab80934f2290a2b579f/${wwiddb2shared}/g" /etc/multipath.conf
 sudo sed -i "s/36001405645b2e72c56142ef97932cb95/${wwiddb2tieb}/g" /etc/multipath.conf
 
-sudo -n -u root -s shutdown -r now
+sudo shutdown -r now
 EOSSH
 done
 
@@ -58,4 +58,8 @@ do
 done
 
 scp /tmp/fromd0_root.sh 192.168.0.20:/tmp/
-ssh 192.168.0.20 sudo -n -u root -s bash /tmp/fromd0_root.sh $nbDb2MemberVms $nbDb2CfVms $wwiddb2data1 $wwiddb2log1 $wwiddb2shared $wwiddb2tieb
+
+ssh -tt 192.168.0.20 << 'EOSSH'
+sudo -n -u root bash -c "bash -v /tmp/fromd0_root.sh $nbDb2MemberVms $nbDb2CfVms $wwiddb2data1 $wwiddb2log1 $wwiddb2shared $wwiddb2tieb"
+EOSSH
+
