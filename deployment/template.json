@@ -63,11 +63,12 @@
         "windowsClientSubnets": ["main", "db2fe"],
         "windowsClientIpAdddressPrefixes": ["192.168.0.4", "192.168.4.4"],
         "commandLogs": "[concat(' \"/tmp/custom-scripts-from-ARM', variables('templateVersion'), '.log\"')]",
-        "comnmandUserAndKeysArgs": "[concat('\"', parameters('userPubKeyValue'), '\" \"', parameters('rhelPrivKeyValue'), '\" \"', parameters('rhelPubKeyValue'), '\" \"', parameters('rootPrivKeyValue'), '\" \"', parameters('rootPubKeyValue'), '\"')]",
-        "commandOnDb2": "[concat('bash -v db2.sh ', variables('comnmandUserAndKeysArgs'), ' \"', parameters('db2bits'), '\"', variables('commandLogs'))]",
-        "commandOnGlusterfs": "[concat('bash -v glusterfs.sh ', variables('comnmandUserAndKeysArgs'), variables('commandLogs'))]",
-        "commandOnWitness": "[concat('bash -v witness.sh ', variables('comnmandUserAndKeysArgs'), variables('commandLogs'))]",
-        "commandOnJumpbox": "[concat('bash -v jumpbox.sh ', variables('comnmandUserAndKeysArgs'), variables('commandLogs'))]"
+        "comnmandUserAndKeysArgsWithRoot": "[concat('\"', parameters('userPubKeyValue'), '\" \"', parameters('rhelPrivKeyValue'), '\" \"', parameters('rhelPubKeyValue'), '\" \"', parameters('rootPrivKeyValue'), '\" \"', parameters('rootPubKeyValue'), '\"')]",
+        "comnmandUserAndKeysArgsNoRoot":   "[concat('\"', parameters('userPubKeyValue'), '\" \"', parameters('rhelPrivKeyValue'), '\" \"', parameters('rhelPubKeyValue'), '\" \"x\" \"x\"')]",
+        "commandOnDb2": "[concat('bash -v db2.sh ', variables('comnmandUserAndKeysArgsWithRoot'), ' \"', parameters('db2bits'), '\"', variables('commandLogs'))]",
+        "commandOnGlusterfs": "[concat('bash -v glusterfs.sh ', variables('comnmandUserAndKeysArgsWithRoot'), variables('commandLogs'))]",
+        "commandOnWitness": "[concat('bash -v witness.sh ', variables('comnmandUserAndKeysArgsWithRoot'), variables('commandLogs'))]",
+        "commandOnJumpbox": "[concat('bash -v jumpbox.sh ', variables('comnmandUserAndKeysArgsNoRoot'), variables('commandLogs'))]"
     },
     "outputs": {
         "nbDb2MemberVms": {
@@ -238,7 +239,6 @@
                             "fileUris": [
                                 "[concat(variables('initScriptsUrl'), 'jumpbox.sh')]",
                                 "[concat(variables('initScriptsUrl'), 'helperscripts/startnetwork_root.sh')]",
-                                "[concat(variables('initScriptsUrl'), 'helperscripts/setsshkeys.sh')]",
                                 "[concat(variables('initScriptsUrl'), 'helperscripts/setsshkeys_root.sh')]"
                             ]
                         },
@@ -393,7 +393,6 @@
                             "fileUris": [
                                 "[concat(variables('initScriptsUrl'), 'db2.sh')]",
                                 "[concat(variables('initScriptsUrl'), 'helperscripts/startnetwork_root.sh')]",
-                                "[concat(variables('initScriptsUrl'), 'helperscripts/setsshkeys.sh')]",
                                 "[concat(variables('initScriptsUrl'), 'helperscripts/setsshkeys_root.sh')]",
                                 "[concat(variables('initScriptsUrl'), 'helperscripts/db2_root.sh')]"
                             ]
@@ -545,7 +544,6 @@
                             "fileUris": [
                                 "[concat(variables('initScriptsUrl'), 'db2.sh')]",
                                 "[concat(variables('initScriptsUrl'), 'helperscripts/startnetwork_root.sh')]",
-                                "[concat(variables('initScriptsUrl'), 'helperscripts/setsshkeys.sh')]",
                                 "[concat(variables('initScriptsUrl'), 'helperscripts/setsshkeys_root.sh')]",
                                 "[concat(variables('initScriptsUrl'), 'helperscripts/db2_root.sh')]"
                             ]
@@ -707,7 +705,6 @@
                             "fileUris": [
                                 "[concat(variables('initScriptsUrl'), 'glusterfs.sh')]",
                                 "[concat(variables('initScriptsUrl'), 'helperscripts/startnetwork_root.sh')]",
-                                "[concat(variables('initScriptsUrl'), 'helperscripts/setsshkeys.sh')]",
                                 "[concat(variables('initScriptsUrl'), 'helperscripts/setsshkeys_root.sh')]",
                                 "[concat(variables('initScriptsUrl'), 'helperscripts/installconfiggluster_root.sh')]"
                             ]
@@ -854,7 +851,6 @@
                             "fileUris": [
                                 "[concat(variables('initScriptsUrl'), 'witness.sh')]",
                                 "[concat(variables('initScriptsUrl'), 'helperscripts/startnetwork_root.sh')]",
-                                "[concat(variables('initScriptsUrl'), 'helperscripts/setsshkeys.sh')]",
                                 "[concat(variables('initScriptsUrl'), 'helperscripts/setsshkeys_root.sh')]"
                             ]
                         },

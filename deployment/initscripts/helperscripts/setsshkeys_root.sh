@@ -1,28 +1,55 @@
 #!/bin/bash
 
-rootPrivKeyValue=$1
-rootPubKeyValue=$2
+#!/bin/bash
+
+userPubKeyValue=$1
+rhelPrivKeyValue=$2
+rhelPubKeyValue=$3
+rootPrivKeyValue=$4
+rootPubKeyValue=$5
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-nbfound=`ls -d ~/.ssh | wc -l`
-if [ "$nbfound" == "0" ]
-then
-    mkdir /root/.ssh
-fi
-
-chmod 700 /root/.ssh
-
-cat > /root/.ssh/config << 'EOF' 
+cat > /home/rhel/.ssh/config << 'EOF' 
 Host *
     StrictHostKeyChecking no
 EOF
-chmod 400 /root/.ssh/config
+chown rhel:rhel /home/rhel/.ssh/config
+chmod 400 /home/rhel/.ssh/config
 
-touch /root/.ssh/authorized_keys
-chmod 600 /root/.ssh/authorized_keys
-echo $rootPubKeyValue >> /root/.ssh/authorized_keys
-echo $rootPrivKeyValue > /root/.ssh/id_rsa
-echo $rootPubKeyValue > /root/.ssh/id_rsa.pub
-chmod 600 /root/.ssh/id_rsa
-chmod 644 /root/.ssh/id_rsa.pub
+echo $rhelPubKeyValue >> /home/rhel/.ssh/authorized_keys
+echo $rhelPrivKeyValue > /home/rhel/.ssh/id_rsa
+echo $rhelPubKeyValue > /home/rhel/.ssh/id_rsa.pub
+chown rhel:rhel /home/rhel/.ssh/authorized_keys
+chown rhel:rhel /home/rhel/.ssh/id_rsa
+chown rhel:rhel /home/rhel/.ssh/id_rsa.pub
+chmod 600 /home/rhel/.ssh/id_rsa
+chmod 644 /home/rhel/.ssh/id_rsa.pub
+
+if [ "$rootPrivKeyValue" != "x" ]
+then
+    nbfound=`ls -d ~/.ssh | wc -l`
+    if [ "$nbfound" == "0" ]
+    then
+        mkdir /root/.ssh
+    fi
+
+    chmod 700 /root/.ssh
+
+    cat > /root/.ssh/config << 'EOF' 
+Host *
+    StrictHostKeyChecking no
+EOF
+    chmod 400 /root/.ssh/config
+
+    touch /root/.ssh/authorized_keys
+    chmod 600 /root/.ssh/authorized_keys
+    echo $rootPubKeyValue >> /root/.ssh/authorized_keys
+    echo $rootPrivKeyValue > /root/.ssh/id_rsa
+    echo $rootPubKeyValue > /root/.ssh/id_rsa.pub
+    chmod 600 /root/.ssh/id_rsa
+    chmod 644 /root/.ssh/id_rsa.pub
+fi
+
+
+
