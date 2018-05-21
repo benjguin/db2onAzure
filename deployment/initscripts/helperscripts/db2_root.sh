@@ -107,10 +107,10 @@ done
 for (( i=0; i<$nbDb2CfVms; i++ ))
 do
     cat << EOF >> /etc/hosts 
-192.168.0.3${i} d${i}
-192.168.1.3${i} d${i}-eth1
-192.168.3.3${i} d${i}-eth2
-192.168.4.3${i} d${i}-eth3
+192.168.0.3${i} cf${i}
+192.168.1.3${i} cf${i}-eth1
+192.168.3.3${i} cf${i}-eth2
+192.168.4.3${i} cf${i}-eth3
 EOF
 done
 

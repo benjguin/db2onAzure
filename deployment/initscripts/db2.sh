@@ -5,11 +5,10 @@ rhelPrivKeyValue=$2
 rhelPubKeyValue=$3
 rootPrivKeyValue=$4
 rootPubKeyValue=$5
-nbDb2MemberVms=$6
-nbDb2CfVms=$7
-db2bits=$8
-
-logPath=$7
+db2bits=$6
+nbDb2MemberVms=$7
+nbDb2CfVms=$8
+logPath=$9
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 

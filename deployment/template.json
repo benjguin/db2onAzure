@@ -48,7 +48,6 @@
         }
     },
     "variables": {
-        "templateVersion": "v180518e",
         "location": "[resourceGroup().location]",
         "linkedTemplatesUrl": "[concat(parameters('gitrawurl'),'deployment/linkedtemplates/')]",
         "initScriptsUrl": "[concat(parameters('gitrawurl'),'deployment/initscripts/')]",
@@ -62,7 +61,7 @@
         "witnessIpAdddressPrefixes": ["192.168.0.6", "192.168.1.6", "192.168.3.6", "192.168.4.6"],
         "windowsClientSubnets": ["main", "db2fe"],
         "windowsClientIpAdddressPrefixes": ["192.168.0.4", "192.168.4.4"],
-        "commandLogs": "[concat(' \"/tmp/custom-scripts-from-ARM', variables('templateVersion'), '.log\"')]",
+        "commandLogs": " \"/tmp/custom-scripts-from-ARM.log\"",
         "comnmandUserAndKeysArgsWithRoot": "[concat('\"', parameters('userPubKeyValue'), '\" \"', parameters('rhelPrivKeyValue'), '\" \"', parameters('rhelPubKeyValue'), '\" \"', parameters('rootPrivKeyValue'), '\" \"', parameters('rootPubKeyValue'), '\"')]",
         "comnmandUserAndKeysArgsNoRoot":   "[concat('\"', parameters('userPubKeyValue'), '\" \"', parameters('rhelPrivKeyValue'), '\" \"', parameters('rhelPubKeyValue'), '\" \"x\" \"x\"')]",
         "commandOnDb2": "[concat('bash -v db2.sh ', variables('comnmandUserAndKeysArgsWithRoot'), ' \"', parameters('db2bits'), '\"', ' \"', parameters('nbDb2MemberVms'), '\"', ' \"', parameters('nbDb2CfVms'), '\"', variables('commandLogs'))]",

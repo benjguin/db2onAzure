@@ -467,3 +467,31 @@ rm -rf /usr/lpp/mmfs
 rm -f /var/adm/ras/mm*
 rm -rf /tmp/mmfs
 ```
+
+## volume create: db2data: failed: /bricks/db2data/db2data is already part of a volume
+
+```
+[root@g0 rhel]# gluster volume create db2data replica 3 g0b:/bricks/db2data/db2data g1b:/bricks/db2data/db2data g2b:/bricks/db2data/db2data
+volume create: db2data: failed: /bricks/db2data/db2data is already part of a volume
+[root@g0 rhel]# ls -als /bricks/db2data/db2data/
+total 0
+0 drwxr-xr-x. 3 root root 24 May 21 09:48 .
+0 drwxr-xr-x. 3 root root 21 May 21 06:30 ..
+0 drw-------. 3 root root 21 May 21 09:48 .glusterfs
+[root@g0 rhel]# rm -rf /bricks/db2data/db2data/.glusterfs/
+[root@g0 rhel]# ls -als /bricks/db2data/db2data/
+total 0
+0 drwxr-xr-x. 2 root root  6 May 21 09:49 .
+0 drwxr-xr-x. 3 root root 21 May 21 06:30 ..
+[root@g0 rhel]# gluster volume create db2data replica 3 g0b:/bricks/db2data/db2data g1b:/bricks/db2data/db2data g2b:/bricks/db2data/db2data
+volume create: db2data: failed: /bricks/db2data/db2data is already part of a volume
+```
+
+<https://stackoverflow.com/questions/39446546/glusterfs-volume-creation-failed-brick-is-already-part-of-volume>
+
+```
+[root@g0 rhel]# gluster volume create db2data replica 3 g0b:/bricks/db2data/db2data g1b:/bricks/db2data/db2data g2b:/bricks/db2data/db2data force
+volume create: db2data: success: please start the volume to access data
+[root@g0 rhel]# gluster volume start db2data
+volume start: db2data: success
+```
