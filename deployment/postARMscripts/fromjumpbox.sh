@@ -53,7 +53,7 @@ EOF
 for db2srv in "${db2servers[@]}"
 do
     scp /tmp/tmpcmd002.sh ${db2srv}:/tmp/
-    ssh $db2srv bash /tmp/tmpcmd001.sh
+    ssh $db2srv bash /tmp/tmpcmd002.sh
 done
 
 # wait for the reboots to finish
@@ -84,6 +84,10 @@ done
 
 scp /tmp/fromd0_root.sh 192.168.0.20:/tmp/
 
-ssh -tt 192.168.0.20 << 'EOSSH'
-sudo -n -u root bash -c "bash -v /tmp/fromd0_root.sh $nbDb2MemberVms $nbDb2CfVms $wwiddb2data1 $wwiddb2log1 $wwiddb2shared $wwiddb2tieb"
-EOSSH
+cat > /tmp/tmpcmd003.sh << 'EOF'
+sudo -n -u root bash -c "bash -v /tmp/fromd0_root.sh \"$nbDb2MemberVms\" \"$nbDb2CfVms\" \"$wwiddb2data1\" \"$wwiddb2log1\" \"$wwiddb2shared\" \"$wwiddb2tieb\""
+EOF
+
+cat /tmp/tmpcmd003.sh
+scp /tmp/tmpcmd003.sh 192.168.0.20:/tmp/
+ssh 192.168.0.20 bash /tmp/tmpcmd003.sh

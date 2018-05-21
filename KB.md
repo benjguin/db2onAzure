@@ -495,3 +495,12 @@ volume create: db2data: success: please start the volume to access data
 [root@g0 rhel]# gluster volume start db2data
 volume start: db2data: success
 ```
+
+## The template deployment ___ is not valid according to the validation procedure
+
+```
+The template deployment 'deployment_180521b' is not valid according to the validation procedure. The tracking id is '6f6a11d7-9298-49e8-b6ce-00f18e973fe6'. See inner errors for details. Please see https://aka.ms/arm-deploy for usage details.
+```
+
+Please check the quota in your subscription. You may run out of cores to deploy the solution.
+Make somn space and retry.
