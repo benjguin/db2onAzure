@@ -184,8 +184,7 @@ modprobe dm-multipath
 service multipathd start 
 chkconfig multipathd on
 multipath -l
-#iscsiadm -m discovery -t sendtargets -p 192.168.1.10
-iscsiadm -m discovery -t sendtargets -p 192.168.1.30
+iscsiadm -m discovery -t sendtargets -p 192.168.1.10
 iscsiadm -m node -L automatic 
 iscsiadm -m session 
 multipath -l

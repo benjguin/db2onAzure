@@ -45,6 +45,7 @@ cat >> /etc/fstab <<EOF
 EOF
 
 #firewall
+#TODO: allow on interface eth1 instead of eth0
 firewall-cmd --zone=public --add-port=24007-24010/tcp --permanent
 firewall-cmd --zone=public --add-port=49152-49160/tcp --permanent
 firewall-cmd --zone=public --add-port=3260/tcp --permanent

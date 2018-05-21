@@ -2,17 +2,6 @@
 
 nbDb2MemberVms=$1
 nbDb2CfVms=$2
-wwiddb2data1=$3
-wwiddb2log1=$4
-wwiddb2shared=$5
-wwiddb2tieb=$6
-
-echo "nbDb2MemberVms = $nbDb2MemberVms"
-echo "nbDb2CfVms = $nbDb2CfVms"
-echo "wwiddb2data1 = $wwiddb2data1"
-echo "wwiddb2log1 = $wwiddb2log1"
-echo "wwiddb2shared = $wwiddb2shared"
-echo "wwiddb2tieb = $wwiddb2tieb"
 
 # write a response file
 
@@ -126,10 +115,10 @@ done
 
 # see <http://www-01.ibm.com/support/docview.wss?uid=swg21969333>
 
-devdb2shared=`ll /dev/mapper | grep $wwiddb2shared | awk '{sub(/\.\./,"/dev"); print $11}'`
-devdb2data1=`ll /dev/mapper | grep $wwiddb2data1 | awk '{sub(/\.\./,"/dev"); print $11}'`
-devdb2log1=`ll /dev/mapper | grep $wwiddb2log1 | awk '{sub(/\.\./,"/dev"); print $11}'`
-devdb2tieb=`ll /dev/mapper | grep $wwiddb2tieb | awk '{sub(/\.\./,"/dev"); print $11}'`
+devdb2data1=`ls -ls /dev/mapper | grep db2data1 | awk '{sub(/\.\./,"/dev"); print $12}'`
+devdb2log1=`ls -ls /dev/mapper | grep db2log1 | awk '{sub(/\.\./,"/dev"); print $12}'`
+devdb2shared=`ls -ls /dev/mapper | grep db2shared | awk '{sub(/\.\./,"/dev"); print $12}'`
+devdb2tieb=`ls -ls /dev/mapper | grep db2tieb | awk '{sub(/\.\./,"/dev"); print $12}'`
 
 cat >> /root/db2server.rsp <<EOF
 

@@ -37,6 +37,8 @@ scp /tmp/tmpcmd001.sh 192.168.0.20:/tmp/
 ssh 192.168.0.20 bash /tmp/tmpcmd001.sh
 scp 192.168.0.20:/tmp/iscsidisks.txt .
 
+scp /tmp/fromd0getwwids_root.sh 192.168.0.20:/tmp/
+
 ssh 192.168.0.20 sudo -n -u root -s "bash -v /tmp/fromd0getwwids_root.sh"
 scp 192.168.0.20:/tmp/initwwids.sh /tmp/initwwids.sh
 source /tmp/initwwids.sh
@@ -85,7 +87,7 @@ done
 scp /tmp/fromd0_root.sh 192.168.0.20:/tmp/
 
 cat > /tmp/tmpcmd003.sh <<EOF
-sudo -n -u root bash -c "bash -v /tmp/fromd0_root.sh \"$nbDb2MemberVms\" \"$nbDb2CfVms\" \"$wwiddb2data1\" \"$wwiddb2log1\" \"$wwiddb2shared\" \"$wwiddb2tieb\""
+sudo -n -u root bash -c "bash -v /tmp/fromd0_root.sh \"$nbDb2MemberVms\" \"$nbDb2CfVms\""
 EOF
 
 cat /tmp/tmpcmd003.sh
