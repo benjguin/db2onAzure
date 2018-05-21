@@ -233,7 +233,8 @@ echo "Starting deployment..."
 		--parameters rhelPrivKeyValue="$rhelPrivKeyValue" rhelPubKeyValue="$rhelPubKeyValue" \
 		--parameters rootPrivKeyValue="$rootPrivKeyValue" rootPubKeyValue="$rootPubKeyValue" \
 		--parameters adwinPassword="$adwinPassword" \
-		--parameters db2bits="$db2bits" gitrawurl="$gitrawurl" jumpboxPublicName="$jumpboxPublicName"
+		--parameters db2bits="$db2bits" gitrawurl="$gitrawurl" jumpboxPublicName="$jumpboxPublicName" \
+		--parameters acceleratedNetworkingOnGlusterfs="$acceleratedNetworkingOnGlusterfs"
 )
 
 if [ $?  == 0 ];

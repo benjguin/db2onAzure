@@ -15,7 +15,7 @@ iscsiadm -m session
 multipath -l
 sleep 5s
 fdisk -l | grep /dev/mapper/3
-ll /dev/mapper
+ls -ls /dev/mapper
 
 wwiddb2data1=`fdisk -l | grep /dev/mapper/3 | grep ': 2' | awk '{sub(/\/dev\/mapper\//,""); sub(/:/,""); print $2}'`
 wwiddb2log1=`fdisk -l | grep /dev/mapper/3 | grep ': 5' | awk '{sub(/\/dev\/mapper\//,""); sub(/:/,""); print $2}'`
