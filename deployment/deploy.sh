@@ -23,8 +23,9 @@ usage() {
     echo "- gitrawurl (-u): folder where this repo is, with a trailing /. E.g.: https://raw.githubusercontent.com/benjguin/db2onAzure/master/"
     echo "- jumpboxPublicName (-j): jumpbox public DNS name. The full DNS name will be <jumpboxPublicName>.<location>.cloudapp.azure.com."
 	echo "- temp local folder (-t) for ssh keys and other files, with a trailing /."
+	echo "- acceleratedNetworkingOnGlusterfs (-a). Should the Gluster FS NICs have accelerated networking enabled? Possible values: true or false."
     echo ""
-    echo "Usage: $0 -s <subscription> -g <resourceGroupName> -l <location> -n <deploymentName> -k pubKeyPath -p adwinPassword -d db2bits -u gitrawurl" 1>&2
+    echo "Usage: $0 -s <subscription> -g <resourceGroupName> -l <location> -n <deploymentName> -k pubKeyPath -p adwinPassword -d db2bits -u gitrawurl -a " 1>&2
     exit 1
 }
 
@@ -37,10 +38,14 @@ declare db2bits=""
 declare gitrawurl=""
 declare jumpboxPublicName=""
 declare tempLocalFolder=""
+declare acceleratedNetworkingOnGlusterfs=""
 
 # Initialize parameters specified from command line
-while getopts ":d:g:j:k:l:n:p:s:t:u:" arg; do
+while getopts ":a:d:g:j:k:l:n:p:s:t:u:" arg; do
 	case "${arg}" in
+		a)
+			acceleratedNetworkingOnGlusterfs=${OPTARG}
+			;;
 		d)
 			db2bits=${OPTARG}
 			;;
@@ -146,6 +151,12 @@ if [ -z "$tempLocalFolder" ]; then
 	echo "$tempLocalFolder not found, defaulting to current folder"
 	tempLocalFolder="${DIR}/"
 fi
+
+if [[ -z "$acceleratedNetworkingOnGlusterfs" ]]; then
+	echo "Assuming you do NOT want accelerated networking on Gluster FS nodes"
+	acceleratedNetworkingOnGlusterfs=false
+fi
+
 
 #templateFile Path - template file to be used
 templateFilePath="${DIR}/template.json"

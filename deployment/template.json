@@ -45,6 +45,10 @@
         "jumpboxPublicName": {
             "defaultValue": "[concat('jbox',uniqueString(resourceGroup().id, 'jumpbox'))]",
             "type": "string"
+        },
+        "acceleratedNetworkingOnGlusterFs": {
+            "defaultValue": false,
+            "type": "bool"
         }
     },
     "variables": {
@@ -277,6 +281,9 @@
                     },
                     "nb_vms": {
                         "value": "[parameters('nbDb2MemberVms')]"
+                    },
+                    "enableAcceleratedNetworking": {
+                        "value": false
                     }
                 }
             },
@@ -434,6 +441,9 @@
                     },
                     "nb_vms": {
                         "value": "[parameters('nbDb2CfVms')]"
+                    },
+                    "enableAcceleratedNetworking": {
+                        "value": false
                     }
                 }
             },
@@ -585,6 +595,9 @@
                     },
                     "nb_vms": {
                         "value": "[parameters('nbGlusterFsVms')]"
+                    },
+                    "enableAcceleratedNetworking": {
+                        "value": "[parameters('acceleratedNetworkingOnGlusterFs')]"
                     }
                 }
             },
@@ -746,6 +759,9 @@
                     },
                     "nb_vms": {
                         "value": 1
+                    },
+                    "enableAcceleratedNetworking": {
+                        "value": false
                     }
                 }
             },
@@ -889,6 +905,9 @@
                     },
                     "nb_vms": {
                         "value": 1
+                    },
+                    "enableAcceleratedNetworking": {
+                        "value": false
                     }
                 }
             },

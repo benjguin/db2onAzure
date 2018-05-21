@@ -20,6 +20,10 @@
         "nb_vms": {
             "defaultValue": 0,
             "type": "int"
+        },
+        "enableAcceleratedNetworking": {
+            "defaultValue": false,
+            "type": "bool"
         }
     },
     "variables": {
@@ -52,7 +56,7 @@
                     "dnsServers": [],
                     "appliedDnsServers": []
                 },
-                "enableAcceleratedNetworking": false,
+                "enableAcceleratedNetworking": "[parameters('enableAcceleratedNetworking')]",
                 "enableIPForwarding": false,
                 "networkSecurityGroup": {
                     "id": "[resourceId(resourceGroup().name, 'Microsoft.Network/networkSecurityGroups', concat(parameters('vnetName'), '_nsg'))]"
