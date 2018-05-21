@@ -7,9 +7,16 @@ wwiddb2log1=$4
 wwiddb2shared=$5
 wwiddb2tieb=$6
 
+echo "nbDb2MemberVms = $nbDb2MemberVms"
+echo "nbDb2CfVms = $nbDb2CfVms"
+echo "wwiddb2data1 = $wwiddb2data1"
+echo "wwiddb2log1 = $wwiddb2log1"
+echo "wwiddb2shared = $wwiddb2shared"
+echo "wwiddb2tieb = $wwiddb2tieb"
+
 # write a response file
 
-cat > /root/db2server.rsp << 'EOF'
+cat > /root/db2server.rsp <<EOF
 *-----------------------------------------------------
 * Generated response file 
 * see fromd0_root.sh script
@@ -62,7 +69,7 @@ EOF
 for (( i=0; i<$nbDb2MemberVms; i++ ))
 do
 j=$(($i+1))
-cat >> /root/db2server.rsp << 'EOF'
+cat >> /root/db2server.rsp <<EOF
 inst1.MEMBER       = host$j
 EOF
 done
@@ -70,12 +77,12 @@ done
 for (( i=0; j<$nbDb2CfVms; i++ ))
 do
 j=$(($nbDb2MemberVms+1+$i))
-cat >> /root/db2server.rsp << 'EOF'
+cat >> /root/db2server.rsp <<EOF
 inst1.PREFERRED_PRIMARY_CF       = host$j
 EOF
 done
 
-cat >> /root/db2server.rsp << 'EOF'
+cat >> /root/db2server.rsp <<EOF
 inst1.TYPE       = dsf
 *  Instance-owning user
 inst1.NAME       = db2sdin1
@@ -100,7 +107,7 @@ EOF
 for (( i=0; i<$nbDb2MemberVms; i++ ))
 do
 j=$(($i+1))
-cat >> /root/db2server.rsp << 'EOF'
+cat >> /root/db2server.rsp <<EOF
 HOST       = host$j
 host1.HOSTNAME       = d$i-eth1
 host1.CLUSTER_INTERCONNECT_NETNAME       = d${i}-eth2
@@ -110,7 +117,7 @@ done
 for (( i=0; j<$nbDb2CfVms; i++ ))
 do
 j=$(($nbDb2MemberVms+1+$i))
-cat >> /root/db2server.rsp << 'EOF'
+cat >> /root/db2server.rsp <<EOF
 HOST       = host$j
 host1.HOSTNAME       = cf$i-eth1
 host1.CLUSTER_INTERCONNECT_NETNAME       = cf${i}-eth2
@@ -124,7 +131,7 @@ devdb2data1=`ll /dev/mapper | grep $wwiddb2data1 | awk '{sub(/\.\./,"/dev"); pri
 devdb2log1=`ll /dev/mapper | grep $wwiddb2log1 | awk '{sub(/\.\./,"/dev"); print $11}'`
 devdb2tieb=`ll /dev/mapper | grep $wwiddb2tieb | awk '{sub(/\.\./,"/dev"); print $11}'`
 
-cat >> /root/db2server.rsp << 'EOF'
+cat >> /root/db2server.rsp <<EOF
 
 
 * ----------------------------------------------

@@ -30,7 +30,7 @@ do
     sudo bash -c "echo \"192.168.0.3${i} cf${i}\" >> /etc/hosts" 
 done
 
-cat > /tmp/tmpcmd001.sh << 'EOF'
+cat > /tmp/tmpcmd001.sh <<EOF
 sudo -n -u root bash -c "fdisk -l | grep /dev/mapper/3 > /tmp/iscsidisks.txt"
 EOF
 scp /tmp/tmpcmd001.sh 192.168.0.20:/tmp/
@@ -41,7 +41,7 @@ ssh 192.168.0.20 sudo -n -u root -s "bash -v /tmp/fromd0getwwids_root.sh"
 scp 192.168.0.20:/tmp/initwwids.sh /tmp/initwwids.sh
 source /tmp/initwwids.sh
 
-cat > /tmp/tmpcmd002.sh << 'EOF'
+cat > /tmp/tmpcmd002.sh <<EOF
 sudo sed -i "s/36001405149ee39c319845aaa710099a7/${wwiddb2data1}/g" /etc/multipath.conf
 sudo sed -i "s/36001405bfc71ff861174f2bbb0bfea37/${wwiddb2log1}/g" /etc/multipath.conf
 sudo sed -i "s/36001405484ba6ab80934f2290a2b579f/${wwiddb2shared}/g" /etc/multipath.conf
@@ -84,7 +84,7 @@ done
 
 scp /tmp/fromd0_root.sh 192.168.0.20:/tmp/
 
-cat > /tmp/tmpcmd003.sh << 'EOF'
+cat > /tmp/tmpcmd003.sh <<EOF
 sudo -n -u root bash -c "bash -v /tmp/fromd0_root.sh \"$nbDb2MemberVms\" \"$nbDb2CfVms\" \"$wwiddb2data1\" \"$wwiddb2log1\" \"$wwiddb2shared\" \"$wwiddb2tieb\""
 EOF
 
