@@ -15,7 +15,7 @@ wwiddb2log1=`fdisk -l | grep /dev/mapper/3 | grep ': 5' | awk '{sub(/\/dev\/mapp
 wwiddb2shared=`fdisk -l | grep /dev/mapper/3 | grep ': 1' | head -1 | awk '{sub(/\/dev\/mapper\//,""); sub(/:/,""); print $2}'`
 wwiddb2tieb=`fdisk -l | grep /dev/mapper/3 | grep ': 1' | tail -1 | awk '{sub(/\/dev\/mapper\//,""); sub(/:/,""); print $2}'`
 
-cat > /tmp/initwwids.sh << 'EOF'
+cat > /tmp/initwwids.sh <<EOF
 wwiddb2data1=$wwiddb2data1
 wwiddb2log1=$wwiddb2log1
 wwiddb2shared=$wwiddb2shared

@@ -8,7 +8,7 @@ rootPubKeyValue=$5
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-cat > /home/rhel/.ssh/config << 'EOF' 
+cat > /home/rhel/.ssh/config << EOF 
 Host *
     StrictHostKeyChecking no
 EOF
@@ -34,7 +34,7 @@ then
 
     chmod 700 /root/.ssh
 
-    cat > /root/.ssh/config << 'EOF' 
+    cat > /root/.ssh/config << EOF 
 Host *
     StrictHostKeyChecking no
 EOF
