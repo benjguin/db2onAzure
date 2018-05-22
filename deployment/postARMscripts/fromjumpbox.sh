@@ -43,11 +43,36 @@ ssh 192.168.0.20 sudo -n -u root -s "bash -v /tmp/fromd0getwwids_root.sh"
 scp 192.168.0.20:/tmp/initwwids.sh /tmp/initwwids.sh
 source /tmp/initwwids.sh
 
-cat > /tmp/tmpcmd002.sh <<EOF
-sudo sed -i "s/36001405149ee39c319845aaa710099a7/${wwiddb2data1}/g" /etc/multipath.conf
-sudo sed -i "s/36001405bfc71ff861174f2bbb0bfea37/${wwiddb2log1}/g" /etc/multipath.conf
-sudo sed -i "s/36001405484ba6ab80934f2290a2b579f/${wwiddb2shared}/g" /etc/multipath.conf
-sudo sed -i "s/36001405645b2e72c56142ef97932cb95/${wwiddb2tieb}/g" /etc/multipath.conf
+cat > /tmp/tmpcmd002x.sh <<EOF
+cat >> /etc/multipath.conf <<EOF2
+multipaths {
+    multipath {
+        wwid  ${wwiddb2data1}
+        alias db2data1  
+    }
+    multipath {
+        wwid  ${wwiddb2log1}
+        alias db2log1  
+    }
+    multipath {
+        wwid  ${wwiddb2shared}
+        alias db2shared
+    }
+    multipath {
+        wwid  ${wwiddb2tieb}
+        alias db2tieb 
+    }
+}
+EOF2
+
+iscsiadm -m discovery -t sendtargets -p 192.168.1.10
+iscsiadm -m node -L automatic 
+iscsiadm -m session 
+multipath -l
+sleep 5s
+fdisk -l | grep /dev/mapper/3
+lsblk
+ls -ls /dev/mapper
 
 sudo shutdown -r now
 EOF

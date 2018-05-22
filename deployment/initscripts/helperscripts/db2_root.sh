@@ -157,43 +157,12 @@ blacklist {
     devnode "^sdc[0-9]*" 
     devnode "^cciss.*" 
 } 
-multipaths {
-    multipath {
-        wwid  36001405149ee39c319845aaa710099a7
-        alias db2data1  
-    }
-    multipath {
-        wwid  36001405bfc71ff861174f2bbb0bfea37
-        alias db2log1  
-    }
-    multipath {
-        wwid  36001405484ba6ab80934f2290a2b579f
-        alias db2shared
-    }
-    multipath {
-        wwid  36001405645b2e72c56142ef97932cb95
-        alias db2tieb 
-    }
-}
 EOF
-# the 4 values 
-# 36001405149ee39c319845aaa710099a7, 36001405bfc71ff861174f2bbb0bfea37, 36001405484ba6ab80934f2290a2b579f and 36001405645b2e72c56142ef97932cb95
-# will be replaced by a script to take the actual values from the GlusterFS cluster
 
 modprobe dm-multipath 
-service multipathd start 
+systemctl start multipathd 
 chkconfig multipathd on
 multipath -l
-iscsiadm -m discovery -t sendtargets -p 192.168.1.10
-iscsiadm -m node -L automatic 
-iscsiadm -m session 
-multipath -l
-fdisk -l | grep /dev/mapper/3
-lsblk #inconsistent paths frmo one machine to another
-sleep 0.5s
-ll /dev/mapper
-
-#fi # }connect to iscsi}
 
 #https://www.ibm.com/support/knowledgecenter/en/SSEPGG_11.1.0/com.ibm.db2.luw.qb.server.doc/doc/t0055374.html?pos=2
 groupadd --gid 341 db2iadm1

@@ -53,25 +53,10 @@ COMP       = SPATIAL_EXTENDER_CLIENT_SUPPORT
 *  Instance properties
 * ----------------------------------------------
 INSTANCE       = inst1
-EOF
-
-for (( i=0; i<$nbDb2MemberVms; i++ ))
-do
-j=$(($i+1))
-cat >> /root/db2server.rsp <<EOF
-inst1.MEMBER       = host$j
-EOF
-done
-
-for (( i=0; j<$nbDb2CfVms; i++ ))
-do
-j=$(($nbDb2MemberVms+1+$i))
-cat >> /root/db2server.rsp <<EOF
-inst1.PREFERRED_PRIMARY_CF       = host$j
-EOF
-done
-
-cat >> /root/db2server.rsp <<EOF
+inst1.MEMBER       = host1
+inst1.MEMBER       = host2
+inst1.PREFERRED_PRIMARY_CF       = host3
+inst1.PREFERRED_SECONDARY_CF       = host4
 inst1.TYPE       = dsf
 *  Instance-owning user
 inst1.NAME       = db2sdin1
@@ -95,21 +80,21 @@ EOF
 
 for (( i=0; i<$nbDb2MemberVms; i++ ))
 do
-j=$(($i+1))
-cat >> /root/db2server.rsp <<EOF
+    j=$(($i+1))
+    cat >> /root/db2server.rsp <<EOF
 HOST       = host$j
-host1.HOSTNAME       = d$i-eth1
-host1.CLUSTER_INTERCONNECT_NETNAME       = d${i}-eth2
+host$j.HOSTNAME       = d$i
+host$j.CLUSTER_INTERCONNECT_NETNAME       = d${i}-eth2
 EOF
 done
 
-for (( i=0; j<$nbDb2CfVms; i++ ))
+for (( i=0; i<$nbDb2CfVms; i++ ))
 do
-j=$(($nbDb2MemberVms+1+$i))
-cat >> /root/db2server.rsp <<EOF
+    j=$(($nbDb2MemberVms+1+$i))
+    cat >> /root/db2server.rsp <<EOF
 HOST       = host$j
-host1.HOSTNAME       = cf$i-eth1
-host1.CLUSTER_INTERCONNECT_NETNAME       = cf${i}-eth2
+host$j.HOSTNAME       = cf$i
+host$j.CLUSTER_INTERCONNECT_NETNAME       = cf${i}-eth2
 EOF
 done
 

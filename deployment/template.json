@@ -46,7 +46,7 @@
             "defaultValue": "[concat('jbox',uniqueString(resourceGroup().id, 'jumpbox'))]",
             "type": "string"
         },
-        "acceleratedNetworkingOnGlusterFs": {
+        "acceleratedNetworkingOnGlusterfs": {
             "defaultValue": false,
             "type": "bool"
         }
@@ -175,7 +175,7 @@
             "scale": null,
             "properties": {
                 "hardwareProfile": {
-                    "vmSize": "Standard_DS2_V2_Promo"
+                    "vmSize": "Standard_DS2_v2"
                 },
                 "storageProfile": {
                     "imageReference": {
@@ -303,7 +303,7 @@
             "scale": null,
             "properties": {
                 "hardwareProfile": {
-                    "vmSize": "Standard_DS3_v2_Promo"
+                    "vmSize": "Standard_DS3_v2"
                 },
                 "storageProfile": {
                     "imageReference": {
@@ -463,7 +463,7 @@
             "scale": null,
             "properties": {
                 "hardwareProfile": {
-                    "vmSize": "Standard_DS3_v2_Promo"
+                    "vmSize": "Standard_DS3_v2"
                 },
                 "storageProfile": {
                     "imageReference": {
@@ -597,7 +597,7 @@
                         "value": "[parameters('nbGlusterFsVms')]"
                     },
                     "enableAcceleratedNetworking": {
-                        "value": "[parameters('acceleratedNetworkingOnGlusterFs')]"
+                        "value": "[parameters('acceleratedNetworkingOnGlusterfs')]"
                     }
                 }
             },
@@ -617,7 +617,7 @@
             "scale": null,
             "properties": {
                 "hardwareProfile": {
-                    "vmSize": "Standard_DS4_v2_Promo"
+                    "vmSize": "Standard_DS4_v2"
                 },
                 "storageProfile": {
                     "imageReference": {
@@ -781,7 +781,7 @@
             "scale": null,
             "properties": {
                 "hardwareProfile": {
-                    "vmSize": "Standard_DS3_v2_Promo"
+                    "vmSize": "Standard_DS3_v2"
                 },
                 "storageProfile": {
                     "imageReference": {
@@ -927,7 +927,7 @@
             "scale": null,
             "properties": {
                 "hardwareProfile": {
-                    "vmSize": "Standard_DS3_v2_Promo"
+                    "vmSize": "Standard_DS3_v2"
                 },
                 "storageProfile": {
                     "imageReference": {
