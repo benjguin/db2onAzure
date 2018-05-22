@@ -43,7 +43,7 @@ ssh 192.168.0.20 sudo -n -u root -s "bash -v /tmp/fromd0getwwids_root.sh"
 scp 192.168.0.20:/tmp/initwwids.sh /tmp/initwwids.sh
 source /tmp/initwwids.sh
 
-cat > /tmp/tmpcmd002x.sh <<EOF
+cat > /tmp/tmpcmd002.sh <<EOF
 cat >> /etc/multipath.conf <<EOF2
 multipaths {
     multipath {

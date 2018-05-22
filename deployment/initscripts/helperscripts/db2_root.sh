@@ -115,7 +115,7 @@ EOF
 done
 
 #format data disk and mount it
-if [ $(ls -ls /dev/sd* | grep '/dev/sdb1' | wc -l) -eq 1 ]
+if [ $(lsblk | grep '/mnt/resource' | grep sdb1 | wc -l) -eq 1 ]
 then
     dataon=sdc
 else
