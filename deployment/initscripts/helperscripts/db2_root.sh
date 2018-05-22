@@ -170,12 +170,17 @@ groupadd --gid 342 db2fadm1
 useradd -g db2iadm1 -m -d /home/db2sdin1 db2sdin1
 useradd -g db2fadm1 -m -d /home/db2sdfe1 db2sdfe1
 
+rm -rf /home/db2sdin1/.ssh/
+rsync -av /home/rhel/.ssh/ /home/db2sdin1/.ssh
+chown -R db2sdin1:db2iadm1 /home/db2sdin1/.ssh
+
 mkdir -p /var/ct/cfg/
 # define the witness. cf https://www.ibm.com/support/knowledgecenter/en/SSEPGG_11.1.0/com.ibm.db2.luw.qb.server.doc/doc/t0061581.html
 cat <<EOF > /var/ct/cfg/netmon.cf
 !IBQPORTONLY !ALL
-!REQD eth0 192.168.1.60
-!REQD eth1 192.168.3.60
+!REQD eth0 192.168.0.60
+!REQD eth1 192.168.1.60
+!REQD eth2 192.168.3.60
 EOF
 
 uname -r

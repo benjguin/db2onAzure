@@ -307,15 +307,6 @@ A diagnostic log has been saved to '/tmp/ibm.db2.cluster.Gixsus'.
 
 ```
 
-## uninstall DB2 before reinstalling it
-
-<https://www.ibm.com/support/knowledgecenter/en/SSEPGG_10.1.0/com.ibm.db2.luw.qb.server.doc/doc/t0007435.html>
-
-```bash
-cd /opt/ibm/db2/V11.1/install/
-./db2_deinstall -a
-```
-
 ## drop the DB2 nodes and recreate them
 
 ```bash
@@ -468,7 +459,148 @@ rm -f /var/adm/ras/mm*
 rm -rf /tmp/mmfs
 ```
 
-## volume create: db2data: failed: /bricks/db2data/db2data is already part of a volume
+## DB2 pureScale - setup thinks we try to install GPFS without DB2
+
+```
+DBI1527E  The installation failed because the response file used
+specified the installation of the IBM General Parallel File System       (GPFS)
+but did not specify DB2 pureScale.  Explanation:   The GPFS license is provided
+for use with the DB2 pureScale Feature only. The DB2 pureScale must be selected
+in the installation response file to install GPFS.  User response:   Edit the
+installation response file to select both components for installation.
+Related information:    Response file installation of DB2 overview (Linux and
+UNIX)    Checking DB2 license compliance
+
+The response file specified "/root/db2server.rsp" is not valid.
+```
+
+uninstall DB2 before reinstalling it
+
+## uninstall DB2 before reinstalling it
+
+<https://www.ibm.com/support/knowledgecenter/en/SSEPGG_10.1.0/com.ibm.db2.luw.qb.server.doc/doc/t0007435.html>
+
+```bash
+#cd /opt/ibm/db2/V11.1/install/
+cd /data1/db2/install/
+./db2_deinstall -a
+```
+
+## DB2 the path specified for the instance shared mount point must be a new path and must not be a sub-directory of an existing GPFS file system.
+
+```
+DBI1191I  db2setup is installing and configuring DB2 according to the
+      response file provided. Please wait.
+
+
+
+DBI1474E  The instance shared mount point path is invalid. Command:
+      .
+
+Explanation:
+
+In the specified command, the path specified for the instance shared
+mount point must be a new path and must not be a sub-directory of an
+existing GPFS file system.
+
+User response:
+
+Rerun the command specifying a new path for the instance shared mount
+point.
+
+
+The response file specified "/root/db2server.rsp" is not valid.
+```
+
+delete partition on the shared disk, change label to bsd for instance
+
+```
+[root@d0 ~]# ll /dev/mapper
+total 0
+crw------- 1 root root 10, 236 May 21 23:14 control
+lrwxrwxrwx 1 root root       7 May 22 10:00 db2data1 -> ../dm-1
+lrwxrwxrwx 1 root root       7 May 22 10:00 db2log1 -> ../dm-0
+lrwxrwxrwx 1 root root       7 May 22 10:00 db2shared -> ../dm-3
+lrwxrwxrwx 1 root root       7 May 22 10:00 db2tieb -> ../dm-2
+
+[root@d0 ~]# parted /dev/dm-3
+GNU Parted 3.1
+Using /dev/dm-3
+Welcome to GNU Parted! Type 'help' to view a list of commands.
+
+(parted) mktable bsd
+Warning: The existing disk label on /dev/dm-3 will be destroyed and all data on this disk will be lost. Do you want to continue?
+Yes/No? Yes
+(parted) p
+Model: Linux device-mapper (multipath) (dm)
+Disk /dev/dm-3: 10.7GB
+Sector size (logical/physical): 512B/512B
+Partition Table: bsd
+Disk Flags:
+
+Number  Start  End  Size  File system  Flags
+
+(parted) print
+Model: Linux device-mapper (multipath) (dm)
+Disk /dev/dm-3: 10.7GB
+Sector size (logical/physical): 512B/512B
+Partition Table: bsd
+Disk Flags:
+
+Number  Start  End  Size  File system  Flags
+
+(parted) q
+Information: You may need to update /etc/fstab.
+
+[root@d0 ~]# cat /etc/fstab
+
+#
+# /etc/fstab
+# Created by anaconda on Thu Sep  7 20:55:27 2017
+#
+# Accessible filesystems, by reference, are maintained under '/dev/disk'
+# See man pages fstab(5), findfs(8), mount(8) and/or blkid(8) for more info
+#
+UUID=3c11fba3-32c7-4d0c-b614-aad5630504eb /                       xfs     defaults        0 0
+UUID=ca02dd2d-a91b-4fb1-b24b-0fb19c18b89d /boot                   xfs     defaults        0 0
+/dev/sdc1   /data1  auto    defaults,nofail 0   0
+/dev/db2fs1          /db2sd_1804a         gpfs       rw,mtime,atime,dev=db2fs1,noauto 0 0
+[root@d0 ~]# ll /dev/db2*
+ls: cannot access /dev/db2*: No such file or directory
+
+[root@d0 ~]# vi /etc/fstab
+[root@d0 ~]# tail /etc/fstab
+#
+# /etc/fstab
+# Created by anaconda on Thu Sep  7 20:55:27 2017
+#
+# Accessible filesystems, by reference, are maintained under '/dev/disk'
+# See man pages fstab(5), findfs(8), mount(8) and/or blkid(8) for more info
+#
+UUID=3c11fba3-32c7-4d0c-b614-aad5630504eb /                       xfs     defaults        0 0
+UUID=ca02dd2d-a91b-4fb1-b24b-0fb19c18b89d /boot                   xfs     defaults        0 0
+/dev/sdc1   /data1  auto    defaults,nofail 0   0
+
+mount -a
+```
+
+also modify /etc/fstab on d1, cf0 and cf1
+
+```
+cat /etc/fstab
+sed -i '$d' /etc/fstab
+cat /etc/fstab
+mount -a
+```
+
+also remove the empty shared mount point on all nodes
+
+```
+rmdir /db2sd_1804a/
+```
+
+
+## Gluster FS - volume create: db2data: failed: /bricks/db2data/db2data is already part of a volume
 
 ```
 [root@g0 rhel]# gluster volume create db2data replica 3 g0b:/bricks/db2data/db2data g1b:/bricks/db2data/db2data g2b:/bricks/db2data/db2data
@@ -496,7 +628,7 @@ volume create: db2data: success: please start the volume to access data
 volume start: db2data: success
 ```
 
-## The template deployment ___ is not valid according to the validation procedure
+## Azure ARM template - The template deployment ___ is not valid according to the validation procedure
 
 ```
 The template deployment 'deployment_180521b' is not valid according to the validation procedure. The tracking id is '6f6a11d7-9298-49e8-b6ce-00f18e973fe6'. See inner errors for details. Please see https://aka.ms/arm-deploy for usage details.
