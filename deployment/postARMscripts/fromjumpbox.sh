@@ -80,7 +80,7 @@ EOF
 for db2srv in "${db2servers[@]}"
 do
     scp /tmp/tmpcmd002.sh ${db2srv}:/tmp/
-    ssh $db2srv bash /tmp/tmpcmd002.sh
+    ssh $db2srv sudo bash /tmp/tmpcmd002.sh
 done
 
 # wait for the reboots to finish
