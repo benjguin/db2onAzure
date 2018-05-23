@@ -30,9 +30,40 @@ do
     sudo bash -c "echo \"192.168.0.3${i} cf${i}\" >> /etc/hosts" 
 done
 
+# wait for the reboots to finish
+for db2srv in "${db2servers[@]}"
+do
+    echo "waiting for $db2srv to reboot"
+    stay="true"
+    tries=0
+    while [ "$stay" == "true" ]
+    do
+        ssh $db2srv whoami
+        x=`ssh $db2srv whoami | grep rhel | wc -l`
+        if [ "$x" == "1" ]
+        then
+            stay="false"
+        else
+            if [ $tries -gt 10 ]
+            then
+                echo "Servers did not reboot correctly"
+                exit 1
+            fi
+            echo "waiting for 30 seconds ..."
+            sleep 30s
+            ((tries=tries+1))
+        fi
+    done
+done
+
 cat > /tmp/tmpcmd001.sh <<EOF
-sudo -n -u root bash -c "fdisk -l | grep /dev/mapper/3 > /tmp/iscsidisks.txt"
+sudo modprobe dm-multipath 
+sudo systemctl start multipathd 
+sudo chkconfig multipathd on
+sudo multipath -l
+sudo fdisk -l | grep /dev/mapper/3 > /tmp/iscsidisks.txt
 EOF
+
 scp /tmp/tmpcmd001.sh 192.168.0.20:/tmp/
 ssh 192.168.0.20 bash /tmp/tmpcmd001.sh
 scp 192.168.0.20:/tmp/iscsidisks.txt .
@@ -73,40 +104,12 @@ sleep 5s
 fdisk -l | grep /dev/mapper/3
 lsblk
 ls -ls /dev/mapper
-
-sudo shutdown -r now
 EOF
 
 for db2srv in "${db2servers[@]}"
 do
     scp /tmp/tmpcmd002.sh ${db2srv}:/tmp/
     ssh $db2srv sudo bash /tmp/tmpcmd002.sh
-done
-
-# wait for the reboots to finish
-for db2srv in "${db2servers[@]}"
-do
-    echo "waiting for $db2srv to reboot"
-    stay="true"
-    tries=0
-    while [ "$stay" == "true" ]
-    do
-        ssh $db2srv whoami
-        x=`ssh $db2srv whoami | grep rhel | wc -l`
-        if [ "$x" == "1" ]
-        then
-            stay="false"
-        else
-            if [ $tries -gt 10 ]
-            then
-                echo "Servers did not reboot correctly"
-                exit 1
-            fi
-            echo "waiting for 30 seconds ..."
-            sleep 30s
-            ((tries=tries+1))
-        fi
-    done
 done
 
 scp /tmp/fromd0_root.sh 192.168.0.20:/tmp/

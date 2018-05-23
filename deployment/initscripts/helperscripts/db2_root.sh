@@ -138,11 +138,6 @@ blacklist {
 } 
 EOF
 
-modprobe dm-multipath 
-systemctl start multipathd 
-chkconfig multipathd on
-multipath -l
-
 #https://www.ibm.com/support/knowledgecenter/en/SSEPGG_11.1.0/com.ibm.db2.luw.qb.server.doc/doc/t0055374.html?pos=2
 groupadd --gid 341 db2iadm1
 groupadd --gid 342 db2fadm1
@@ -169,9 +164,12 @@ grub2-set-default 'Red Hat Enterprise Linux Server (3.10.0-514.el7.x86_64) 7.3 (
 cat /boot/grub2/grubenv |grep saved
 grub2-mkconfig -o /boot/efi/EFI/redhat/grub.cfg
 grub2-mkconfig -o /boot/grub2/grub.cfg
-# NB: a reboot will be required - this will be done after the ARM templates deployment
+# NB: a reboot will be required
 
 sestatus
 sed -i s/SELINUX=enforcing/SELINUX=disabled/ /etc/selinux/config
 setenforce 0
 sestatus
+
+# reboot to get the right kernel
+shutdown -r now

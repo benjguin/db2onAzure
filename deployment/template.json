@@ -55,6 +55,7 @@
         "location": "[resourceGroup().location]",
         "linkedTemplatesUrl": "[concat(parameters('gitrawurl'),'deployment/linkedtemplates/')]",
         "initScriptsUrl": "[concat(parameters('gitrawurl'),'deployment/initscripts/')]",
+        "diagsStorageAccountName": "[concat('storage', uniqueString(resourceGroup().id,0))]",
         "db2MemberSubnets": ["main", "gfsfe", "db2be", "db2fe"],
         "db2MemberIpAdddressPrefixes": ["192.168.0.2", "192.168.1.2", "192.168.3.2", "192.168.4.2"],
         "db2CfSubnets": ["main", "gfsfe", "db2be"],
@@ -85,6 +86,42 @@
     },
     "resources": [
         {
+            "comments": "diagnostics storage'.",
+            "type": "Microsoft.Storage/storageAccounts",
+            "sku": {
+                "name": "Standard_LRS",
+                "tier": "Standard"
+            },        
+            "kind": "StorageV2",
+            "name": "[variables('diagsStorageAccountName')]",
+                "apiVersion": "2017-10-01",
+                "location": "westeurope",
+                "tags": {},
+                "scale": null,
+                "properties": {
+                    "networkAcls": {
+                        "bypass": "AzureServices",
+                        "virtualNetworkRules": [],
+                        "ipRules": [],
+                        "defaultAction": "Allow"
+                    },
+                    "supportsHttpsTrafficOnly": false,
+                    "encryption": {
+                        "services": {
+                            "file": {
+                                "enabled": true
+                            },
+                            "blob": {
+                                "enabled": true
+                            }
+                        },
+                        "keySource": "Microsoft.Storage"
+                    },
+                    "accessTier": "Hot"
+                },
+                "dependsOn": []
+            },
+            {
             "comments": "vNET and NSG",
             "type": "Microsoft.Resources/deployments",
             "name": "vNetAndNsg",
@@ -219,6 +256,12 @@
                             }
                         }
                     ]
+                },
+                "diagnosticsProfile": {
+                    "bootDiagnostics": {
+                        "enabled": true,
+                        "storageUri": "[concat('https://',variables('diagsStorageAccountName'),'.blob.core.windows.net')]"
+                    }
                 }
             },
             "resources": [
@@ -252,7 +295,8 @@
                 }
             ],
             "dependsOn": [
-                "jumpbox0_main"
+                "jumpbox0_main",
+                "[resourceId('Microsoft.Storage/storageAccounts', variables('diagsStorageAccountName'))]"
             ]
         },
         {
@@ -364,6 +408,12 @@
                             }
                         }
                     ]
+                },
+                "diagnosticsProfile": {
+                    "bootDiagnostics": {
+                        "enabled": true,
+                        "storageUri": "[concat('https://',variables('diagsStorageAccountName'),'.blob.core.windows.net')]"
+                    }
                 }
             },
             "resources": [
@@ -401,7 +451,10 @@
                 "name": "db2MemberVmsCopy",
                 "count": "[parameters('nbDb2MemberVms')]"
             },
-            "dependsOn": ["db2MemberNicsCopy"]
+            "dependsOn": [
+                "db2MemberNicsCopy", 
+                "[resourceId('Microsoft.Storage/storageAccounts', variables('diagsStorageAccountName'))]"
+            ]
         },
         {
             "comments": "db2 CF NICs",
@@ -506,6 +559,12 @@
                             }
                         }
                     ]
+                },
+                "diagnosticsProfile": {
+                    "bootDiagnostics": {
+                        "enabled": true,
+                        "storageUri": "[concat('https://',variables('diagsStorageAccountName'),'.blob.core.windows.net')]"
+                    }
                 }
             },
             "resources": [
@@ -543,7 +602,10 @@
                 "name": "db2CfVmsCopy",
                 "count": "[parameters('nbDb2CfVms')]"
             },
-            "dependsOn": ["db2CfNicsCopy"]
+            "dependsOn": [
+                "db2CfNicsCopy",
+                "[resourceId('Microsoft.Storage/storageAccounts', variables('diagsStorageAccountName'))]"
+             ]
         },
         {
             "comments": "Gluster FS member NICs",
@@ -670,6 +732,12 @@
                             }
                         }
                     ]
+                },
+                "diagnosticsProfile": {
+                    "bootDiagnostics": {
+                        "enabled": true,
+                        "storageUri": "[concat('https://',variables('diagsStorageAccountName'),'.blob.core.windows.net')]"
+                    }
                 }
             },
             "resources": [
@@ -707,8 +775,11 @@
                 "name": "glusterFsVmsCopy",
                 "count": "[parameters('nbGlusterFsVms')]"
             },
-            "dependsOn": ["glusterFsNicsCopy"]
-        },
+            "dependsOn": [
+                "glusterFsNicsCopy",
+                "[resourceId('Microsoft.Storage/storageAccounts', variables('diagsStorageAccountName'))]"
+            ]
+       },
         {
             "comments": "witness NICs",
             "type": "Microsoft.Resources/deployments",
@@ -819,6 +890,12 @@
                             }
                         }
                     ]
+                },
+                "diagnosticsProfile": {
+                    "bootDiagnostics": {
+                        "enabled": true,
+                        "storageUri": "[concat('https://',variables('diagsStorageAccountName'),'.blob.core.windows.net')]"
+                    }
                 }
             },
             "resources": [
@@ -852,7 +929,8 @@
                 }
             ],
             "dependsOn": [
-                "witnessNicsCopy"
+                "witnessNicsCopy",
+                "[resourceId('Microsoft.Storage/storageAccounts', variables('diagsStorageAccountName'))]"
             ]
         },
         {
@@ -947,10 +1025,17 @@
                             }
                         }
                     ]
+                },
+                "diagnosticsProfile": {
+                    "bootDiagnostics": {
+                        "enabled": true,
+                        "storageUri": "[concat('https://',variables('diagsStorageAccountName'),'.blob.core.windows.net')]"
+                    }
                 }
             },
             "dependsOn": [
-                "windowsClientNicsCopy"
+                "windowsClientNicsCopy",
+                "[resourceId('Microsoft.Storage/storageAccounts', variables('diagsStorageAccountName'))]"
             ]
         }
     ]
