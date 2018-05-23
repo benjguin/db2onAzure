@@ -56,20 +56,7 @@ do
     done
 done
 
-cat > /tmp/tmpcmd001.sh <<EOF
-sudo modprobe dm-multipath 
-sudo systemctl start multipathd 
-sudo chkconfig multipathd on
-sudo multipath -l
-sudo fdisk -l | grep /dev/mapper/3 > /tmp/iscsidisks.txt
-EOF
-
-scp /tmp/tmpcmd001.sh 192.168.0.20:/tmp/
-ssh 192.168.0.20 bash /tmp/tmpcmd001.sh
-scp 192.168.0.20:/tmp/iscsidisks.txt .
-
 scp /tmp/fromd0getwwids_root.sh 192.168.0.20:/tmp/
-
 ssh 192.168.0.20 sudo -n -u root -s "bash -v /tmp/fromd0getwwids_root.sh"
 scp 192.168.0.20:/tmp/initwwids.sh /tmp/initwwids.sh
 source /tmp/initwwids.sh
@@ -96,12 +83,15 @@ multipaths {
 }
 EOF2
 
+modprobe dm-multipath 
+systemctl start multipathd 
+chkconfig multipathd on
+
 iscsiadm -m discovery -t sendtargets -p 192.168.1.10
 iscsiadm -m node -L automatic 
 iscsiadm -m session 
 multipath -l
 sleep 5s
-fdisk -l | grep /dev/mapper/3
 lsblk
 ls -ls /dev/mapper
 EOF
@@ -109,7 +99,7 @@ EOF
 for db2srv in "${db2servers[@]}"
 do
     scp /tmp/tmpcmd002.sh ${db2srv}:/tmp/
-    ssh $db2srv sudo bash /tmp/tmpcmd002.sh
+    ssh $db2srv sudo bash -v /tmp/tmpcmd002.sh
 done
 
 scp /tmp/fromd0_root.sh 192.168.0.20:/tmp/
