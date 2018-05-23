@@ -319,19 +319,7 @@
                         "caching": "ReadWrite",
                         "managedDisk": {
                         }
-                    },
-                    "dataDisks": [
-                        {
-                            "lun": 0,
-                            "name": "[concat('d', copyIndex(),'_dataDisk_lun0')]",
-                            "createOption": "Empty",
-                            "diskSizeGB": 32,
-                            "caching": "None",
-                            "managedDisk": {
-                                "storageAccountType": "Premium_LRS"
-                            }
-                        }
-                    ]
+                    }
                 },
                 "osProfile": {
                     "computerName": "[concat('d', copyIndex())]",
@@ -479,19 +467,7 @@
                         "caching": "ReadWrite",
                         "managedDisk": {
                         }
-                    },
-                    "dataDisks": [
-                        {
-                            "lun": 0,
-                            "name": "[concat('cf', copyIndex(),'_dataDisk_lun0')]",
-                            "createOption": "Empty",
-                            "diskSizeGB": 32,
-                            "caching": "None",
-                            "managedDisk": {
-                                "storageAccountType": "Premium_LRS"
-                            }
-                        }
-                    ]
+                    }
                 },
                 "osProfile": {
                     "computerName": "[concat('cf', copyIndex())]",

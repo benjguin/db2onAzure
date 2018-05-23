@@ -114,22 +114,7 @@ do
 EOF
 done
 
-#format data disk and mount it
-if [ $(lsblk | grep '/mnt/resource' | grep sdc1 | wc -l) -eq 1 ]
-then
-    dataon=sdb
-else
-    dataon=sdc
-fi
-
-printf "n\np\n1\n\n\np\nw\n" | fdisk /dev/$dataon
-printf "\n" | mkfs -t ext4 /dev/${dataon}1
 mkdir /data1
-data1uuid=`ls -als /dev/disk/by-uuid | grep ${dataon}1 | awk '{print $10}'`
-mount /dev/disk/by-uuid/$data1uuid /data1
-cat >> /etc/fstab << EOF
-/dev/disk/by-uuid/$data1uuid   /data1  auto    defaults,nofail 0   0
-EOF
 
 # setup multipath.conf 
 cat << EOF > /etc/multipath.conf 
