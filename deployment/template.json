@@ -55,7 +55,7 @@
         "location": "[resourceGroup().location]",
         "linkedTemplatesUrl": "[concat(parameters('gitrawurl'),'deployment/linkedtemplates/')]",
         "initScriptsUrl": "[concat(parameters('gitrawurl'),'deployment/initscripts/')]",
-        "diagsStorageAccountName": "[concat('storage', uniqueString(resourceGroup().id,0))]",
+        "diagsStorageAccountName": "[concat('storage', uniqueString(resourceGroup().id,'0'))]",
         "db2MemberSubnets": ["main", "gfsfe", "db2be", "db2fe"],
         "db2MemberIpAdddressPrefixes": ["192.168.0.2", "192.168.1.2", "192.168.3.2", "192.168.4.2"],
         "db2CfSubnets": ["main", "gfsfe", "db2be"],
