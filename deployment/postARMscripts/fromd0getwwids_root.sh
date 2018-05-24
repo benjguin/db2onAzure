@@ -1,5 +1,26 @@
 #!/bin/bash
 
+cat > /etc/multipath.conf <<EOF
+defaults { 
+    user_friendly_names no
+    bindings_file /etc/multipath/bindings4db2
+    max_fds max
+    flush_on_last_del yes 
+    queue_without_daemon no 
+    dev_loss_tmo infinity
+    fast_io_fail_tmo 5
+} 
+blacklist { 
+    wwid "SAdaptec*" 
+    devnode "^hd[a-z]" 
+    devnode "^(ram|raw|loop|fd|md|dm-|sr|scd|st)[0-9]*" 
+    devnode "^sda[0-9]*" 
+    devnode "^sdb[0-9]*" 
+    devnode "^sdc[0-9]*" 
+    devnode "^cciss.*" 
+} 
+EOF
+
 modprobe dm-multipath 
 systemctl start multipathd 
 sleep 1s

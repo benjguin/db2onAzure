@@ -5,14 +5,6 @@ nbDb2CfVms=$2
 
 nbGlusterfsVms=3
 
-scp /tmp/fromg0_root.sh 192.168.0.10:/tmp/
-ssh 192.168.0.10 sudo -n -u root -s "bash -v /tmp/fromg0_root.sh"
-
-for (( i=0; i<$nbGlusterfsVms; i++ ))
-do
-    sudo bash -c "echo \"192.168.0.1${i} g${i}\" >> /etc/hosts" 
-done
-
 sudo bash -c "echo \"192.168.0.5 jumpbox\" >> /etc/hosts" 
 sudo bash -c "echo \"192.168.0.40 wcli0\" >> /etc/hosts" 
 sudo bash -c "echo \"192.168.0.60 witn0\" >> /etc/hosts" 
@@ -28,6 +20,20 @@ for (( i=0; i<$nbDb2MemberVms; i++ ))
 do
     db2servers+=(192.168.0.3$i)
     sudo bash -c "echo \"192.168.0.3${i} cf${i}\" >> /etc/hosts" 
+done
+
+# reboot DB2 servers so that they have the right kernel
+for db2srv in "${db2servers[@]}"
+do
+    ssh $db2srv sudo shutdown -r now
+done
+
+scp /tmp/fromg0_root.sh 192.168.0.10:/tmp/
+ssh 192.168.0.10 sudo -n -u root -s "bash -v /tmp/fromg0_root.sh"
+
+for (( i=0; i<$nbGlusterfsVms; i++ ))
+do
+    sudo bash -c "echo \"192.168.0.1${i} g${i}\" >> /etc/hosts" 
 done
 
 # wait for the reboots to finish
@@ -61,8 +67,30 @@ ssh 192.168.0.20 sudo -n -u root -s "bash -v /tmp/fromd0getwwids_root.sh"
 scp 192.168.0.20:/tmp/initwwids.sh /tmp/initwwids.sh
 source /tmp/initwwids.sh
 
+# setup multipath.conf 
 cat > /tmp/tmpcmd002.sh <<EOF
-cat >> /etc/multipath.conf <<EOF2
+uname -r
+df
+
+cat > /etc/multipath.conf <<EOF2
+defaults { 
+    user_friendly_names no
+    bindings_file /etc/multipath/bindings4db2
+    max_fds max
+    flush_on_last_del yes 
+    queue_without_daemon no 
+    dev_loss_tmo infinity
+    fast_io_fail_tmo 5
+} 
+blacklist { 
+    wwid "SAdaptec*" 
+    devnode "^hd[a-z]" 
+    devnode "^(ram|raw|loop|fd|md|dm-|sr|scd|st)[0-9]*" 
+    devnode "^sda[0-9]*" 
+    devnode "^sdb[0-9]*" 
+    devnode "^sdc[0-9]*" 
+    devnode "^cciss.*" 
+} 
 multipaths {
     multipath {
         wwid  ${wwiddb2data1}

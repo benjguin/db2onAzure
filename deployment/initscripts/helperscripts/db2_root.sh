@@ -116,28 +116,6 @@ done
 
 mkdir /data1
 
-# setup multipath.conf 
-cat << EOF > /etc/multipath.conf 
-defaults { 
-    user_friendly_names no
-    bindings_file /etc/multipath/bindings4db2
-    max_fds max
-    flush_on_last_del yes 
-    queue_without_daemon no 
-    dev_loss_tmo infinity
-    fast_io_fail_tmo 5
-} 
-blacklist { 
-    wwid "SAdaptec*" 
-    devnode "^hd[a-z]" 
-    devnode "^(ram|raw|loop|fd|md|dm-|sr|scd|st)[0-9]*" 
-    devnode "^sda[0-9]*" 
-    devnode "^sdb[0-9]*" 
-    devnode "^sdc[0-9]*" 
-    devnode "^cciss.*" 
-} 
-EOF
-
 #https://www.ibm.com/support/knowledgecenter/en/SSEPGG_11.1.0/com.ibm.db2.luw.qb.server.doc/doc/t0055374.html?pos=2
 groupadd --gid 341 db2iadm1
 groupadd --gid 342 db2fadm1
@@ -164,7 +142,7 @@ grub2-set-default 'Red Hat Enterprise Linux Server (3.10.0-514.el7.x86_64) 7.3 (
 cat /boot/grub2/grubenv |grep saved
 grub2-mkconfig -o /boot/efi/EFI/redhat/grub.cfg
 grub2-mkconfig -o /boot/grub2/grub.cfg
-# NB: a reboot will be required
+# NB: a reboot is required and will be done after ARM deploys
 
 sestatus
 sed -i s/SELINUX=enforcing/SELINUX=disabled/ /etc/selinux/config
@@ -173,6 +151,3 @@ sestatus
 
 uname -r
 df
-
-# reboot to get the right kernel
-shutdown -r now
