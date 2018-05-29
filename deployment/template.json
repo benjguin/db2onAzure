@@ -49,6 +49,17 @@
         "acceleratedNetworkingOnGlusterfs": {
             "defaultValue": false,
             "type": "bool"
+        },
+        "acceleratedNetworkingOnDB2": {
+            "defaultValue": false,
+            "type": "bool"
+        },
+        "acceleratedNetworkingOnOthers": {
+            "defaultValue": false,
+            "type": "bool"
+        },
+        "lisbits": {
+            "type": "string"
         }
     },
     "variables": {
@@ -69,7 +80,7 @@
         "commandLogs": " \"/tmp/custom-scripts-from-ARM.log\"",
         "comnmandUserAndKeysArgsWithRoot": "[concat('\"', parameters('userPubKeyValue'), '\" \"', parameters('rhelPrivKeyValue'), '\" \"', parameters('rhelPubKeyValue'), '\" \"', parameters('rootPrivKeyValue'), '\" \"', parameters('rootPubKeyValue'), '\"')]",
         "comnmandUserAndKeysArgsNoRoot":   "[concat('\"', parameters('userPubKeyValue'), '\" \"', parameters('rhelPrivKeyValue'), '\" \"', parameters('rhelPubKeyValue'), '\" \"x\" \"x\"')]",
-        "commandOnDb2": "[concat('bash -v db2.sh ', variables('comnmandUserAndKeysArgsWithRoot'), ' \"', parameters('db2bits'), '\"', ' \"', parameters('nbDb2MemberVms'), '\"', ' \"', parameters('nbDb2CfVms'), '\"', variables('commandLogs'))]",
+        "commandOnDb2": "[concat('bash -v db2.sh ', variables('comnmandUserAndKeysArgsWithRoot'), ' \"', parameters('db2bits'), '\"', ' \"', parameters('nbDb2MemberVms'), '\"', ' \"', parameters('nbDb2CfVms'), '\"', variables('commandLogs'), ' \"', parameters('acceleratedNetworkingOnDB2'), '\" \"', parameters('lisbits'), '\"')]",
         "commandOnGlusterfs": "[concat('bash -v glusterfs.sh ', variables('comnmandUserAndKeysArgsWithRoot'), variables('commandLogs'))]",
         "commandOnWitness": "[concat('bash -v witness.sh ', variables('comnmandUserAndKeysArgsWithRoot'), variables('commandLogs'))]",
         "commandOnJumpbox": "[concat('bash -v jumpbox.sh ', variables('comnmandUserAndKeysArgsNoRoot'), variables('commandLogs'))]"
@@ -191,7 +202,7 @@
                     "dnsServers": [],
                     "appliedDnsServers": []
                 },
-                "enableAcceleratedNetworking": false,
+                "enableAcceleratedNetworking": "[parameters('acceleratedNetworkingOnOthers')]",
                 "enableIPForwarding": false,
                 "networkSecurityGroup": {
                     "id": "[resourceId('Microsoft.Network/networkSecurityGroups', concat(parameters('vnetName'), '_nsg'))]"
@@ -808,7 +819,7 @@
                         "value": 1
                     },
                     "enableAcceleratedNetworking": {
-                        "value": false
+                        "value": "[parameters('acceleratedNetworkingOnOthers')]"
                     }
                 }
             },
@@ -961,7 +972,8 @@
                         "value": 1
                     },
                     "enableAcceleratedNetworking": {
-                        "value": false
+                        "value": "[parameters('acceleratedNetworkingOnOthers')]"
+
                     }
                 }
             },

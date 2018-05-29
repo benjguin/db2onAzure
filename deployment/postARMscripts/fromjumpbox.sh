@@ -22,7 +22,7 @@ do
     sudo bash -c "echo \"192.168.0.3${i} cf${i}\" >> /etc/hosts" 
 done
 
-# reboot DB2 servers so that they have the right kernel
+# reboot DB2 servers so that they have the  acclerated networking or the right kernel version
 for db2srv in "${db2servers[@]}"
 do
     ssh $db2srv sudo shutdown -r now

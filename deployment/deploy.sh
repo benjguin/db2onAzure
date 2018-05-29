@@ -19,13 +19,16 @@ usage() {
     echo "- deploymentName (-n): Azure region where the resources will be created"
     echo "- pubKeyPath (-k): path to the public key to be used for jumpbox access"
     echo "- adwinPassword (-p): password for the 'adwin' user on Windows boxes"
-    echo "- db2bits (-d): location where the 'v11.1_linuxx64_server_t.tar.gz' file can be downloaded from"
+    echo "- db2bits (-d): location where the 'v11.1_linuxx64_server_t.tar.gz' file can be downloaded from. You should manually download it from https://www.ibm.com/analytics/us/en/db2/trials/ first, then copy it somewhere like on Azure storage."
     echo "- gitrawurl (-u): folder where this repo is, with a trailing /. E.g.: https://raw.githubusercontent.com/benjguin/db2onAzure/master/"
     echo "- jumpboxPublicName (-j): jumpbox public DNS name. The full DNS name will be <jumpboxPublicName>.<location>.cloudapp.azure.com."
 	echo "- temp local folder (-t) for ssh keys and other files, with a trailing /."
-	echo "- acceleratedNetworkingOnGlusterfs (-a). Should the Gluster FS NICs have accelerated networking enabled? Possible values: true or false."
+	echo "- acceleratedNetworkingOnGlusterfs (-ag). Should the Gluster FS NICs have accelerated networking enabled? Possible values: true or false."
+	echo "- acceleratedNetworkingOnDB2 (-ad). Should the DB2 NICs have accelerated networking enabled? Possible values: true or false."
+	echo "- lisbits (-adb). location where the 'lis-rpms-4.2.4-2.tar.gz' file can be downloaded from. You can first manually download it from https://www.microsoft.com/en-us/download/details.aspx?id=55106"
+	echo "- acceleratedNetworkingOnOthers (-ao). Should the other NICs have accelerated networking enabled? Possible values: true or false."
     echo ""
-    echo "Usage: $0 -s <subscription> -g <resourceGroupName> -l <location> -n <deploymentName> -k pubKeyPath -p adwinPassword -d db2bits -u gitrawurl -a " 1>&2
+    echo "Usage: $0 -s <subscription> -g <resourceGroupName> -l <location> -n <deploymentName> -k <pubKeyPath> -p <adwinPassword> -d <db2bits> -u <gitrawurl> -j <jumpboxPublicName> -t <tempLocalFolder> -ag <acceleratedNetworkingOnGlusterfs> -ad <acceleratedNetworkingOnDB2> -ao <acceleratedNetworkingOnOthers> -adb <lisbits>" 1>&2
     exit 1
 }
 
@@ -41,10 +44,19 @@ declare tempLocalFolder=""
 declare acceleratedNetworkingOnGlusterfs=""
 
 # Initialize parameters specified from command line
-while getopts ":a:d:g:j:k:l:n:p:s:t:u:" arg; do
+while getopts ":ag:ad:ao:adb:d:g:j:k:l:n:p:s:t:u:" arg; do
 	case "${arg}" in
-		a)
+		ag)
 			acceleratedNetworkingOnGlusterfs=${OPTARG}
+			;;
+		ad)
+			acceleratedNetworkingOnDB2=${OPTARG}
+			;;
+		ao)
+			acceleratedNetworkingOnOthers=${OPTARG}
+			;;
+		adb)
+			lisbits=${OPTARG}
 			;;
 		d)
 			db2bits=${OPTARG}
@@ -147,7 +159,7 @@ fi
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-if [ -z "$tempLocalFolder" ]; then
+if [[ -z "$tempLocalFolder" ]]; then
 	echo "$tempLocalFolder not found, defaulting to current folder"
 	tempLocalFolder="${DIR}/"
 fi
@@ -157,6 +169,23 @@ if [[ -z "$acceleratedNetworkingOnGlusterfs" ]]; then
 	acceleratedNetworkingOnGlusterfs=false
 fi
 
+if [[ -z "$acceleratedNetworkingOnDB2" ]]; then
+	echo "Assuming you do NOT want accelerated networking on DB2 nodes"
+	acceleratedNetworkingOnDB2=false
+fi
+
+if [[ -z "$acceleratedNetworkingOnOthers" ]]; then
+	echo "Assuming you do NOT want accelerated networking on other nodes"
+	acceleratedNetworkingOnOthers=false
+fi
+
+if [[ -z "$lisbits" ]]; then
+	if [ "$acceleratedNetworkingOnDB2" == "true" ]; then
+		echo "Enter a URL where the 'lis-rpms-4.2.4-2.tar.gz' file can be downloaded from :"
+		read lisbits
+		[[ "${lisbits:?}" ]]
+	fi
+fi
 
 #templateFile Path - template file to be used
 templateFilePath="${DIR}/template.json"
@@ -234,7 +263,10 @@ echo "Starting deployment..."
 		--parameters rootPrivKeyValue="$rootPrivKeyValue" rootPubKeyValue="$rootPubKeyValue" \
 		--parameters adwinPassword="$adwinPassword" \
 		--parameters db2bits="$db2bits" gitrawurl="$gitrawurl" jumpboxPublicName="$jumpboxPublicName" \
-		--parameters acceleratedNetworkingOnGlusterfs="$acceleratedNetworkingOnGlusterfs"
+		--parameters acceleratedNetworkingOnGlusterfs="$acceleratedNetworkingOnGlusterfs" \
+		--parameters acceleratedNetworkingOnDB2="$acceleratedNetworkingOnDB2" \
+		--parameters acceleratedNetworkingOnOthers="$acceleratedNetworkingOnOthers" \
+		--parameters lisbits="$lisbits"
 )
 
 if [ $?  == 0 ];
@@ -254,9 +286,43 @@ jumpbox="${jumpboxPublicName}.${location}.cloudapp.azure.com"
 nbDb2MemberVms=`az group deployment show -g $rg -n "$deploymentName" --query properties.outputs.nbDb2MemberVms.value --output json`
 nbDb2CfVms=`az group deployment show -g $rg -n "$deploymentName" --query properties.outputs.nbDb2CfVms.value --output json`
 
+if [ "$acceleratedNetworkingOnDB2" == "true" ]; then
+	scp -o StrictHostKeyChecking=no ${DIR}/postARMscripts/fromdcfan_root.sh rhel@$jumpbox:/tmp/
+	scp -o StrictHostKeyChecking=no ${DIR}/postARMscripts/fromjumpbox-prepare-an.sh rhel@$jumpbox:/tmp/
+	ssh -o StrictHostKeyChecking=no rhel@$jumpbox "bash -v /tmp/fromjumpbox-prepare-an.sh $nbDb2MemberVms $nbDb2CfVms \"$lisbits\" &> >(tee -a /tmp/postARM-prepare-an.log)"
+
+	db2serverNames=()
+	for (( i=0; i<$nbDb2MemberVms; i++ ))
+	do
+		db2serverNames+=(d$i)
+	done
+	for (( i=0; i<$nbDb2MemberVms; i++ ))
+	do
+		db2serverNames+=(cf$i)
+	done
+
+	for db2vm in db2serverNames
+	do
+		az vm deallocate -g $rg --name ${db2vm}
+		az network nic list -g $rg | grep ${db2vm}_
+		hasdb2fe=`az network nic list -g $rg | grep ${db2vm}_ | grep _db2fe | wc -l`
+
+		az network nic update -g $rg --name ${db2vm}_main   --accelerated-networking true
+		az network nic update -g $rg --name ${db2vm}_db2be  --accelerated-networking true
+		az network nic update -g $rg --name ${db2vm}_gfsfe --accelerated-networking true
+		if [ $hasdb2fe -eq 1 ] 
+		then 
+			az network nic update -g $rg --name ${db2vm}_db2fe  --accelerated-networking true
+		fi
+
+		az network nic list -g $rg | grep ${db2vm}_
+		az vm start -g $rg --name ${db2vm} &
+	done
+fi
+
 scp -o StrictHostKeyChecking=no ${DIR}/postARMscripts/fromjumpbox.sh rhel@$jumpbox:/tmp/
 scp -o StrictHostKeyChecking=no ${DIR}/postARMscripts/fromd0_root.sh rhel@$jumpbox:/tmp/
 scp -o StrictHostKeyChecking=no ${DIR}/postARMscripts/fromd0getwwids_root.sh rhel@$jumpbox:/tmp/
 scp -o StrictHostKeyChecking=no ${DIR}/postARMscripts/fromg0_root.sh rhel@$jumpbox:/tmp/
 
-ssh -o StrictHostKeyChecking=no rhel@$jumpbox "bash -v /tmp/fromjumpbox.sh $nbDb2MemberVms $nbDb2CfVms &> >(tee -a /tmp/postARM.log)"
+ssh -o StrictHostKeyChecking=no rhel@$jumpbox "bash -v /tmp/fromjumpbox.sh $nbDb2MemberVms $nbDb2CfVms $acceleratedNetworkingOnDB2 &> >(tee -a /tmp/postARM.log)"

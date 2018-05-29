@@ -9,6 +9,8 @@ db2bits=$6
 nbDb2MemberVms=$7
 nbDb2CfVms=$8
 logPath=$9
+acceleratedNetworkingOnDB2=${10}
+lisbits=${11}
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
