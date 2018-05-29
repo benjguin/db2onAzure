@@ -289,6 +289,12 @@ jumpbox="${jumpboxPublicName}.${location}.cloudapp.azure.com"
 nbDb2MemberVms=`az group deployment show -g $rg -n "$deploymentName" --query properties.outputs.nbDb2MemberVms.value --output json`
 nbDb2CfVms=`az group deployment show -g $rg -n "$deploymentName" --query properties.outputs.nbDb2CfVms.value --output json`
 
+scp -o StrictHostKeyChecking=no ${DIR}/postARMscripts/wait4reboots_src.sh rhel@$jumpbox:/tmp/
+scp -o StrictHostKeyChecking=no ${DIR}/postARMscripts/fromjumpbox.sh rhel@$jumpbox:/tmp/
+scp -o StrictHostKeyChecking=no ${DIR}/postARMscripts/fromd0_root.sh rhel@$jumpbox:/tmp/
+scp -o StrictHostKeyChecking=no ${DIR}/postARMscripts/fromd0getwwids_root.sh rhel@$jumpbox:/tmp/
+scp -o StrictHostKeyChecking=no ${DIR}/postARMscripts/fromg0_root.sh rhel@$jumpbox:/tmp/
+
 if [ "$acceleratedNetworkingOnDB2" == "true" ]; then
 	scp -o StrictHostKeyChecking=no ${DIR}/postARMscripts/fromdcfan_root.sh rhel@$jumpbox:/tmp/
 	scp -o StrictHostKeyChecking=no ${DIR}/postARMscripts/fromjumpbox-prepare-an.sh rhel@$jumpbox:/tmp/
@@ -304,7 +310,7 @@ if [ "$acceleratedNetworkingOnDB2" == "true" ]; then
 		db2serverNames+=(cf$i)
 	done
 
-	for db2vm in db2serverNames
+	for db2vm in "${db2serverNames[@]}"
 	do
 		az vm deallocate -g $rg --name ${db2vm}
 		az network nic list -g $rg | grep ${db2vm}_
@@ -323,9 +329,6 @@ if [ "$acceleratedNetworkingOnDB2" == "true" ]; then
 	done
 fi
 
-scp -o StrictHostKeyChecking=no ${DIR}/postARMscripts/fromjumpbox.sh rhel@$jumpbox:/tmp/
-scp -o StrictHostKeyChecking=no ${DIR}/postARMscripts/fromd0_root.sh rhel@$jumpbox:/tmp/
-scp -o StrictHostKeyChecking=no ${DIR}/postARMscripts/fromd0getwwids_root.sh rhel@$jumpbox:/tmp/
-scp -o StrictHostKeyChecking=no ${DIR}/postARMscripts/fromg0_root.sh rhel@$jumpbox:/tmp/
+ssh -o StrictHostKeyChecking=no rhel@$jumpbox "bash -v /tmp/fromjumpbox.sh $nbDb2MemberVms $nbDb2CfVms &> >(tee -a /tmp/postARM.log)"
 
-ssh -o StrictHostKeyChecking=no rhel@$jumpbox "bash -v /tmp/fromjumpbox.sh $nbDb2MemberVms $nbDb2CfVms $acceleratedNetworkingOnDB2 &> >(tee -a /tmp/postARM.log)"
+az network nic list -g $rg

@@ -2,7 +2,7 @@
 
 nbDb2MemberVms=$1
 nbDb2CfVms=$2
-lisbits=$4
+lisbits=$3
 
 nbGlusterfsVms=3
 
@@ -24,36 +24,15 @@ do
 done
 
 # wait for the reboots to finish
-for db2srv in "${db2servers[@]}"
-do
-    echo "waiting for $db2srv to reboot"
-    stay="true"
-    tries=0
-    while [ "$stay" == "true" ]
-    do
-        ssh $db2srv whoami
-        x=`ssh $db2srv whoami | grep rhel | wc -l`
-        if [ "$x" == "1" ]
-        then
-            stay="false"
-        else
-            if [ $tries -gt 10 ]
-            then
-                echo "Servers did not reboot correctly"
-                exit 1
-            fi
-            echo "waiting for 30 seconds ..."
-            sleep 30s
-            ((tries=tries+1))
-        fi
-    done
-done
+source /tmp/wait4reboots_src.sh
 
 echo "lisbits=$lisbits"
 
 for db2srv in "${db2servers[@]}"
 do
     scp /tmp/fromdcfan_root.sh ${db2srv}:/tmp/
-    ssh $db2srv sudo bash -v /tmp/fromdcfan_root.sh "$lisbits"
+    ssh $db2srv "sudo bash -v /tmp/fromdcfan_root.sh \"$lisbits\""
 done
 
+# need to wait for the reboot to finsih before deallocating and set accelerated network to true
+source /tmp/wait4reboots_src.sh

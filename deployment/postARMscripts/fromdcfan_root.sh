@@ -17,3 +17,6 @@ curl -o lis-rpms-4.2.4-2.tar.gz "$lisbits"
 tar xvf lis-rpms-4.2.4-2.tar.gz
 cd LISISO
 bash ./install.sh
+
+# need to reboot before deallocating and set accelerated network to true
+shutdown -r now
