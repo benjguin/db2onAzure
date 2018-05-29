@@ -23,10 +23,10 @@ usage() {
     echo "- gitrawurl (-u): folder where this repo is, with a trailing /. E.g.: https://raw.githubusercontent.com/benjguin/db2onAzure/master/"
     echo "- jumpboxPublicName (-j): jumpbox public DNS name. The full DNS name will be <jumpboxPublicName>.<location>.cloudapp.azure.com."
 	echo "- temp local folder (-t) for ssh keys and other files, with a trailing /."
-	echo "- acceleratedNetworkingOnGlusterfs (-ag). Should the Gluster FS NICs have accelerated networking enabled? Possible values: true or false."
-	echo "- acceleratedNetworkingOnDB2 (-ad). Should the DB2 NICs have accelerated networking enabled? Possible values: true or false."
-	echo "- lisbits (-adb). location where the 'lis-rpms-4.2.4-2.tar.gz' file can be downloaded from. You can first manually download it from https://www.microsoft.com/en-us/download/details.aspx?id=55106"
-	echo "- acceleratedNetworkingOnOthers (-ao). Should the other NICs have accelerated networking enabled? Possible values: true or false."
+	echo "- acceleratedNetworkingOnGlusterfs (-a). Should the Gluster FS NICs have accelerated networking enabled? Possible values: true or false."
+	echo "- acceleratedNetworkingOnDB2 (-c). Should the DB2 NICs have accelerated networking enabled? Possible values: true or false."
+	echo "- acceleratedNetworkingOnOthers (-e). Should the other NICs have accelerated networking enabled? Possible values: true or false."
+	echo "- lisbits (-b). location where the 'lis-rpms-4.2.4-2.tar.gz' file can be downloaded from. You can first manually download it from https://www.microsoft.com/en-us/download/details.aspx?id=55106"
     echo ""
     echo "Usage: $0 -s <subscription> -g <resourceGroupName> -l <location> -n <deploymentName> -k <pubKeyPath> -p <adwinPassword> -d <db2bits> -u <gitrawurl> -j <jumpboxPublicName> -t <tempLocalFolder> -ag <acceleratedNetworkingOnGlusterfs> -ad <acceleratedNetworkingOnDB2> -ao <acceleratedNetworkingOnOthers> -adb <lisbits>" 1>&2
     exit 1
@@ -42,20 +42,23 @@ declare gitrawurl=""
 declare jumpboxPublicName=""
 declare tempLocalFolder=""
 declare acceleratedNetworkingOnGlusterfs=""
+declare acceleratedNetworkingOnDB2=""
+declare acceleratedNetworkingOnOthers=""
+declare lisbits=""
 
 # Initialize parameters specified from command line
-while getopts ":ag:ad:ao:adb:d:g:j:k:l:n:p:s:t:u:" arg; do
+while getopts ":a:b:c:d:e:g:j:k:l:n:p:s:t:u:" arg; do
 	case "${arg}" in
-		ag)
+		a)
 			acceleratedNetworkingOnGlusterfs=${OPTARG}
 			;;
-		ad)
+		c)
 			acceleratedNetworkingOnDB2=${OPTARG}
 			;;
-		ao)
+		e)
 			acceleratedNetworkingOnOthers=${OPTARG}
 			;;
-		adb)
+		b)
 			lisbits=${OPTARG}
 			;;
 		d)

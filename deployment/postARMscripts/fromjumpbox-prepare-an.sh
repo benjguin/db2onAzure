@@ -49,9 +49,11 @@ do
     done
 done
 
+echo "lisbits=$lisbits"
+
 for db2srv in "${db2servers[@]}"
 do
     scp /tmp/fromdcfan_root.sh ${db2srv}:/tmp/
-    ssh $db2srv sudo bash -v /tmp/fromdcfan_root.sh
+    ssh $db2srv sudo bash -v /tmp/fromdcfan_root.sh "$lisbits"
 done
 
