@@ -312,6 +312,7 @@ if [ "$acceleratedNetworkingOnDB2" == "true" ]; then
 
 	for db2vm in "${db2serverNames[@]}"
 	do
+		echo "adding accelerated network to ${db2vm}"
 		az vm deallocate -g $rg --name ${db2vm}
 		az network nic list -g $rg | grep ${db2vm}_
 		hasdb2fe=`az network nic list -g $rg | grep ${db2vm}_ | grep _db2fe | wc -l`
