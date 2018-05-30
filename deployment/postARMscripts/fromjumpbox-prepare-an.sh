@@ -12,7 +12,7 @@ do
     db2servers+=(192.168.0.2$i)
 done
 
-for (( i=0; i<$nbDb2MemberVms; i++ ))
+for (( i=0; i<$nbDb2CfVms; i++ ))
 do
     db2servers+=(192.168.0.3$i)
 done

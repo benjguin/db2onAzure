@@ -305,7 +305,7 @@ if [ "$acceleratedNetworkingOnDB2" == "true" ]; then
 	do
 		db2serverNames+=(d$i)
 	done
-	for (( i=0; i<$nbDb2MemberVms; i++ ))
+	for (( i=0; i<$nbDb2CfVms; i++ ))
 	do
 		db2serverNames+=(cf$i)
 	done
@@ -319,16 +319,16 @@ if [ "$acceleratedNetworkingOnDB2" == "true" ]; then
 		az network nic update -g $rg --name ${db2vm}_main   --accelerated-networking true
 		az network nic update -g $rg --name ${db2vm}_db2be  --accelerated-networking true
 		az network nic update -g $rg --name ${db2vm}_gfsfe --accelerated-networking true
-		if [ $hasdb2fe -eq 1 ] 
+		if [ "$hasdb2fe" == "1" ]
 		then 
-			az network nic update -g $rg --name ${db2vm}_db2fe  --accelerated-networking true
+			az network nic update -g $rg --name ${db2vm}_db2fe --accelerated-networking true
 		fi
 
 		az network nic list -g $rg | grep ${db2vm}_
-		az vm start -g $rg --name ${db2vm} &
+		az vm start -g $rg --name ${db2vm}
 	done
 fi
 
-ssh -o StrictHostKeyChecking=no rhel@$jumpbox "bash -v /tmp/fromjumpbox.sh $nbDb2MemberVms $nbDb2CfVms &> >(tee -a /tmp/postARM.log)"
+ssh -o StrictHostKeyChecking=no rhel@$jumpbox "bash -v /tmp/fromjumpbox.sh $nbDb2MemberVms $nbDb2CfVms $acceleratedNetworkingOnDB2 &> >(tee -a /tmp/postARM.log)"
 
 az network nic list -g $rg
