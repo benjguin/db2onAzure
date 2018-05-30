@@ -300,6 +300,8 @@ if [ "$acceleratedNetworkingOnDB2" == "true" ]; then
 	scp -o StrictHostKeyChecking=no ${DIR}/postARMscripts/fromjumpbox-prepare-an.sh rhel@$jumpbox:/tmp/
 	ssh -o StrictHostKeyChecking=no rhel@$jumpbox "bash -v /tmp/fromjumpbox-prepare-an.sh $nbDb2MemberVms $nbDb2CfVms \"$lisbits\" &> >(tee -a /tmp/postARM-prepare-an.log)"
 
+	sleep 10s
+
 	db2serverNames=()
 	for (( i=0; i<$nbDb2MemberVms; i++ ))
 	do
