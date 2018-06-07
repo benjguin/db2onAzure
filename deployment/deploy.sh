@@ -27,8 +27,10 @@ usage() {
 	echo "- acceleratedNetworkingOnDB2 (-c). Should the DB2 NICs have accelerated networking enabled? Possible values: true or false."
 	echo "- acceleratedNetworkingOnOthers (-e). Should the other NICs have accelerated networking enabled? Possible values: true or false."
 	echo "- lisbits (-b). location where the 'lis-rpms-4.2.4-2.tar.gz' file can be downloaded from. You can first manually download it from https://www.microsoft.com/en-us/download/details.aspx?id=55106"
+	echo "- nbDb2MemberVms (-y) - nb of DB2 member VMs - default is 2"
+	echo "- nbDb2CfVms (-z) - nb of DB2 caching facilities (CF) VMs - default is 2"
     echo ""
-    echo "Usage: $0 -s <subscription> -g <resourceGroupName> -l <location> -n <deploymentName> -k <pubKeyPath> -p <adwinPassword> -d <db2bits> -u <gitrawurl> -j <jumpboxPublicName> -t <tempLocalFolder> -ag <acceleratedNetworkingOnGlusterfs> -ad <acceleratedNetworkingOnDB2> -ao <acceleratedNetworkingOnOthers> -adb <lisbits>" 1>&2
+    echo "Usage: $0 -s <subscription> -g <resourceGroupName> -l <location> -n <deploymentName> -k <pubKeyPath> -p <adwinPassword> -d <db2bits> -u <gitrawurl> -j <jumpboxPublicName> -t <tempLocalFolder> -ag <acceleratedNetworkingOnGlusterfs> -ad <acceleratedNetworkingOnDB2> -ao <acceleratedNetworkingOnOthers> -adb <lisbits> -y nbDb2MemberVms -z nbDb2CfVms " 1>&2
     exit 1
 }
 
@@ -45,9 +47,11 @@ declare acceleratedNetworkingOnGlusterfs=""
 declare acceleratedNetworkingOnDB2=""
 declare acceleratedNetworkingOnOthers=""
 declare lisbits=""
+declare nbDb2MemberVms=2
+declare nbDb2CfVms=2
 
 # Initialize parameters specified from command line
-while getopts ":a:b:c:d:e:g:j:k:l:n:p:s:t:u:" arg; do
+while getopts ":a:b:c:d:e:g:j:k:l:n:p:s:t:u:y:z:" arg; do
 	case "${arg}" in
 		a)
 			acceleratedNetworkingOnGlusterfs=${OPTARG}
@@ -91,6 +95,13 @@ while getopts ":a:b:c:d:e:g:j:k:l:n:p:s:t:u:" arg; do
 		u)
 			gitrawurl=${OPTARG}
 			;;
+		y)
+			nbDb2MemberVms=${OPTARG}
+			;;
+		z)
+			nbDb2CfVms=${OPTARG}
+			;;
+
 		esac
 done
 shift $((OPTIND-1))
@@ -269,6 +280,7 @@ echo "Starting deployment..."
 		--parameters acceleratedNetworkingOnGlusterfs="$acceleratedNetworkingOnGlusterfs" \
 		--parameters acceleratedNetworkingOnDB2="$acceleratedNetworkingOnDB2" \
 		--parameters acceleratedNetworkingOnOthers="$acceleratedNetworkingOnOthers" \
+		--parameters nbDb2MemberVms="$nbDb2MemberVms" nbDb2CfVms="$nbDb2CfVms" \
 		--parameters lisbits="$lisbits"
 )
 
@@ -300,7 +312,8 @@ if [ "$acceleratedNetworkingOnDB2" == "true" ]; then
 	scp -o StrictHostKeyChecking=no ${DIR}/postARMscripts/fromjumpbox-prepare-an.sh rhel@$jumpbox:/tmp/
 	ssh -o StrictHostKeyChecking=no rhel@$jumpbox "bash -v /tmp/fromjumpbox-prepare-an.sh $nbDb2MemberVms $nbDb2CfVms \"$lisbits\" &> >(tee -a /tmp/postARM-prepare-an.log)"
 
-	sleep 10s
+	# test with a long wait time to see if the loop stops at the first CF or not, in that case
+	sleep 5m
 
 	db2serverNames=()
 	for (( i=0; i<$nbDb2MemberVms; i++ ))
@@ -316,21 +329,34 @@ if [ "$acceleratedNetworkingOnDB2" == "true" ]; then
 	do
 		echo "adding accelerated network to ${db2vm}"
 		az vm deallocate -g $rg --name ${db2vm}
+		echo "dbg-180607a ${db2vm}"
 		az network nic list -g $rg | grep ${db2vm}_
+		echo "dbg-180607b ${db2vm}"
 		hasdb2fe=`az network nic list -g $rg | grep ${db2vm}_ | grep _db2fe | wc -l`
+		echo "dbg-180607c [${db2vm}] [${hasdb2fe}]"
 
 		az network nic update -g $rg --name ${db2vm}_main   --accelerated-networking true
+		echo "dbg-180607d [${db2vm}] [${hasdb2fe}]"
 		az network nic update -g $rg --name ${db2vm}_db2be  --accelerated-networking true
+		echo "dbg-180607e [${db2vm}] [${hasdb2fe}]"
 		az network nic update -g $rg --name ${db2vm}_gfsfe --accelerated-networking true
+		echo "dbg-180607f [${db2vm}] [${hasdb2fe}]"
 		if [ "$hasdb2fe" == "1" ]
 		then 
+			echo "dbg-180607g [${db2vm}] [${hasdb2fe}]"
 			az network nic update -g $rg --name ${db2vm}_db2fe --accelerated-networking true
+			echo "dbg-180607h [${db2vm}] [${hasdb2fe}]"
 		fi
+		echo "dbg-180607i [${db2vm}] [${hasdb2fe}]"
 
 		az network nic list -g $rg | grep ${db2vm}_
+		echo "dbg-180607j [${db2vm}] [${hasdb2fe}]"
 		az vm start -g $rg --name ${db2vm}
+		echo "dbg-180607k [${db2vm}] [${hasdb2fe}]"
 	done
+	echo "dbg-180607l"
 fi
+echo "dbg-180607m"
 
 ssh -o StrictHostKeyChecking=no rhel@$jumpbox "bash -v /tmp/fromjumpbox.sh $nbDb2MemberVms $nbDb2CfVms $acceleratedNetworkingOnDB2 &> >(tee -a /tmp/postARM.log)"
 

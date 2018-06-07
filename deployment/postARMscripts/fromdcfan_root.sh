@@ -10,12 +10,7 @@ uname -r
 yum remove -y kernel-3.10.0-514.28.1.el7.x86_64
 rpm -q kernel
 
-mkdir /tmp/lis
-cd /tmp/lis
-echo "lisbits=$lisbits"
-curl -o lis-rpms-4.2.4-2.tar.gz "$lisbits"
-tar xvf lis-rpms-4.2.4-2.tar.gz
-cd LISISO
+cd /tmp/lis/LISISO
 bash ./install.sh
 
 # need to reboot before deallocating and set accelerated network to true
