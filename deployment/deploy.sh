@@ -21,7 +21,7 @@ usage() {
 	echo "- acceleratedNetworkingOnOthers (-e). Should the other NICs have accelerated networking enabled? Possible values: true or false."
 	echo "- lisbits (-b). location where the 'lis-rpms-4.2.4-2.tar.gz' file can be downloaded from. You can first manually download it from https://www.microsoft.com/en-us/download/details.aspx?id=55106"
 	echo "- nbDb2MemberVms (-y) - nb of DB2 member VMs - default is 2"
-	echo "- nbDb2CfVms (-z) - nb of DB2 caching facilities (CF) VMs - default is 2"
+	echo "- nbDb2CfVms (-z) - nb of DB2 caching facilities (CF) VMs - default and recommended value is 2 (the deployment was not tested with less and may not be supported with 3 or more as there is only 1 primary CF role and 1 secondary CF role)"
     echo ""
     echo "Usage: $0 -s <subscription> -g <resourceGroupName> -l <location> -n <deploymentName> -k <pubKeyPath> -p <adwinPassword> -d <db2bits> -u <gitrawurl> -j <jumpboxPublicName> -t <tempLocalFolder> -ag <acceleratedNetworkingOnGlusterfs> -ad <acceleratedNetworkingOnDB2> -ao <acceleratedNetworkingOnOthers> -adb <lisbits> -y nbDb2MemberVms -z nbDb2CfVms " 1>&2
     exit 1
@@ -255,22 +255,19 @@ rootPubKeyValue=`cat ${tempLocalFolder}rootid_rsa.pub`
 
 #Start deployment
 echo "Starting deployment..."
-(
-	set -x
 
-	az group deployment create --name "$deploymentName" --resource-group "$rg" --template-file "$templateFilePath" \
-        --parameters "@${parametersFilePath}" \
-        --parameters userPubKeyValue="$pubKeyValue" \
-		--parameters rhelPrivKeyValue="$rhelPrivKeyValue" rhelPubKeyValue="$rhelPubKeyValue" \
-		--parameters rootPrivKeyValue="$rootPrivKeyValue" rootPubKeyValue="$rootPubKeyValue" \
-		--parameters adwinPassword="$adwinPassword" \
-		--parameters db2bits="$db2bits" gitrawurl="$gitrawurl" jumpboxPublicName="$jumpboxPublicName" \
-		--parameters acceleratedNetworkingOnGlusterfs="$acceleratedNetworkingOnGlusterfs" \
-		--parameters acceleratedNetworkingOnDB2="$acceleratedNetworkingOnDB2" \
-		--parameters acceleratedNetworkingOnOthers="$acceleratedNetworkingOnOthers" \
-		--parameters nbDb2MemberVms="$nbDb2MemberVms" nbDb2CfVms="$nbDb2CfVms" \
-		--parameters lisbits="$lisbits"
-)
+az group deployment create --name "$deploymentName" --resource-group "$rg" --template-file "$templateFilePath" \
+	--parameters "@${parametersFilePath}" \
+	--parameters userPubKeyValue="$pubKeyValue" \
+	--parameters rhelPrivKeyValue="$rhelPrivKeyValue" rhelPubKeyValue="$rhelPubKeyValue" \
+	--parameters rootPrivKeyValue="$rootPrivKeyValue" rootPubKeyValue="$rootPubKeyValue" \
+	--parameters adwinPassword="$adwinPassword" \
+	--parameters db2bits="$db2bits" gitrawurl="$gitrawurl" jumpboxPublicName="$jumpboxPublicName" \
+	--parameters acceleratedNetworkingOnGlusterfs="$acceleratedNetworkingOnGlusterfs" \
+	--parameters acceleratedNetworkingOnDB2="$acceleratedNetworkingOnDB2" \
+	--parameters acceleratedNetworkingOnOthers="$acceleratedNetworkingOnOthers" \
+	--parameters nbDb2MemberVms="$nbDb2MemberVms" nbDb2CfVms="$nbDb2CfVms" \
+	--parameters lisbits="$lisbits"
 
 if [ $?  == 0 ];
 then
