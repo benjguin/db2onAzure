@@ -2,6 +2,7 @@
 
 nbDb2MemberVms=$1
 nbDb2CfVms=$2
+acceleratedNetworkingOnDB2=$3
 
 nbGlusterfsVms=3
 
@@ -16,17 +17,20 @@ do
     sudo bash -c "echo \"192.168.0.2${i} d${i}\" >> /etc/hosts" 
 done
 
-for (( i=0; i<$nbDb2MemberVms; i++ ))
+for (( i=0; i<$nbDb2CfVms; i++ ))
 do
     db2servers+=(192.168.0.3$i)
     sudo bash -c "echo \"192.168.0.3${i} cf${i}\" >> /etc/hosts" 
 done
 
-# reboot DB2 servers so that they have the right kernel
-for db2srv in "${db2servers[@]}"
-do
-    ssh $db2srv sudo shutdown -r now
-done
+if [ "$acceleratedNetworkingOnDB2" == "false" ]
+then
+    # reboot DB2 servers so that they have the right kernel version
+    for db2srv in "${db2servers[@]}"
+    do
+        ssh $db2srv sudo shutdown -r now
+    done
+fi
 
 scp /tmp/fromg0_root.sh 192.168.0.10:/tmp/
 ssh 192.168.0.10 sudo -n -u root -s "bash -v /tmp/fromg0_root.sh"
@@ -36,31 +40,8 @@ do
     sudo bash -c "echo \"192.168.0.1${i} g${i}\" >> /etc/hosts" 
 done
 
-# wait for the reboots to finish
-for db2srv in "${db2servers[@]}"
-do
-    echo "waiting for $db2srv to reboot"
-    stay="true"
-    tries=0
-    while [ "$stay" == "true" ]
-    do
-        ssh $db2srv whoami
-        x=`ssh $db2srv whoami | grep rhel | wc -l`
-        if [ "$x" == "1" ]
-        then
-            stay="false"
-        else
-            if [ $tries -gt 10 ]
-            then
-                echo "Servers did not reboot correctly"
-                exit 1
-            fi
-            echo "waiting for 30 seconds ..."
-            sleep 30s
-            ((tries=tries+1))
-        fi
-    done
-done
+# wait for the reboots or starts to finish
+source /tmp/wait4reboots_src.sh
 
 scp /tmp/fromd0getwwids_root.sh 192.168.0.20:/tmp/
 ssh 192.168.0.20 sudo -n -u root -s "bash -v /tmp/fromd0getwwids_root.sh"

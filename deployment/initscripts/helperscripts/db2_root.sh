@@ -3,6 +3,16 @@
 db2bits=$1
 nbDb2MemberVms=$2
 nbDb2CfVms=$3
+acceleratedNetworkingOnDB2=$4
+lisbits=$5
+
+echo "---------------------------------------------------"
+echo "db2bits=[$db2bits]"
+echo "nbDb2MemberVms=[$nbDb2MemberVms]"
+echo "nbDb2CfVms=[$nbDb2CfVms]"
+echo "acceleratedNetworkingOnDB2=[$acceleratedNetworkingOnDB2]"
+echo "lisbits=[$lisbits]"
+echo "---------------------------------------------------"
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
@@ -151,3 +161,11 @@ sestatus
 
 uname -r
 df
+
+if [ `echo "$acceleratedNetworkingOnDB2" | awk '{print tolower($0)}'` == "true" ]
+then
+    mkdir /tmp/lis
+    cd /tmp/lis
+    curl -o lis-rpms-4.2.4-2.tar.gz "$lisbits"
+    tar xvf lis-rpms-4.2.4-2.tar.gz
+fi
