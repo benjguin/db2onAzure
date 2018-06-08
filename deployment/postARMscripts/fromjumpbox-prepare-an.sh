@@ -26,13 +26,11 @@ done
 # wait for the reboots to finish
 source /tmp/wait4reboots_src.sh
 
-echo "lisbits=$lisbits"
-
 for db2srv in "${db2servers[@]}"
 do
     scp /tmp/fromdcfan_root.sh ${db2srv}:/tmp/
-    ssh $db2srv "sudo bash -v /tmp/fromdcfan_root.sh \"$lisbits\""
+    ssh $db2srv "sudo bash -v /tmp/fromdcfan_root.sh"
 done
 
-# need to wait for the reboot to finsih before deallocating and set accelerated network to true
+# need to wait for the reboot to finish before deallocating and set accelerated network to true
 source /tmp/wait4reboots_src.sh

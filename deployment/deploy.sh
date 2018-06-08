@@ -312,7 +312,11 @@ if [ "$acceleratedNetworkingOnDB2" == "true" ]; then
 	scp -o StrictHostKeyChecking=no ${DIR}/postARMscripts/fromjumpbox-prepare-an.sh rhel@$jumpbox:/tmp/
 	ssh -o StrictHostKeyChecking=no rhel@$jumpbox "bash -v /tmp/fromjumpbox-prepare-an.sh $nbDb2MemberVms $nbDb2CfVms \"$lisbits\" &> >(tee -a /tmp/postARM-prepare-an.log)"
 
-	# test with a long wait time to see if the loop stops at the first CF or not, in that case
+	# test with a long wait time to see if the loop stops at the first CF or not
+	# with 10s, 2 d vms, 2 cf vms, the loop then stops at cf0
+	# with 5m, 3 d VMs, 4 cf vms, the loop doesn't stop
+	# TODO: find what makes it stop and wait for the issue to be solved instead of waiting for 5 minutes which is less efficient and may be random
+	# 	this could be waiting for a sign in the VM that its boot process is finished
 	sleep 5m
 
 	db2serverNames=()
@@ -325,38 +329,52 @@ if [ "$acceleratedNetworkingOnDB2" == "true" ]; then
 		db2serverNames+=(cf$i)
 	done
 
+	# deallocate in parallel
 	for db2vm in "${db2serverNames[@]}"
 	do
-		echo "adding accelerated network to ${db2vm}"
-		az vm deallocate -g $rg --name ${db2vm}
-		echo "dbg-180607a ${db2vm}"
+		az vm deallocate -g $rg --name ${db2vm} &
+	done
+
+	for db2vm in "${db2serverNames[@]}"
+	do
+		echo "adding accelerated network to ${db2vm}. First wait for deallocation to finish."
+		stay="true"
+		tries=0
+		while [ "$stay" == "true" ]
+		do
+			x1=`az vm get-instance-view -g $rg --name ${db2vm} --output json | grep PowerState`
+			echo "${db2vm} power state: $x1"
+			x=`echo $x1 | grep deallocated | wc -l`
+			if [ "$x" == "1" ]
+			then
+				stay="false"
+			else
+				if [ $tries -gt 10 ]
+				then
+					echo "Servers did not deallocate correctly"
+					exit 1
+				fi
+				echo "waiting for 30 seconds ..."
+				sleep 30s
+				((tries=tries+1))
+			fi
+		done
+
 		az network nic list -g $rg | grep ${db2vm}_
-		echo "dbg-180607b ${db2vm}"
 		hasdb2fe=`az network nic list -g $rg | grep ${db2vm}_ | grep _db2fe | wc -l`
-		echo "dbg-180607c [${db2vm}] [${hasdb2fe}]"
 
 		az network nic update -g $rg --name ${db2vm}_main   --accelerated-networking true
-		echo "dbg-180607d [${db2vm}] [${hasdb2fe}]"
 		az network nic update -g $rg --name ${db2vm}_db2be  --accelerated-networking true
-		echo "dbg-180607e [${db2vm}] [${hasdb2fe}]"
 		az network nic update -g $rg --name ${db2vm}_gfsfe --accelerated-networking true
-		echo "dbg-180607f [${db2vm}] [${hasdb2fe}]"
 		if [ "$hasdb2fe" == "1" ]
 		then 
-			echo "dbg-180607g [${db2vm}] [${hasdb2fe}]"
 			az network nic update -g $rg --name ${db2vm}_db2fe --accelerated-networking true
-			echo "dbg-180607h [${db2vm}] [${hasdb2fe}]"
 		fi
-		echo "dbg-180607i [${db2vm}] [${hasdb2fe}]"
 
 		az network nic list -g $rg | grep ${db2vm}_
-		echo "dbg-180607j [${db2vm}] [${hasdb2fe}]"
 		az vm start -g $rg --name ${db2vm}
-		echo "dbg-180607k [${db2vm}] [${hasdb2fe}]"
 	done
-	echo "dbg-180607l"
 fi
-echo "dbg-180607m"
 
 ssh -o StrictHostKeyChecking=no rhel@$jumpbox "bash -v /tmp/fromjumpbox.sh $nbDb2MemberVms $nbDb2CfVms $acceleratedNetworkingOnDB2 &> >(tee -a /tmp/postARM.log)"
 
