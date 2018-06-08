@@ -1,12 +1,5 @@
 #!/bin/bash
 
-set -euo pipefail
-IFS=$'\n\t'
-
-# -e: immediately exit if any command has a non-zero exit status
-# -o: prevents errors in a pipeline from being masked
-# IFS new value is less likely to cause confusing bugs when looping arrays or arguments (e.g. $@)
-
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 #Parameters
@@ -171,8 +164,6 @@ if [[ -z "$jumpboxPublicName" ]]; then
 	read jumpboxPublicName
 fi
 
-DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-
 if [[ -z "$tempLocalFolder" ]]; then
 	echo "$tempLocalFolder not found, defaulting to current folder"
 	tempLocalFolder="${DIR}/"
@@ -235,14 +226,11 @@ fi
 #set the default subscription id
 az account set -s "$subscription"
 
-set +e
-
 #Check for existing RG
 searchresult=`az group show -g $rg | wc -l`
 
 if [ "$searchresult" == "0" ]; then
 	echo "Resource group with name ${rg} could not be found. Creating new resource group.."
-	set -e
 	(
 		set -x
 		az group create --name ${rg} --location ${location} 1> /dev/null
@@ -298,8 +286,8 @@ fi
 #rm -f ${DIR}/rootid_rsa.pub
 
 jumpbox="${jumpboxPublicName}.${location}.cloudapp.azure.com"
-nbDb2MemberVms=$(az group deployment show -g $rg -n "$deploymentName" --query properties.outputs.nbDb2MemberVms.value --output json)
-nbDb2CfVms=$(az group deployment show -g $rg -n "$deploymentName" --query properties.outputs.nbDb2CfVms.value --output json)
+nbDb2MemberVms=`az group deployment show -g $rg -n "$deploymentName" --query properties.outputs.nbDb2MemberVms.value --output json`
+nbDb2CfVms=`az group deployment show -g $rg -n "$deploymentName" --query properties.outputs.nbDb2CfVms.value --output json`
 
 scp -o StrictHostKeyChecking=no ${DIR}/postARMscripts/wait4reboots_src.sh rhel@$jumpbox:/tmp/
 scp -o StrictHostKeyChecking=no ${DIR}/postARMscripts/fromjumpbox.sh rhel@$jumpbox:/tmp/
@@ -307,7 +295,8 @@ scp -o StrictHostKeyChecking=no ${DIR}/postARMscripts/fromd0_root.sh rhel@$jumpb
 scp -o StrictHostKeyChecking=no ${DIR}/postARMscripts/fromd0getwwids_root.sh rhel@$jumpbox:/tmp/
 scp -o StrictHostKeyChecking=no ${DIR}/postARMscripts/fromg0_root.sh rhel@$jumpbox:/tmp/
 
-if [ "$acceleratedNetworkingOnDB2" == "true" ]; then
+if [ `echo "$acceleratedNetworkingOnDB2" | awk '{print tolower($0)}'` == "true" ]
+then
 	scp -o StrictHostKeyChecking=no ${DIR}/postARMscripts/fromdcfan_root.sh rhel@$jumpbox:/tmp/
 	scp -o StrictHostKeyChecking=no ${DIR}/postARMscripts/fromjumpbox-prepare-an.sh rhel@$jumpbox:/tmp/
 	ssh -o StrictHostKeyChecking=no rhel@$jumpbox "bash -v /tmp/fromjumpbox-prepare-an.sh $nbDb2MemberVms $nbDb2CfVms \"$lisbits\" &> >(tee -a /tmp/postARM-prepare-an.log)"
@@ -336,9 +325,9 @@ if [ "$acceleratedNetworkingOnDB2" == "true" ]; then
 		while [ "$stay" == "true" ]
 		do
 			echo "dbg-180608a [${db2vm}]"
-			x1=$(az vm get-instance-view -g $rg --name ${db2vm} --output json | grep PowerState)
+			x1=`az vm get-instance-view -g $rg --name ${db2vm} --output json | grep PowerState`
 			echo "${db2vm} power state: $x1"
-			x=$(echo $x1 | grep deallocated | wc -l)
+			x=`echo $x1 | grep deallocated | wc -l`
 			echo "dbg-180608b [${db2vm}] [${x1}] [${x}]"
 			if [ "$x" == "1" ]
 			then
@@ -358,22 +347,31 @@ if [ "$acceleratedNetworkingOnDB2" == "true" ]; then
 
 		az network nic list -g $rg | grep ${db2vm}_
 		echo "dbg-180608c [${db2vm}]"
-		hasdb2fe=$(az network nic list -g $rg | grep ${db2vm}_ | grep _db2fe | wc -l)
+		hasdb2fe=`az network nic list -g $rg | grep ${db2vm}_ | grep _db2fe | wc -l`
 		echo "dbg-180608d [${db2vm}] [${hasdb2fe}]"
 
 		az network nic update -g $rg --name ${db2vm}_main   --accelerated-networking true
+		echo "dbg-180608e [${db2vm}]"
 		az network nic update -g $rg --name ${db2vm}_db2be  --accelerated-networking true
+		echo "dbg-180608f [${db2vm}]"
 		az network nic update -g $rg --name ${db2vm}_gfsfe --accelerated-networking true
+		echo "dbg-180608g [${db2vm}]"
 		if [ "$hasdb2fe" == "1" ]
 		then 
+			echo "dbg-180608h [${db2vm}] [${hasdb2fe}]"
 			az network nic update -g $rg --name ${db2vm}_db2fe --accelerated-networking true
+			echo "dbg-180608i [${db2vm}] [${hasdb2fe}]"
 		fi
-		echo "dbg-180608e [${db2vm}] [${hasdb2fe}]"
+		echo "dbg-180608j [${db2vm}] [${hasdb2fe}]"
 
 		az network nic list -g $rg | grep ${db2vm}_
+		echo "dbg-180608k [${db2vm}] [${hasdb2fe}]"
 		az vm start -g $rg --name ${db2vm} &
+		echo "dbg-180608l [${db2vm}] [${hasdb2fe}]"
 	done
+	echo "dbg-180608m"
 fi
+echo "dbg-180608n"
 
 ssh -o StrictHostKeyChecking=no rhel@$jumpbox "bash -v /tmp/fromjumpbox.sh $nbDb2MemberVms $nbDb2CfVms $acceleratedNetworkingOnDB2 &> >(tee -a /tmp/postARM.log)"
 

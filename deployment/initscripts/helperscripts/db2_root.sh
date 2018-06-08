@@ -162,7 +162,7 @@ sestatus
 uname -r
 df
 
-if [ $(echo "$acceleratedNetworkingOnDB2" | awk '{print tolower($0)}') == "true" ]
+if [ `echo "$acceleratedNetworkingOnDB2" | awk '{print tolower($0)}'` == "true" ]
 then
     mkdir /tmp/lis
     cd /tmp/lis
