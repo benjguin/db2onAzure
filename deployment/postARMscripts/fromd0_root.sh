@@ -53,10 +53,22 @@ COMP       = SPATIAL_EXTENDER_CLIENT_SUPPORT
 *  Instance properties
 * ----------------------------------------------
 INSTANCE       = inst1
-inst1.MEMBER       = host1
-inst1.MEMBER       = host2
-inst1.PREFERRED_PRIMARY_CF       = host3
-inst1.PREFERRED_SECONDARY_CF       = host4
+EOF
+
+for (( i=0; i<$nbDb2MemberVms; i++ ))
+do
+    j=$(($i+1))
+    cat >> /root/db2server.rsp <<EOF
+inst1.MEMBER       = host$j
+EOF
+done
+
+CfPrimary=$(($j+1))
+CfSecondary=$(($j+2))
+
+cat >> /root/db2server.rsp <<EOF
+inst1.PREFERRED_PRIMARY_CF       = host${CfPrimary}
+inst1.PREFERRED_SECONDARY_CF       = host${CfSecondary}
 inst1.TYPE       = dsf
 *  Instance-owning user
 inst1.NAME       = db2sdin1
