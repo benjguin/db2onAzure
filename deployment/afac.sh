@@ -307,6 +307,11 @@ scp -o StrictHostKeyChecking=no ${DIR}/postARMscripts/fromd0_root.sh rhel@$jumpb
 scp -o StrictHostKeyChecking=no ${DIR}/postARMscripts/fromd0getwwids_root.sh rhel@$jumpbox:/tmp/
 scp -o StrictHostKeyChecking=no ${DIR}/postARMscripts/fromg0_root.sh rhel@$jumpbox:/tmp/
 
+echo "stop for debugging purposes"
+exit 0
+
+
+
 if [ "$acceleratedNetworkingOnDB2" == "true" ]; then
 	scp -o StrictHostKeyChecking=no ${DIR}/postARMscripts/fromdcfan_root.sh rhel@$jumpbox:/tmp/
 	scp -o StrictHostKeyChecking=no ${DIR}/postARMscripts/fromjumpbox-prepare-an.sh rhel@$jumpbox:/tmp/
