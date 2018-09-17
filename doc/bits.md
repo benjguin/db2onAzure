@@ -79,6 +79,10 @@ db2bitssas=`az storage blob generate-sas --account-name $stor1 --container-name 
 ## clone the db2OnAzure GitHub repo
 
 ```bash
+localGitFolderpath=/mnt/c/dev/GitHub/benjguin
+```
+
+```bash
 cd $localGitFolderpath
 git clone $githubRepoCloneUrl
 ```

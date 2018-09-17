@@ -19,7 +19,7 @@ usage() {
 	echo "- acceleratedNetworkingOnGlusterfs (-a). Should the Gluster FS NICs have accelerated networking enabled? Possible values: true or false."
 	echo "- acceleratedNetworkingOnDB2 (-c). Should the DB2 NICs have accelerated networking enabled? Possible values: true or false."
 	echo "- acceleratedNetworkingOnOthers (-e). Should the other NICs have accelerated networking enabled? Possible values: true or false."
-	echo "- lisbits (-b). location where the 'lis-rpms-4.2.4-2.tar.gz' file can be downloaded from. You can first manually download it from https://www.microsoft.com/en-us/download/details.aspx?id=55106"
+	echo "- lisbits (-b). location where the 'lis-rpms-4.2.x.tar.gz' file can be downloaded from. You can first manually download it from https://www.microsoft.com/en-us/download/details.aspx?id=55106"
 	echo "- nbDb2MemberVms (-y) - nb of DB2 member VMs - default is 2"
 	echo "- nbDb2CfVms (-z) - nb of DB2 caching facilities (CF) VMs - default and recommended value is 2 (the deployment was not tested with less and may not be supported with 3 or more as there is only 1 primary CF role and 1 secondary CF role)"
     echo ""
