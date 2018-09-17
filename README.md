@@ -35,3 +35,5 @@ DB2 member | d{vm_number} | 192.168.{subnet}.2{vm_number}
 DB2 CF | cf{vm_number} | 192.168.{subnet}.3{vm_number}
 Windows Client | wcli0 | 192.168.{subnet}.4{vm_number}
 Witness | witn0 | 192.168.{subnet}.6{vm_number}
+
+The [documentation](doc/README.md) provides a step by step procedure to use the ARM templates and scripts. 
