@@ -1,19 +1,25 @@
 #!/bin/bash
 
+dateid="180917a"
+subscription="Azure bengui"
+stor1=db27up34
+adwinPassword="BHxutbsp82________"
+location="westeurope"
+
+lisbitsfilename=lis-rpms-4.2.6.tar.gz
+lisbitsgenericfilename=lis-rpms-4.2.x.tar.gz
+db2bitsfilename=v11.1_linuxx64_server_t.tar.gz
+lisbitssas=`az storage blob generate-sas --account-name $stor1 --container-name "setup" --policy-name "readuntileofcy2020" --name "$lisbitsgenericfilename" --output tsv`
+db2bitssas=`az storage blob generate-sas --account-name $stor1 --container-name "setup" --policy-name "readuntileofcy2020" --name "$db2bitsfilename" --output tsv`
+lisbits="https://${stor1}.blob.core.windows.net/setup/${lisbitsgenericfilename}?${lisbitssas}"
+db2bits="https://${stor1}.blob.core.windows.net/setup/${db2bitsfilename}?${db2bitssas}"
+
 githubRepoCloneUrl=git@github.com:benjguin/db2onAzure.git
 localGitFolderpath=/mnt/c/dev/_git/GitHub/benjguin
 
-dateid="180917a"
-
-subscription="Azure bengui"
 rg="a_${dateid}"
-location="westeurope"
 deploymentName="deployment_$dateid"
 pubKeyPath=~/.ssh/id_rsa.pub
-adwinPassword="BHxutbsp82________"
-db2bits='https://###obfuscated###.blob.core.windows.net/setup/v11.1_linuxx64_server_t.tar.gz?sv=2016-05-31&sr=b&si=readonly&sig=###obfuscated###'
-lisbitsfilename=lis-rpms-4.2.6.tar.gz
-lisbits='https://###obfuscated###.blob.core.windows.net/setup/lis-rpms-4.2.4-2.tar.gz?sv=2016-05-31&sr=b&si=readonly&sig=###obfuscated###'
 gitrawurl='https://raw.githubusercontent.com/benjguin/db2onAzure/master/'
 jumpboxPublicName="j${dateid}"
 tempLocalFolder=/mnt/c/afac/

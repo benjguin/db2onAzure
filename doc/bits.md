@@ -4,7 +4,7 @@ The deployment needs two files that you need to download first from the IBM and 
 
 File name | Description | URL
 ----------|-------------|-----
-`lis-rpms-4.2.6.tar.gz` | Linux Integration Services v4.2 for Hyper-V and Azure | <https://www.microsoft.com/en-us/download/details.aspx?id=55106>
+`lis-rpms-4.2.x.tar.gz` | Linux Integration Services v4.2 for Hyper-V and Azure | <https://www.microsoft.com/en-us/download/details.aspx?id=55106>
 `v11.1_linuxx64_server_t.tar.gz` | DB2 trial bits | <https://www.ibm.com/analytics/us/en/db2/trials/>
 
 This documentation assumes you're using DB2 trial bits, but you may prefer to get the real bits. Please contact your IBM sales representative to know how to get those instead.
@@ -31,19 +31,20 @@ Then a shared access policy is created on that container to provide read access 
 az group create --name $rg1 --location $location
 az storage account create -g $rg1 --name $stor1 --kind StorageV2 --sku Standard_LRS --https-only true 
 az storage container create --account-name $stor1 --name "setup" --public-access off
-az storage container policy create --account-name $stor1 --container-name "setup" --name readuntileofcy2020 --expiry "2020-12-31T23:59:59Z" --permissions "r"
+az storage container policy create --account-name $stor1 --container-name "setup" --name "readuntileofcy2020" --expiry "2020-12-31T23:59:59Z" --permissions "r"
 ```
 
 ## downloads the bits from Microsoft web site
 
 Download file `lis-rpms-4.2.6.tar.gz` (Linux Integration Services v4.2 for Hyper-V and Azure) from <https://www.microsoft.com/en-us/download/details.aspx?id=55106>
 
-NB: a more recent version may exist when you download the file. So let's fill a variable with the exact name we have. Let's also have another variable that points to the location where the file was downloaded.
-
-The following may change depending on 
+NB: a more recent version may exist when you download the file. 
+So let's fill a variable with the exact name we have, and the generic one that will be used in the [db2_root.sh](../deployment/initscripts/helperscripts/db2_root.sh) script. 
+Let's also have another variable that points to the location where the file was downloaded.
 
 ```bash
 lisbitsfilename=lis-rpms-4.2.6.tar.gz
+lisbitsgenericfilename=lis-rpms-4.2.x.tar.gz
 downloadlocation=/mnt/c/Users/bengui/Downloads
 ```
 
@@ -61,17 +62,19 @@ Choose the following in the IBM web site:
 db2bitsfilename=v11.1_linuxx64_server_t.tar.gz
 ```
 
-
 ## Upload to Azure storage and get the URLs for the bits (thru Shared Access Signature)
 
 ```bash
-az storage blob upload --account-name $stor1 --container-name "setup" --name "$lisbitsfilename" --file "$downloadlocation/$lisbitsfilename"
+az storage blob upload --account-name $stor1 --container-name "setup" --name "$lisbitsgenericfilename" --file "$downloadlocation/$lisbitsfilename"
 az storage blob upload --account-name $stor1 --container-name "setup" --name "$db2bitsfilename" --file "$downloadlocation/$db2bitsfilename"
 ```
 
 Then we can get the shared access signature URLs from those blobs:
 
-
+```bash
+lisbitssas=`az storage blob generate-sas --account-name $stor1 --container-name "setup" --policy-name "readuntileofcy2020" --name "$lisbitsgenericfilename" --output tsv`
+db2bitssas=`az storage blob generate-sas --account-name $stor1 --container-name "setup" --policy-name "readuntileofcy2020" --name "$db2bitsfilename" --output tsv`
+```
 
 ## clone the db2OnAzure GitHub repo
 
@@ -82,3 +85,7 @@ git clone $githubRepoCloneUrl
 
 ## update the `01init.sh` file
 
+Update the `01init.sh` file based on:
+- the steps you followed previously in [bits](bits.md)
+- the names you choose (like `dateid` or `adwinPassword`)
+- your environment (e.g.: `subscription`)
