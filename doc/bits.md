@@ -64,6 +64,8 @@ db2bitsfilename=v11.1_linuxx64_server_t.tar.gz
 
 ## Upload to Azure storage and get the URLs for the bits (thru Shared Access Signature)
 
+NB: You can read about Shared Access Signatures [here](https://docs.microsoft.com/en-us/rest/api/storageservices/delegating-access-with-a-shared-access-signature).
+
 ```bash
 az storage blob upload --account-name $stor1 --container-name "setup" --name "$lisbitsgenericfilename" --file "$downloadlocation/$lisbitsfilename"
 az storage blob upload --account-name $stor1 --container-name "setup" --name "$db2bitsfilename" --file "$downloadlocation/$db2bitsfilename"

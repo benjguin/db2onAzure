@@ -30,6 +30,51 @@ source 01init.sh
 
 ```bash
 cd $localGitFolderpath/db2OnAzure/deployment
-./deploy.sh -s "$subscription" -g "$rg" -l "$location" -n "$deploymentName" -k "$pubKeyPath" -p "$adwinPassword" -d "$db2bits" -u "$gitrawurl" -j "$jumpboxPublicName" -t "$tempLocalFolder" -a "$acceleratedNetworkingOnGlusterfs" -c "$acceleratedNetworkingOnDB2" -e "$acceleratedNetworkingOnOthers" -b "$lisbits"
+date
+./deploy.sh -s "$subscription" -g "$rg" -l "$location" -n "$deploymentName" -k "$pubKeyPath" -p "$adwinPassword" -d "$db2bits" -u "$gitrawurl" -j "$jumpboxPublicName" -t "$tempLocalFolder" -a "$acceleratedNetworkingOnGlusterfs" -c "$acceleratedNetworkingOnDB2" -e "$acceleratedNetworkingOnOthers" -b "$lisbits" -y $nbDb2MemberVms
+date
 ```
 
+## Follow up the deployment
+
+In order to follow the deployment, you can issue commands like the following in another terminal, where you also executed `source 01init.sh`:
+
+```bash
+az group deployment list -g $rg
+az group deployment operation list -g $rg --name $deploymentName --output jsonc --query "[?properties.provisioningState != 'Succeeded']"
+```
+
+The equivalent is also available in the portal. Search for the resource group, then for the deployments in it:
+
+![](img/azure006.png)
+
+![](img/azure007.png)
+
+In that case, this shows that the deployment itself takes too long.
+
+You can try to connect to the first VM (the jumpbox) and check some logs in the `/tmp` folder:
+
+```bash
+ssh rhel@$jumpbox
+ll /tmp/*.log
+tail /tmp/custom-scripts-from-ARM.log
+for i in d0 d1 cf0 cf1 g0 g1 g2
+do
+    echo -----------------------------------------
+    echo $i
+    echo -----------------------------------------
+    ssh $i "tail /tmp/custom-scripts-from-ARM.log"
+    echo
+    echo -----------------------------------------
+    echo
+done
+```
+
+## Cancel a deployment
+
+One of the best ways to cancel the deployment is to stop the script, then destroy the whole resource group:
+
+```bash
+echo $rg
+az group delete -g $rg
+```

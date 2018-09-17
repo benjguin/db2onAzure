@@ -8,3 +8,6 @@ Here are the steps you may want to follow:
 - [Check the setup and troubleshoot](troubleshoot.md)
 - [Use the deployment](use.md)
 - [Roadmap, Possible enhancements, Ideas](roadmap.md)
+
+Additional documentation include:
+- [Knowledge Base](KB.md)
