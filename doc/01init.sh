@@ -12,6 +12,7 @@ deploymentName="deployment_$dateid"
 pubKeyPath=~/.ssh/id_rsa.pub
 adwinPassword="BHxutbsp82________"
 db2bits='https://###obfuscated###.blob.core.windows.net/setup/v11.1_linuxx64_server_t.tar.gz?sv=2016-05-31&sr=b&si=readonly&sig=###obfuscated###'
+lisbitsfilename=lis-rpms-4.2.6.tar.gz
 lisbits='https://###obfuscated###.blob.core.windows.net/setup/lis-rpms-4.2.4-2.tar.gz?sv=2016-05-31&sr=b&si=readonly&sig=###obfuscated###'
 gitrawurl='https://raw.githubusercontent.com/benjguin/db2onAzure/master/'
 jumpboxPublicName="j${dateid}"
