@@ -1,0 +1,390 @@
+#!/bin/bash
+
+nbDb2MemberVms=$1
+nbDb2CfVms=$2
+lisbits=$3
+
+nbGlusterfsVms=3
+
+db2servers=()
+for (( i=0; i<$nbDb2MemberVms; i++ ))
+do
+    db2servers+=(192.168.0.2$i)
+done
+
+for (( i=0; i<$nbDb2CfVms; i++ ))
+do
+    db2servers+=(192.168.0.3$i)
+done
+
+# reboot DB2 servers so that they have the right kernel
+for db2srv in "${db2servers[@]}"
+do
+    ssh $db2srv sudo shutdown -r now
+done
+Warning: Permanently added '192.168.0.20' (ECDSA) to the list of known hosts.
+Connection to 192.168.0.20 closed by remote host.
+Warning: Permanently added '192.168.0.21' (ECDSA) to the list of known hosts.
+Connection to 192.168.0.21 closed by remote host.
+Warning: Permanently added '192.168.0.30' (ECDSA) to the list of known hosts.
+Connection to 192.168.0.30 closed by remote host.
+Warning: Permanently added '192.168.0.31' (ECDSA) to the list of known hosts.
+Connection to 192.168.0.31 closed by remote host.
+
+# wait for the reboots to finish
+source /tmp/wait4reboots_src.sh
+# this file is intended to be sourced
+for db2srv in "${db2servers[@]}"
+do
+    echo "waiting for $db2srv to reboot"
+    stay="true"
+    tries=0
+    while [ "$stay" == "true" ]
+    do
+        ssh $db2srv whoami
+        x=`ssh $db2srv whoami | grep rhel | wc -l`
+        if [ "$x" == "1" ]
+        then
+            stay="false"
+        else
+            if [ $tries -gt 10 ]
+            then
+                echo "Servers did not reboot correctly"
+                exit 1
+            fi
+            echo "waiting for 30 seconds ..."
+            sleep 30s
+            ((tries=tries+1))
+        fi
+    done
+done
+waiting for 192.168.0.20 to reboot
+rhel
+ssh $db2srv whoami | grep rhel | wc -l
+waiting for 192.168.0.21 to reboot
+rhel
+ssh $db2srv whoami | grep rhel | wc -l
+waiting for 192.168.0.30 to reboot
+rhel
+ssh $db2srv whoami | grep rhel | wc -l
+waiting for 192.168.0.31 to reboot
+rhel
+ssh $db2srv whoami | grep rhel | wc -l
+
+for db2srv in "${db2servers[@]}"
+do
+    scp /tmp/fromdcfan_root.sh ${db2srv}:/tmp/
+    ssh $db2srv "sudo bash -v /tmp/fromdcfan_root.sh"
+done
+#!/bin/bash
+
+# this is called only when accelerated network is needed on DB2 nodes
+
+# remove unused versions of the kernel to avoid this message: your running kernel 3.10.0-514.el7.x86_64 is not your latest installed kernel, aborting installation
+rpm -q kernel
+kernel-3.10.0-514.el7.x86_64
+kernel-3.10.0-514.28.1.el7.x86_64
+uname -r
+3.10.0-514.el7.x86_64
+yum remove -y kernel-3.10.0-514.28.1.el7.x86_64
+Loaded plugins: langpacks, product-id, search-disabled-repos
+Resolving Dependencies
+--> Running transaction check
+---> Package kernel.x86_64 0:3.10.0-514.28.1.el7 will be erased
+--> Finished Dependency Resolution
+
+Dependencies Resolved
+
+================================================================================
+ Package   Arch      Version                   Repository                  Size
+================================================================================
+Removing:
+ kernel    x86_64    3.10.0-514.28.1.el7       @rhel-7-server-eus-rpms    148 M
+
+Transaction Summary
+================================================================================
+Remove  1 Package
+
+Installed size: 148 M
+Downloading packages:
+Running transaction check
+Running transaction test
+Transaction test succeeded
+Running transaction
+  Erasing    : kernel-3.10.0-514.28.1.el7.x86_64                            1/1 
+  Verifying  : kernel-3.10.0-514.28.1.el7.x86_64                            1/1 
+
+Removed:
+  kernel.x86_64 0:3.10.0-514.28.1.el7                                           
+
+Complete!
+rpm -q kernel
+kernel-3.10.0-514.el7.x86_64
+
+cd /tmp/lis/LISISO
+bash ./install.sh
+Removing Hyper-V daemons
+Invoking release specific install file in directory RHEL73
+Installing the Linux Integration Services for Microsoft Hyper-V...
+Preparing...                          ########################################
+Updating / installing...
+kmod-microsoft-hyper-v-4.2.6-20180820 ########################################
+microsoft-hyper-v-4.2.6-20180820      ########################################
+Running unbonding script.
+Saving old initramfs
+Installing new initramfs
+Starting KVP Daemon....
+Starting VSS Daemon....
+Starting FCOPY Daemon....
+microsoft-hyper-v-debuginfo-4.2.6-2018########################################
+ Linux Integration Services for Hyper-V has been installed. Please reboot your system.
+
+# need to reboot before deallocating and set accelerated network to true
+shutdown -r now
+Connection to 192.168.0.20 closed by remote host.
+#!/bin/bash
+
+# this is called only when accelerated network is needed on DB2 nodes
+
+# remove unused versions of the kernel to avoid this message: your running kernel 3.10.0-514.el7.x86_64 is not your latest installed kernel, aborting installation
+rpm -q kernel
+kernel-3.10.0-514.el7.x86_64
+kernel-3.10.0-514.28.1.el7.x86_64
+uname -r
+3.10.0-514.el7.x86_64
+yum remove -y kernel-3.10.0-514.28.1.el7.x86_64
+Loaded plugins: langpacks, product-id, search-disabled-repos
+Resolving Dependencies
+--> Running transaction check
+---> Package kernel.x86_64 0:3.10.0-514.28.1.el7 will be erased
+--> Finished Dependency Resolution
+
+Dependencies Resolved
+
+================================================================================
+ Package   Arch      Version                   Repository                  Size
+================================================================================
+Removing:
+ kernel    x86_64    3.10.0-514.28.1.el7       @rhel-7-server-eus-rpms    148 M
+
+Transaction Summary
+================================================================================
+Remove  1 Package
+
+Installed size: 148 M
+Downloading packages:
+Running transaction check
+Running transaction test
+Transaction test succeeded
+Running transaction
+  Erasing    : kernel-3.10.0-514.28.1.el7.x86_64                            1/1 
+  Verifying  : kernel-3.10.0-514.28.1.el7.x86_64                            1/1 
+
+Removed:
+  kernel.x86_64 0:3.10.0-514.28.1.el7                                           
+
+Complete!
+rpm -q kernel
+kernel-3.10.0-514.el7.x86_64
+
+cd /tmp/lis/LISISO
+bash ./install.sh
+Removing Hyper-V daemons
+Invoking release specific install file in directory RHEL73
+Installing the Linux Integration Services for Microsoft Hyper-V...
+Preparing...                          ########################################
+Updating / installing...
+kmod-microsoft-hyper-v-4.2.6-20180820 ########################################
+microsoft-hyper-v-4.2.6-20180820      ########################################
+Running unbonding script.
+Saving old initramfs
+Installing new initramfs
+Starting KVP Daemon....
+Starting VSS Daemon....
+Starting FCOPY Daemon....
+microsoft-hyper-v-debuginfo-4.2.6-2018########################################
+ Linux Integration Services for Hyper-V has been installed. Please reboot your system.
+
+# need to reboot before deallocating and set accelerated network to true
+shutdown -r now
+Connection to 192.168.0.21 closed by remote host.
+#!/bin/bash
+
+# this is called only when accelerated network is needed on DB2 nodes
+
+# remove unused versions of the kernel to avoid this message: your running kernel 3.10.0-514.el7.x86_64 is not your latest installed kernel, aborting installation
+rpm -q kernel
+kernel-3.10.0-514.el7.x86_64
+kernel-3.10.0-514.28.1.el7.x86_64
+uname -r
+3.10.0-514.el7.x86_64
+yum remove -y kernel-3.10.0-514.28.1.el7.x86_64
+Loaded plugins: langpacks, product-id, search-disabled-repos
+Resolving Dependencies
+--> Running transaction check
+---> Package kernel.x86_64 0:3.10.0-514.28.1.el7 will be erased
+--> Finished Dependency Resolution
+
+Dependencies Resolved
+
+================================================================================
+ Package   Arch      Version                   Repository                  Size
+================================================================================
+Removing:
+ kernel    x86_64    3.10.0-514.28.1.el7       @rhel-7-server-eus-rpms    148 M
+
+Transaction Summary
+================================================================================
+Remove  1 Package
+
+Installed size: 148 M
+Downloading packages:
+Running transaction check
+Running transaction test
+Transaction test succeeded
+Running transaction
+  Erasing    : kernel-3.10.0-514.28.1.el7.x86_64                            1/1 
+  Verifying  : kernel-3.10.0-514.28.1.el7.x86_64                            1/1 
+
+Removed:
+  kernel.x86_64 0:3.10.0-514.28.1.el7                                           
+
+Complete!
+rpm -q kernel
+kernel-3.10.0-514.el7.x86_64
+
+cd /tmp/lis/LISISO
+bash ./install.sh
+Removing Hyper-V daemons
+Invoking release specific install file in directory RHEL73
+Installing the Linux Integration Services for Microsoft Hyper-V...
+Preparing...                          ########################################
+Updating / installing...
+kmod-microsoft-hyper-v-4.2.6-20180820 ########################################
+microsoft-hyper-v-4.2.6-20180820      ########################################
+Running unbonding script.
+Saving old initramfs
+Installing new initramfs
+Starting KVP Daemon....
+Starting VSS Daemon....
+Starting FCOPY Daemon....
+microsoft-hyper-v-debuginfo-4.2.6-2018########################################
+ Linux Integration Services for Hyper-V has been installed. Please reboot your system.
+
+# need to reboot before deallocating and set accelerated network to true
+shutdown -r now
+Connection to 192.168.0.30 closed by remote host.
+#!/bin/bash
+
+# this is called only when accelerated network is needed on DB2 nodes
+
+# remove unused versions of the kernel to avoid this message: your running kernel 3.10.0-514.el7.x86_64 is not your latest installed kernel, aborting installation
+rpm -q kernel
+kernel-3.10.0-514.el7.x86_64
+kernel-3.10.0-514.28.1.el7.x86_64
+uname -r
+3.10.0-514.el7.x86_64
+yum remove -y kernel-3.10.0-514.28.1.el7.x86_64
+Loaded plugins: langpacks, product-id, search-disabled-repos
+Resolving Dependencies
+--> Running transaction check
+---> Package kernel.x86_64 0:3.10.0-514.28.1.el7 will be erased
+--> Finished Dependency Resolution
+
+Dependencies Resolved
+
+================================================================================
+ Package   Arch      Version                   Repository                  Size
+================================================================================
+Removing:
+ kernel    x86_64    3.10.0-514.28.1.el7       @rhel-7-server-eus-rpms    148 M
+
+Transaction Summary
+================================================================================
+Remove  1 Package
+
+Installed size: 148 M
+Downloading packages:
+Running transaction check
+Running transaction test
+Transaction test succeeded
+Running transaction
+  Erasing    : kernel-3.10.0-514.28.1.el7.x86_64                            1/1 
+  Verifying  : kernel-3.10.0-514.28.1.el7.x86_64                            1/1 
+
+Removed:
+  kernel.x86_64 0:3.10.0-514.28.1.el7                                           
+
+Complete!
+rpm -q kernel
+kernel-3.10.0-514.el7.x86_64
+
+cd /tmp/lis/LISISO
+bash ./install.sh
+Removing Hyper-V daemons
+Invoking release specific install file in directory RHEL73
+Installing the Linux Integration Services for Microsoft Hyper-V...
+Preparing...                          ########################################
+Updating / installing...
+kmod-microsoft-hyper-v-4.2.6-20180820 ########################################
+microsoft-hyper-v-4.2.6-20180820      ########################################
+Running unbonding script.
+Saving old initramfs
+Installing new initramfs
+Starting KVP Daemon....
+Starting VSS Daemon....
+Starting FCOPY Daemon....
+microsoft-hyper-v-debuginfo-4.2.6-2018########################################
+ Linux Integration Services for Hyper-V has been installed. Please reboot your system.
+
+# need to reboot before deallocating and set accelerated network to true
+shutdown -r now
+Connection to 192.168.0.31 closed by remote host.
+
+# need to wait for the reboot to finish before deallocating and set accelerated network to true
+source /tmp/wait4reboots_src.sh
+# this file is intended to be sourced
+for db2srv in "${db2servers[@]}"
+do
+    echo "waiting for $db2srv to reboot"
+    stay="true"
+    tries=0
+    while [ "$stay" == "true" ]
+    do
+        ssh $db2srv whoami
+        x=`ssh $db2srv whoami | grep rhel | wc -l`
+        if [ "$x" == "1" ]
+        then
+            stay="false"
+        else
+            if [ $tries -gt 10 ]
+            then
+                echo "Servers did not reboot correctly"
+                exit 1
+            fi
+            echo "waiting for 30 seconds ..."
+            sleep 30s
+            ((tries=tries+1))
+        fi
+    done
+done
+waiting for 192.168.0.20 to reboot
+rhel
+ssh $db2srv whoami | grep rhel | wc -l
+waiting for 192.168.0.21 to reboot
+rhel
+ssh $db2srv whoami | grep rhel | wc -l
+waiting for 192.168.0.30 to reboot
+rhel
+ssh $db2srv whoami | grep rhel | wc -l
+waiting for 192.168.0.31 to reboot
+ssh: connect to host 192.168.0.31 port 22: Connection refused
+ssh $db2srv whoami | grep rhel | wc -l
+ssh: connect to host 192.168.0.31 port 22: Connection refused
+waiting for 30 seconds ...
+ssh: connect to host 192.168.0.31 port 22: Connection refused
+ssh $db2srv whoami | grep rhel | wc -l
+ssh: connect to host 192.168.0.31 port 22: Connection refused
+waiting for 30 seconds ...
+rhel
+ssh $db2srv whoami | grep rhel | wc -l

@@ -35,13 +35,17 @@ date
 date
 ```
 
+`deploy.sh` has two main phases:
+- ARM deployment which includes scripts execution on each node, managed by the ARM template (see `az group deployment create` in [deploy.sh](../deployment/deploy.sh)) . Look for `"publisher": "Microsoft.Azure.Extensions"` and `"type": "CustomScript"` in the ARM templates like [template.json](../deployment/template.json).
+- post ARM scripts. These scripts are launched by the `deploy.sh` script, after the ARM deployment itself is finsihed. They include actions that reboot nodes or link groups of nodes together (e.g.: a DB2 member needs a disk that is exposed by the whole Gluster FS cluster).
+
 Typical deployment time for the ARM templates are:
 
 ![](img/azure008.png)
 
 After the ARM templates are deployed, there are also additional scripts running.
 
-You can find an example of what the terminal reads in [sample_deployment_log.txt](sample_deployment_log.txt).
+You can find an example of what the terminal reads in [sample_deployment_log.txt](sample_logs/localLaptop/sample_deployment_log.txt).
 
 ## Follow up the deployment
 

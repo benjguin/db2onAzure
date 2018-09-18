@@ -1,0 +1,1426 @@
+#!/bin/bash
+
+#adapted from https://docs.microsoft.com/en-us/azure/virtual-machines/linux/multiple-nics
+
+ifconfig
+enP1p0s2: flags=6211<UP,BROADCAST,RUNNING,SLAVE,MULTICAST>  mtu 1500
+        ether 00:0d:3a:44:d8:53  txqueuelen 1000  (Ethernet)
+        RX packets 2867  bytes 4225457 (4.0 MiB)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 688  bytes 90330 (88.2 KiB)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+
+enP2p0s2: flags=6211<UP,BROADCAST,RUNNING,SLAVE,MULTICAST>  mtu 1500
+        ether 00:0d:3a:44:da:a5  txqueuelen 1000  (Ethernet)
+        RX packets 0  bytes 0 (0.0 B)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 0  bytes 0 (0.0 B)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+
+enP3p0s2: flags=6211<UP,BROADCAST,RUNNING,SLAVE,MULTICAST>  mtu 1500
+        ether 00:0d:3a:44:d2:ec  txqueuelen 1000  (Ethernet)
+        RX packets 0  bytes 0 (0.0 B)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 0  bytes 0 (0.0 B)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+
+eth0: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+        inet 192.168.0.10  netmask 255.255.255.0  broadcast 192.168.0.255
+        inet6 fe80::20d:3aff:fe44:d853  prefixlen 64  scopeid 0x20<link>
+        ether 00:0d:3a:44:d8:53  txqueuelen 1000  (Ethernet)
+        RX packets 1030  bytes 4832681 (4.6 MiB)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 682  bytes 89874 (87.7 KiB)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+
+eth1: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+        ether 00:0d:3a:44:da:a5  txqueuelen 1000  (Ethernet)
+        RX packets 55  bytes 3630 (3.5 KiB)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 0  bytes 0 (0.0 B)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+
+eth2: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+        ether 00:0d:3a:44:d2:ec  txqueuelen 1000  (Ethernet)
+        RX packets 0  bytes 0 (0.0 B)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 0  bytes 0 (0.0 B)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+
+lo: flags=73<UP,LOOPBACK,RUNNING>  mtu 65536
+        inet 127.0.0.1  netmask 255.0.0.0
+        inet6 ::1  prefixlen 128  scopeid 0x10<host>
+        loop  txqueuelen 1000  (Local Loopback)
+        RX packets 68  bytes 6260 (6.1 KiB)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 68  bytes 6260 (6.1 KiB)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+
+echo "dhclient"
+dhclient
+dhclient
+sleep 10s #get IP addresses from DHCP
+ifconfig
+enP1p0s2: flags=6211<UP,BROADCAST,RUNNING,SLAVE,MULTICAST>  mtu 1500
+        ether 00:0d:3a:44:d8:53  txqueuelen 1000  (Ethernet)
+        RX packets 2957  bytes 4335584 (4.1 MiB)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 840  bytes 123140 (120.2 KiB)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+
+enP2p0s2: flags=6211<UP,BROADCAST,RUNNING,SLAVE,MULTICAST>  mtu 1500
+        ether 00:0d:3a:44:da:a5  txqueuelen 1000  (Ethernet)
+        RX packets 0  bytes 0 (0.0 B)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 6  bytes 1488 (1.4 KiB)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+
+enP3p0s2: flags=6211<UP,BROADCAST,RUNNING,SLAVE,MULTICAST>  mtu 1500
+        ether 00:0d:3a:44:d2:ec  txqueuelen 1000  (Ethernet)
+        RX packets 0  bytes 0 (0.0 B)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 6  bytes 1488 (1.4 KiB)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+
+eth0: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+        inet 192.168.0.10  netmask 255.255.255.0  broadcast 192.168.0.255
+        inet6 fe80::20d:3aff:fe44:d853  prefixlen 64  scopeid 0x20<link>
+        ether 00:0d:3a:44:d8:53  txqueuelen 1000  (Ethernet)
+        RX packets 1142  bytes 4963841 (4.7 MiB)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 828  bytes 121700 (118.8 KiB)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+
+eth1: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+        inet 192.168.1.10  netmask 255.255.255.0  broadcast 192.168.1.255
+        ether 00:0d:3a:44:da:a5  txqueuelen 1000  (Ethernet)
+        RX packets 64  bytes 5484 (5.3 KiB)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 4  bytes 768 (768.0 B)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+
+eth2: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+        inet 192.168.2.10  netmask 255.255.255.0  broadcast 192.168.2.255
+        ether 00:0d:3a:44:d2:ec  txqueuelen 1000  (Ethernet)
+        RX packets 4  bytes 1524 (1.4 KiB)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 4  bytes 768 (768.0 B)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+
+lo: flags=73<UP,LOOPBACK,RUNNING>  mtu 65536
+        inet 127.0.0.1  netmask 255.0.0.0
+        inet6 ::1  prefixlen 128  scopeid 0x10<host>
+        loop  txqueuelen 1000  (Local Loopback)
+        RX packets 68  bytes 6260 (6.1 KiB)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 68  bytes 6260 (6.1 KiB)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+
+
+nbnics=`ls -als /sys/class/net/  | grep eth | wc -l`
+ls -als /sys/class/net/  | grep eth | wc -l
+
+for (( ni=0; ni<$nbnics; ni++ ))
+do
+    echo "TRACE-ni: $ni"
+    ifconfig eth${ni}
+
+    eth_ip=`ifconfig eth${ni} | awk '$1 == "inet" {print $2}'`
+    IFS="." read -ra eth_ipparts <<< "$eth_ip"
+    eth_subnetip=`echo ${eth_ipparts[2]}`
+    lastip=`echo ${eth_ipparts[3]}`
+
+    echo "20${ni} eth${ni}-rt" >> /etc/iproute2/rt_tables
+
+    if [ $ni -gt 0 ]
+    then
+        cat > /etc/sysconfig/network-scripts/ifcfg-eth${ni} << EOF
+BOOTPROTO=dhcp  
+DEFROUTE=no
+DEVICE=eth${ni}
+ONBOOT=yes
+TYPE=Ethernet
+USERCTL=no
+NM_CONTROLLED=no  
+EOF
+    fi
+
+    cat > /etc/sysconfig/network-scripts/rule-eth${ni} << EOF
+from 192.168.$eth_subnetip.$lastip/32 table eth${ni}-rt
+to 192.168.$eth_subnetip.$lastip/32 table eth${ni}-rt
+EOF
+
+    cat > /etc/sysconfig/network-scripts/route-eth${ni} << EOF
+192.168.$eth_subnetip.0/24 dev eth${ni} table eth${ni}-rt
+default via 0.0.0.0 dev eth${ni} table eth${ni}-rt
+EOF
+
+done
+TRACE-ni: 0
+eth0: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+        inet 192.168.0.10  netmask 255.255.255.0  broadcast 192.168.0.255
+        inet6 fe80::20d:3aff:fe44:d853  prefixlen 64  scopeid 0x20<link>
+        ether 00:0d:3a:44:d8:53  txqueuelen 1000  (Ethernet)
+        RX packets 1142  bytes 4963841 (4.7 MiB)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 828  bytes 121700 (118.8 KiB)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+
+ifconfig eth${ni} | awk '$1 == "inet" {print $2}'
+echo ${eth_ipparts[2]}
+echo ${eth_ipparts[3]}
+TRACE-ni: 1
+eth1: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+        inet 192.168.1.10  netmask 255.255.255.0  broadcast 192.168.1.255
+        ether 00:0d:3a:44:da:a5  txqueuelen 1000  (Ethernet)
+        RX packets 64  bytes 5484 (5.3 KiB)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 4  bytes 768 (768.0 B)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+
+ifconfig eth${ni} | awk '$1 == "inet" {print $2}'
+echo ${eth_ipparts[2]}
+echo ${eth_ipparts[3]}
+TRACE-ni: 2
+eth2: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+        inet 192.168.2.10  netmask 255.255.255.0  broadcast 192.168.2.255
+        ether 00:0d:3a:44:d2:ec  txqueuelen 1000  (Ethernet)
+        RX packets 4  bytes 1524 (1.4 KiB)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 4  bytes 768 (768.0 B)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+
+ifconfig eth${ni} | awk '$1 == "inet" {print $2}'
+echo ${eth_ipparts[2]}
+echo ${eth_ipparts[3]}
+
+systemctl restart network
+#!/bin/bash
+
+userPubKeyValue=$1
+rhelPrivKeyValue=$2
+rhelPubKeyValue=$3
+rootPrivKeyValue=$4
+rootPubKeyValue=$5
+
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+cat > /home/rhel/.ssh/config << EOF 
+Host *
+    StrictHostKeyChecking no
+EOF
+chown rhel:rhel /home/rhel/.ssh/config
+chmod 400 /home/rhel/.ssh/config
+
+echo "$rhelPubKeyValue" >> /home/rhel/.ssh/authorized_keys
+echo "$rhelPrivKeyValue" | base64 -d > /home/rhel/.ssh/id_rsa
+echo "$rhelPubKeyValue" > /home/rhel/.ssh/id_rsa.pub
+chown rhel:rhel /home/rhel/.ssh/authorized_keys
+chown rhel:rhel /home/rhel/.ssh/id_rsa
+chown rhel:rhel /home/rhel/.ssh/id_rsa.pub
+chmod 600 /home/rhel/.ssh/id_rsa
+chmod 644 /home/rhel/.ssh/id_rsa.pub
+
+if [ "$rootPrivKeyValue" != "x" ]
+then
+    nbfound=`ls -d /root/.ssh | wc -l`
+    if [ "$nbfound" == "0" ]
+    then
+        mkdir /root/.ssh
+    fi
+
+    chmod 700 /root/.ssh
+
+    cat > /root/.ssh/config << EOF 
+Host *
+    StrictHostKeyChecking no
+EOF
+    chmod 400 /root/.ssh/config
+
+    touch /root/.ssh/authorized_keys
+    chmod 600 /root/.ssh/authorized_keys
+    echo "$rootPubKeyValue" >> /root/.ssh/authorized_keys
+    echo "$rootPrivKeyValue" | base64 -d > /root/.ssh/id_rsa
+    echo "$rootPubKeyValue" > /root/.ssh/id_rsa.pub
+    chmod 600 /root/.ssh/id_rsa
+    chmod 644 /root/.ssh/id_rsa.pub
+fi
+ls -d /root/.ssh | wc -l
+ls: cannot access /root/.ssh: No such file or directory
+
+
+
+#!/bin/bash
+
+#install and configure gluster
+
+#setup DNS static
+cat >> /etc/hosts <<EOF
+192.168.1.10 g0
+192.168.1.11 g1
+192.168.1.12 g2
+
+192.168.2.10 g0b
+192.168.2.11 g1b
+192.168.2.12 g2b
+EOF
+
+#Install stuff
+yum update -y --exclude=WALinuxAgent # cf https://github.com/Azure/WALinuxAgent/issues/178
+Loaded plugins: langpacks, product-id, search-disabled-repos
+Resolving Dependencies
+--> Running transaction check
+---> Package NetworkManager.x86_64 1:1.10.2-13.el7 will be updated
+---> Package NetworkManager.x86_64 1:1.10.2-16.el7_5 will be an update
+---> Package NetworkManager-config-server.noarch 1:1.10.2-13.el7 will be updated
+---> Package NetworkManager-config-server.noarch 1:1.10.2-16.el7_5 will be an update
+---> Package NetworkManager-libnm.x86_64 1:1.10.2-13.el7 will be updated
+---> Package NetworkManager-libnm.x86_64 1:1.10.2-16.el7_5 will be an update
+---> Package NetworkManager-team.x86_64 1:1.10.2-13.el7 will be updated
+---> Package NetworkManager-team.x86_64 1:1.10.2-16.el7_5 will be an update
+---> Package NetworkManager-tui.x86_64 1:1.10.2-13.el7 will be updated
+---> Package NetworkManager-tui.x86_64 1:1.10.2-16.el7_5 will be an update
+---> Package audit.x86_64 0:2.8.1-3.el7 will be updated
+---> Package audit.x86_64 0:2.8.1-3.el7_5.1 will be an update
+---> Package audit-libs.x86_64 0:2.8.1-3.el7 will be updated
+---> Package audit-libs.x86_64 0:2.8.1-3.el7_5.1 will be an update
+---> Package augeas-libs.x86_64 0:1.4.0-5.el7 will be updated
+---> Package augeas-libs.x86_64 0:1.4.0-5.el7_5.1 will be an update
+---> Package bind-libs.x86_64 32:9.9.4-61.el7 will be updated
+---> Package bind-libs.x86_64 32:9.9.4-61.el7_5.1 will be an update
+---> Package bind-libs-lite.x86_64 32:9.9.4-61.el7 will be updated
+---> Package bind-libs-lite.x86_64 32:9.9.4-61.el7_5.1 will be an update
+---> Package bind-license.noarch 32:9.9.4-61.el7 will be updated
+---> Package bind-license.noarch 32:9.9.4-61.el7_5.1 will be an update
+---> Package bind-utils.x86_64 32:9.9.4-61.el7 will be updated
+---> Package bind-utils.x86_64 32:9.9.4-61.el7_5.1 will be an update
+---> Package binutils.x86_64 0:2.27-27.base.el7 will be updated
+---> Package binutils.x86_64 0:2.27-28.base.el7_5.1 will be an update
+---> Package ca-certificates.noarch 0:2017.2.20-71.el7 will be updated
+---> Package ca-certificates.noarch 0:2018.2.22-70.0.el7_5 will be an update
+---> Package dhclient.x86_64 12:4.2.5-68.el7 will be updated
+---> Package dhclient.x86_64 12:4.2.5-68.el7_5.1 will be an update
+---> Package dhcp-common.x86_64 12:4.2.5-68.el7 will be updated
+---> Package dhcp-common.x86_64 12:4.2.5-68.el7_5.1 will be an update
+---> Package dhcp-libs.x86_64 12:4.2.5-68.el7 will be updated
+---> Package dhcp-libs.x86_64 12:4.2.5-68.el7_5.1 will be an update
+---> Package dracut.x86_64 0:033-535.el7 will be updated
+---> Package dracut.x86_64 0:033-535.el7_5.1 will be an update
+---> Package dracut-network.x86_64 0:033-535.el7 will be updated
+---> Package dracut-network.x86_64 0:033-535.el7_5.1 will be an update
+---> Package e2fsprogs.x86_64 0:1.42.9-11.el7 will be updated
+---> Package e2fsprogs.x86_64 0:1.42.9-12.el7_5 will be an update
+---> Package e2fsprogs-libs.x86_64 0:1.42.9-11.el7 will be updated
+---> Package e2fsprogs-libs.x86_64 0:1.42.9-12.el7_5 will be an update
+---> Package gnupg2.x86_64 0:2.0.22-4.el7 will be updated
+---> Package gnupg2.x86_64 0:2.0.22-5.el7_5 will be an update
+---> Package initscripts.x86_64 0:9.49.41-1.el7 will be updated
+---> Package initscripts.x86_64 0:9.49.41-1.el7_5.1 will be an update
+---> Package iptables.x86_64 0:1.4.21-24.el7 will be updated
+---> Package iptables.x86_64 0:1.4.21-24.1.el7_5 will be an update
+---> Package iwl100-firmware.noarch 0:39.31.5.1-62.el7 will be updated
+---> Package iwl100-firmware.noarch 0:39.31.5.1-62.2.el7_5 will be an update
+---> Package iwl1000-firmware.noarch 1:39.31.5.1-62.el7 will be updated
+---> Package iwl1000-firmware.noarch 1:39.31.5.1-62.2.el7_5 will be an update
+---> Package iwl105-firmware.noarch 0:18.168.6.1-62.el7 will be updated
+---> Package iwl105-firmware.noarch 0:18.168.6.1-62.2.el7_5 will be an update
+---> Package iwl135-firmware.noarch 0:18.168.6.1-62.el7 will be updated
+---> Package iwl135-firmware.noarch 0:18.168.6.1-62.2.el7_5 will be an update
+---> Package iwl2000-firmware.noarch 0:18.168.6.1-62.el7 will be updated
+---> Package iwl2000-firmware.noarch 0:18.168.6.1-62.2.el7_5 will be an update
+---> Package iwl2030-firmware.noarch 0:18.168.6.1-62.el7 will be updated
+---> Package iwl2030-firmware.noarch 0:18.168.6.1-62.2.el7_5 will be an update
+---> Package iwl3160-firmware.noarch 0:22.0.7.0-62.el7 will be updated
+---> Package iwl3160-firmware.noarch 0:22.0.7.0-62.2.el7_5 will be an update
+---> Package iwl3945-firmware.noarch 0:15.32.2.9-62.el7 will be updated
+---> Package iwl3945-firmware.noarch 0:15.32.2.9-62.2.el7_5 will be an update
+---> Package iwl4965-firmware.noarch 0:228.61.2.24-62.el7 will be updated
+---> Package iwl4965-firmware.noarch 0:228.61.2.24-62.2.el7_5 will be an update
+---> Package iwl5000-firmware.noarch 0:8.83.5.1_1-62.el7 will be updated
+---> Package iwl5000-firmware.noarch 0:8.83.5.1_1-62.2.el7_5 will be an update
+---> Package iwl5150-firmware.noarch 0:8.24.2.2-62.el7 will be updated
+---> Package iwl5150-firmware.noarch 0:8.24.2.2-62.2.el7_5 will be an update
+---> Package iwl6000-firmware.noarch 0:9.221.4.1-62.el7 will be updated
+---> Package iwl6000-firmware.noarch 0:9.221.4.1-62.2.el7_5 will be an update
+---> Package iwl6000g2a-firmware.noarch 0:17.168.5.3-62.el7 will be updated
+---> Package iwl6000g2a-firmware.noarch 0:17.168.5.3-62.2.el7_5 will be an update
+---> Package iwl6000g2b-firmware.noarch 0:17.168.5.2-62.el7 will be updated
+---> Package iwl6000g2b-firmware.noarch 0:17.168.5.2-62.2.el7_5 will be an update
+---> Package iwl6050-firmware.noarch 0:41.28.5.1-62.el7 will be updated
+---> Package iwl6050-firmware.noarch 0:41.28.5.1-62.2.el7_5 will be an update
+---> Package iwl7260-firmware.noarch 0:22.0.7.0-62.el7 will be updated
+---> Package iwl7260-firmware.noarch 0:22.0.7.0-62.2.el7_5 will be an update
+---> Package iwl7265-firmware.noarch 0:22.0.7.0-62.el7 will be updated
+---> Package iwl7265-firmware.noarch 0:22.0.7.0-62.2.el7_5 will be an update
+---> Package kernel.x86_64 0:3.10.0-862.11.6.el7 will be installed
+---> Package kernel-tools.x86_64 0:3.10.0-862.el7 will be updated
+---> Package kernel-tools.x86_64 0:3.10.0-862.11.6.el7 will be an update
+---> Package kernel-tools-libs.x86_64 0:3.10.0-862.el7 will be updated
+---> Package kernel-tools-libs.x86_64 0:3.10.0-862.11.6.el7 will be an update
+---> Package kexec-tools.x86_64 0:2.0.15-13.el7 will be updated
+---> Package kexec-tools.x86_64 0:2.0.15-13.el7_5.1 will be an update
+---> Package kmod-kvdo.x86_64 0:6.1.0.153-15.el7 will be updated
+---> Package kmod-kvdo.x86_64 0:6.1.0.181-17.el7_5 will be an update
+---> Package kpartx.x86_64 0:0.4.9-119.el7 will be updated
+---> Package kpartx.x86_64 0:0.4.9-119.el7_5.1 will be an update
+---> Package libblkid.x86_64 0:2.23.2-52.el7 will be updated
+---> Package libblkid.x86_64 0:2.23.2-52.el7_5.1 will be an update
+---> Package libcom_err.x86_64 0:1.42.9-11.el7 will be updated
+---> Package libcom_err.x86_64 0:1.42.9-12.el7_5 will be an update
+---> Package libgcc.x86_64 0:4.8.5-28.el7 will be updated
+---> Package libgcc.x86_64 0:4.8.5-28.el7_5.1 will be an update
+---> Package libgomp.x86_64 0:4.8.5-28.el7 will be updated
+---> Package libgomp.x86_64 0:4.8.5-28.el7_5.1 will be an update
+---> Package libgudev1.x86_64 0:219-57.el7 will be updated
+---> Package libgudev1.x86_64 0:219-57.el7_5.1 will be an update
+---> Package libmount.x86_64 0:2.23.2-52.el7 will be updated
+---> Package libmount.x86_64 0:2.23.2-52.el7_5.1 will be an update
+---> Package libss.x86_64 0:1.42.9-11.el7 will be updated
+---> Package libss.x86_64 0:1.42.9-12.el7_5 will be an update
+---> Package libsss_idmap.x86_64 0:1.16.0-19.el7 will be updated
+---> Package libsss_idmap.x86_64 0:1.16.0-19.el7_5.5 will be an update
+---> Package libsss_nss_idmap.x86_64 0:1.16.0-19.el7 will be updated
+---> Package libsss_nss_idmap.x86_64 0:1.16.0-19.el7_5.5 will be an update
+---> Package libstdc++.x86_64 0:4.8.5-28.el7 will be updated
+---> Package libstdc++.x86_64 0:4.8.5-28.el7_5.1 will be an update
+---> Package libuuid.x86_64 0:2.23.2-52.el7 will be updated
+---> Package libuuid.x86_64 0:2.23.2-52.el7_5.1 will be an update
+---> Package linux-firmware.noarch 0:20180220-62.git6d51311.el7 will be updated
+---> Package linux-firmware.noarch 0:20180220-62.2.git6d51311.el7_5 will be an update
+---> Package microcode_ctl.x86_64 2:2.1-29.el7 will be updated
+---> Package microcode_ctl.x86_64 2:2.1-29.16.el7_5 will be an update
+---> Package nspr.x86_64 0:4.17.0-1.el7 will be updated
+---> Package nspr.x86_64 0:4.19.0-1.el7_5 will be an update
+---> Package nss.x86_64 0:3.34.0-4.el7 will be updated
+---> Package nss.x86_64 0:3.36.0-5.el7_5 will be an update
+---> Package nss-softokn.x86_64 0:3.34.0-2.el7 will be updated
+---> Package nss-softokn.x86_64 0:3.36.0-5.el7_5 will be an update
+---> Package nss-softokn-freebl.x86_64 0:3.34.0-2.el7 will be updated
+---> Package nss-softokn-freebl.x86_64 0:3.36.0-5.el7_5 will be an update
+---> Package nss-sysinit.x86_64 0:3.34.0-4.el7 will be updated
+---> Package nss-sysinit.x86_64 0:3.36.0-5.el7_5 will be an update
+---> Package nss-tools.x86_64 0:3.34.0-4.el7 will be updated
+---> Package nss-tools.x86_64 0:3.36.0-5.el7_5 will be an update
+---> Package nss-util.x86_64 0:3.34.0-2.el7 will be updated
+---> Package nss-util.x86_64 0:3.36.0-1.el7_5 will be an update
+---> Package openldap.x86_64 0:2.4.44-13.el7 will be updated
+---> Package openldap.x86_64 0:2.4.44-15.el7_5 will be an update
+---> Package procps-ng.x86_64 0:3.3.10-17.el7 will be updated
+---> Package procps-ng.x86_64 0:3.3.10-17.el7_5.2 will be an update
+---> Package python.x86_64 0:2.7.5-68.el7 will be updated
+---> Package python.x86_64 0:2.7.5-69.el7_5 will be an update
+---> Package python-libs.x86_64 0:2.7.5-68.el7 will be updated
+---> Package python-libs.x86_64 0:2.7.5-69.el7_5 will be an update
+---> Package python-perf.x86_64 0:3.10.0-862.el7 will be updated
+---> Package python-perf.x86_64 0:3.10.0-862.11.6.el7 will be an update
+---> Package qemu-guest-agent.x86_64 10:2.8.0-2.el7 will be updated
+---> Package qemu-guest-agent.x86_64 10:2.8.0-2.el7_5.1 will be an update
+---> Package rh-dotnetcore11-dotnetcore.x86_64 0:1.1.7-1.el7 will be updated
+---> Package rh-dotnetcore11-dotnetcore.x86_64 0:1.1.9-1.el7 will be an update
+---> Package rhui-azure-rhel7.noarch 0:2.1-19 will be updated
+---> Package rhui-azure-rhel7.noarch 0:2.2-74 will be an update
+---> Package rsyslog.x86_64 0:8.24.0-16.el7 will be updated
+---> Package rsyslog.x86_64 0:8.24.0-16.el7_5.4 will be an update
+---> Package selinux-policy.noarch 0:3.13.1-192.el7_5.3 will be updated
+---> Package selinux-policy.noarch 0:3.13.1-192.el7_5.6 will be an update
+---> Package selinux-policy-targeted.noarch 0:3.13.1-192.el7_5.3 will be updated
+---> Package selinux-policy-targeted.noarch 0:3.13.1-192.el7_5.6 will be an update
+---> Package sos.noarch 0:3.5-6.el7 will be updated
+---> Package sos.noarch 0:3.5-9.el7_5 will be an update
+---> Package sssd-client.x86_64 0:1.16.0-19.el7 will be updated
+---> Package sssd-client.x86_64 0:1.16.0-19.el7_5.5 will be an update
+---> Package sudo.x86_64 0:1.8.19p2-13.el7 will be updated
+---> Package sudo.x86_64 0:1.8.19p2-14.el7_5 will be an update
+---> Package systemd.x86_64 0:219-57.el7 will be updated
+---> Package systemd.x86_64 0:219-57.el7_5.1 will be an update
+---> Package systemd-libs.x86_64 0:219-57.el7 will be updated
+---> Package systemd-libs.x86_64 0:219-57.el7_5.1 will be an update
+---> Package systemd-python.x86_64 0:219-57.el7 will be updated
+---> Package systemd-python.x86_64 0:219-57.el7_5.1 will be an update
+---> Package systemd-sysv.x86_64 0:219-57.el7 will be updated
+---> Package systemd-sysv.x86_64 0:219-57.el7_5.1 will be an update
+---> Package systemtap-runtime.x86_64 0:3.2-4.el7 will be updated
+---> Package systemtap-runtime.x86_64 0:3.2-8.el7_5 will be an update
+---> Package tuned.noarch 0:2.9.0-1.el7 will be updated
+---> Package tuned.noarch 0:2.9.0-1.el7_5.2 will be an update
+---> Package tzdata.noarch 0:2018d-1.el7 will be updated
+---> Package tzdata.noarch 0:2018e-3.el7 will be an update
+---> Package util-linux.x86_64 0:2.23.2-52.el7 will be updated
+---> Package util-linux.x86_64 0:2.23.2-52.el7_5.1 will be an update
+---> Package vdo.x86_64 0:6.1.0.149-16 will be updated
+---> Package vdo.x86_64 0:6.1.0.168-18 will be an update
+---> Package yum-utils.noarch 0:1.1.31-45.el7 will be updated
+---> Package yum-utils.noarch 0:1.1.31-46.el7_5 will be an update
+--> Finished Dependency Resolution
+
+Dependencies Resolved
+
+================================================================================
+ Package          Arch   Version             Repository                    Size
+================================================================================
+Installing:
+ kernel           x86_64 3.10.0-862.11.6.el7 rhui-rhel-7-server-rhui-rpms  46 M
+Updating:
+ NetworkManager   x86_64 1:1.10.2-16.el7_5   rhui-rhel-7-server-rhui-rpms 1.7 M
+ NetworkManager-config-server
+                  noarch 1:1.10.2-16.el7_5   rhui-rhel-7-server-rhui-rpms 143 k
+ NetworkManager-libnm
+                  x86_64 1:1.10.2-16.el7_5   rhui-rhel-7-server-rhui-rpms 1.3 M
+ NetworkManager-team
+                  x86_64 1:1.10.2-16.el7_5   rhui-rhel-7-server-rhui-rpms 161 k
+ NetworkManager-tui
+                  x86_64 1:1.10.2-16.el7_5   rhui-rhel-7-server-rhui-rpms 235 k
+ audit            x86_64 2.8.1-3.el7_5.1     rhui-rhel-7-server-rhui-rpms 247 k
+ audit-libs       x86_64 2.8.1-3.el7_5.1     rhui-rhel-7-server-rhui-rpms  99 k
+ augeas-libs      x86_64 1.4.0-5.el7_5.1     rhui-rhel-7-server-rhui-rpms 355 k
+ bind-libs        x86_64 32:9.9.4-61.el7_5.1 rhui-rhel-7-server-rhui-rpms 1.0 M
+ bind-libs-lite   x86_64 32:9.9.4-61.el7_5.1 rhui-rhel-7-server-rhui-rpms 734 k
+ bind-license     noarch 32:9.9.4-61.el7_5.1 rhui-rhel-7-server-rhui-rpms  85 k
+ bind-utils       x86_64 32:9.9.4-61.el7_5.1 rhui-rhel-7-server-rhui-rpms 204 k
+ binutils         x86_64 2.27-28.base.el7_5.1
+                                             rhui-rhel-7-server-rhui-rpms 5.9 M
+ ca-certificates  noarch 2018.2.22-70.0.el7_5
+                                             rhui-rhel-7-server-rhui-rpms 392 k
+ dhclient         x86_64 12:4.2.5-68.el7_5.1 rhui-rhel-7-server-rhui-rpms 284 k
+ dhcp-common      x86_64 12:4.2.5-68.el7_5.1 rhui-rhel-7-server-rhui-rpms 175 k
+ dhcp-libs        x86_64 12:4.2.5-68.el7_5.1 rhui-rhel-7-server-rhui-rpms 131 k
+ dracut           x86_64 033-535.el7_5.1     rhui-rhel-7-server-rhui-rpms 325 k
+ dracut-network   x86_64 033-535.el7_5.1     rhui-rhel-7-server-rhui-rpms 100 k
+ e2fsprogs        x86_64 1.42.9-12.el7_5     rhui-rhel-7-server-rhui-rpms 699 k
+ e2fsprogs-libs   x86_64 1.42.9-12.el7_5     rhui-rhel-7-server-rhui-rpms 167 k
+ gnupg2           x86_64 2.0.22-5.el7_5      rhui-rhel-7-server-rhui-rpms 1.5 M
+ initscripts      x86_64 9.49.41-1.el7_5.1   rhui-rhel-7-server-rhui-rpms 437 k
+ iptables         x86_64 1.4.21-24.1.el7_5   rhui-rhel-7-server-rhui-rpms 432 k
+ iwl100-firmware  noarch 39.31.5.1-62.2.el7_5
+                                             rhui-rhel-7-server-rhui-rpms 155 k
+ iwl1000-firmware noarch 1:39.31.5.1-62.2.el7_5
+                                             rhui-rhel-7-server-rhui-rpms 218 k
+ iwl105-firmware  noarch 18.168.6.1-62.2.el7_5
+                                             rhui-rhel-7-server-rhui-rpms 239 k
+ iwl135-firmware  noarch 18.168.6.1-62.2.el7_5
+                                             rhui-rhel-7-server-rhui-rpms 248 k
+ iwl2000-firmware noarch 18.168.6.1-62.2.el7_5
+                                             rhui-rhel-7-server-rhui-rpms 242 k
+ iwl2030-firmware noarch 18.168.6.1-62.2.el7_5
+                                             rhui-rhel-7-server-rhui-rpms 251 k
+ iwl3160-firmware noarch 22.0.7.0-62.2.el7_5 rhui-rhel-7-server-rhui-rpms 1.6 M
+ iwl3945-firmware noarch 15.32.2.9-62.2.el7_5
+                                             rhui-rhel-7-server-rhui-rpms  93 k
+ iwl4965-firmware noarch 228.61.2.24-62.2.el7_5
+                                             rhui-rhel-7-server-rhui-rpms 106 k
+ iwl5000-firmware noarch 8.83.5.1_1-62.2.el7_5
+                                             rhui-rhel-7-server-rhui-rpms 299 k
+ iwl5150-firmware noarch 8.24.2.2-62.2.el7_5 rhui-rhel-7-server-rhui-rpms 152 k
+ iwl6000-firmware noarch 9.221.4.1-62.2.el7_5
+                                             rhui-rhel-7-server-rhui-rpms 172 k
+ iwl6000g2a-firmware
+                  noarch 17.168.5.3-62.2.el7_5
+                                             rhui-rhel-7-server-rhui-rpms 315 k
+ iwl6000g2b-firmware
+                  noarch 17.168.5.2-62.2.el7_5
+                                             rhui-rhel-7-server-rhui-rpms 315 k
+ iwl6050-firmware noarch 41.28.5.1-62.2.el7_5
+                                             rhui-rhel-7-server-rhui-rpms 248 k
+ iwl7260-firmware noarch 22.0.7.0-62.2.el7_5 rhui-rhel-7-server-rhui-rpms 1.1 M
+ iwl7265-firmware noarch 22.0.7.0-62.2.el7_5 rhui-rhel-7-server-rhui-rpms 5.5 M
+ kernel-tools     x86_64 3.10.0-862.11.6.el7 rhui-rhel-7-server-rhui-rpms 6.3 M
+ kernel-tools-libs
+                  x86_64 3.10.0-862.11.6.el7 rhui-rhel-7-server-rhui-rpms 6.2 M
+ kexec-tools      x86_64 2.0.15-13.el7_5.1   rhui-rhel-7-server-rhui-rpms 341 k
+ kmod-kvdo        x86_64 6.1.0.181-17.el7_5  rhui-rhel-7-server-rhui-rpms 349 k
+ kpartx           x86_64 0.4.9-119.el7_5.1   rhui-rhel-7-server-rhui-rpms  76 k
+ libblkid         x86_64 2.23.2-52.el7_5.1   rhui-rhel-7-server-rhui-rpms 178 k
+ libcom_err       x86_64 1.42.9-12.el7_5     rhui-rhel-7-server-rhui-rpms  41 k
+ libgcc           x86_64 4.8.5-28.el7_5.1    rhui-rhel-7-server-rhui-rpms 101 k
+ libgomp          x86_64 4.8.5-28.el7_5.1    rhui-rhel-7-server-rhui-rpms 156 k
+ libgudev1        x86_64 219-57.el7_5.1      rhui-rhel-7-server-rhui-rpms  92 k
+ libmount         x86_64 2.23.2-52.el7_5.1   rhui-rhel-7-server-rhui-rpms 180 k
+ libss            x86_64 1.42.9-12.el7_5     rhui-rhel-7-server-rhui-rpms  46 k
+ libsss_idmap     x86_64 1.16.0-19.el7_5.5   rhui-rhel-7-server-rhui-rpms 142 k
+ libsss_nss_idmap x86_64 1.16.0-19.el7_5.5   rhui-rhel-7-server-rhui-rpms 148 k
+ libstdc++        x86_64 4.8.5-28.el7_5.1    rhui-rhel-7-server-rhui-rpms 304 k
+ libuuid          x86_64 2.23.2-52.el7_5.1   rhui-rhel-7-server-rhui-rpms  81 k
+ linux-firmware   noarch 20180220-62.2.git6d51311.el7_5
+                                             rhui-rhel-7-server-rhui-rpms  57 M
+ microcode_ctl    x86_64 2:2.1-29.16.el7_5   rhui-rhel-7-server-rhui-rpms 1.4 M
+ nspr             x86_64 4.19.0-1.el7_5      rhui-rhel-7-server-rhui-rpms 127 k
+ nss              x86_64 3.36.0-5.el7_5      rhui-rhel-7-server-rhui-rpms 835 k
+ nss-softokn      x86_64 3.36.0-5.el7_5      rhui-rhel-7-server-rhui-rpms 315 k
+ nss-softokn-freebl
+                  x86_64 3.36.0-5.el7_5      rhui-rhel-7-server-rhui-rpms 222 k
+ nss-sysinit      x86_64 3.36.0-5.el7_5      rhui-rhel-7-server-rhui-rpms  62 k
+ nss-tools        x86_64 3.36.0-5.el7_5      rhui-rhel-7-server-rhui-rpms 514 k
+ nss-util         x86_64 3.36.0-1.el7_5      rhui-rhel-7-server-rhui-rpms  78 k
+ openldap         x86_64 2.4.44-15.el7_5     rhui-rhel-7-server-rhui-rpms 355 k
+ procps-ng        x86_64 3.3.10-17.el7_5.2   rhui-rhel-7-server-rhui-rpms 290 k
+ python           x86_64 2.7.5-69.el7_5      rhui-rhel-7-server-rhui-rpms  93 k
+ python-libs      x86_64 2.7.5-69.el7_5      rhui-rhel-7-server-rhui-rpms 5.6 M
+ python-perf      x86_64 3.10.0-862.11.6.el7 rhui-rhel-7-server-rhui-rpms 6.3 M
+ qemu-guest-agent x86_64 10:2.8.0-2.el7_5.1  rhui-rhel-7-server-rhui-rpms 150 k
+ rh-dotnetcore11-dotnetcore
+                  x86_64 1.1.9-1.el7         rhui-rhel-7-server-dotnet-rhui-rpms
+                                                                           42 M
+ rhui-azure-rhel7 noarch 2.2-74              rhui-microsoft-azure-rhel7   9.2 k
+ rsyslog          x86_64 8.24.0-16.el7_5.4   rhui-rhel-7-server-rhui-rpms 607 k
+ selinux-policy   noarch 3.13.1-192.el7_5.6  rhui-rhel-7-server-rhui-rpms 453 k
+ selinux-policy-targeted
+                  noarch 3.13.1-192.el7_5.6  rhui-rhel-7-server-rhui-rpms 6.6 M
+ sos              noarch 3.5-9.el7_5         rhui-rhel-7-server-rhui-rpms 414 k
+ sssd-client      x86_64 1.16.0-19.el7_5.5   rhui-rhel-7-server-rhui-rpms 196 k
+ sudo             x86_64 1.8.19p2-14.el7_5   rhui-rhel-7-server-rhui-rpms 1.1 M
+ systemd          x86_64 219-57.el7_5.1      rhui-rhel-7-server-rhui-rpms 5.0 M
+ systemd-libs     x86_64 219-57.el7_5.1      rhui-rhel-7-server-rhui-rpms 402 k
+ systemd-python   x86_64 219-57.el7_5.1      rhui-rhel-7-server-rhui-rpms 128 k
+ systemd-sysv     x86_64 219-57.el7_5.1      rhui-rhel-7-server-rhui-rpms  79 k
+ systemtap-runtime
+                  x86_64 3.2-8.el7_5         rhui-rhel-7-server-rhui-rpms 404 k
+ tuned            noarch 2.9.0-1.el7_5.2     rhui-rhel-7-server-rhui-rpms 244 k
+ tzdata           noarch 2018e-3.el7         rhui-rhel-7-server-rhui-rpms 482 k
+ util-linux       x86_64 2.23.2-52.el7_5.1   rhui-rhel-7-server-rhui-rpms 2.0 M
+ vdo              x86_64 6.1.0.168-18        rhui-rhel-7-server-rhui-rpms 602 k
+ yum-utils        noarch 1.1.31-46.el7_5     rhui-rhel-7-server-rhui-rpms 120 k
+
+Transaction Summary
+================================================================================
+Install   1 Package
+Upgrade  90 Packages
+
+Total download size: 222 M
+Downloading packages:
+Delta RPMs disabled because /usr/bin/applydeltarpm not installed.
+--------------------------------------------------------------------------------
+Total                                               77 MB/s | 222 MB  00:02     
+Running transaction check
+Running transaction test
+Transaction test succeeded
+Running transaction
+  Updating   : libgcc-4.8.5-28.el7_5.1.x86_64                             1/181 
+  Updating   : systemd-libs-219-57.el7_5.1.x86_64                         2/181 
+  Updating   : nspr-4.19.0-1.el7_5.x86_64                                 3/181 
+  Updating   : nss-util-3.36.0-1.el7_5.x86_64                             4/181 
+  Updating   : libuuid-2.23.2-52.el7_5.1.x86_64                           5/181 
+  Updating   : libcom_err-1.42.9-12.el7_5.x86_64                          6/181 
+  Updating   : audit-libs-2.8.1-3.el7_5.1.x86_64                          7/181 
+  Updating   : libblkid-2.23.2-52.el7_5.1.x86_64                          8/181 
+  Updating   : libstdc++-4.8.5-28.el7_5.1.x86_64                          9/181 
+  Updating   : python-libs-2.7.5-69.el7_5.x86_64                         10/181 
+  Updating   : python-2.7.5-69.el7_5.x86_64                              11/181 
+  Updating   : libmount-2.23.2-52.el7_5.1.x86_64                         12/181 
+  Updating   : systemd-219-57.el7_5.1.x86_64                             13/181 
+  Updating   : util-linux-2.23.2-52.el7_5.1.x86_64                       14/181 
+  Updating   : procps-ng-3.3.10-17.el7_5.2.x86_64                        15/181 
+  Updating   : initscripts-9.49.41-1.el7_5.1.x86_64                      16/181 
+  Updating   : 32:bind-license-9.9.4-61.el7_5.1.noarch                   17/181 
+  Updating   : 32:bind-libs-lite-9.9.4-61.el7_5.1.x86_64                 18/181 
+  Updating   : 32:bind-libs-9.9.4-61.el7_5.1.x86_64                      19/181 
+  Updating   : systemd-sysv-219-57.el7_5.1.x86_64                        20/181 
+  Updating   : python-perf-3.10.0-862.11.6.el7.x86_64                    21/181 
+  Updating   : libss-1.42.9-12.el7_5.x86_64                              22/181 
+  Updating   : e2fsprogs-libs-1.42.9-12.el7_5.x86_64                     23/181 
+  Updating   : nss-softokn-freebl-3.36.0-5.el7_5.x86_64                  24/181 
+  Updating   : nss-softokn-3.36.0-5.el7_5.x86_64                         25/181 
+  Updating   : nss-sysinit-3.36.0-5.el7_5.x86_64                         26/181 
+  Updating   : nss-3.36.0-5.el7_5.x86_64                                 27/181 
+  Updating   : 1:NetworkManager-libnm-1.10.2-16.el7_5.x86_64             28/181 
+  Updating   : 1:NetworkManager-1.10.2-16.el7_5.x86_64                   29/181 
+  Updating   : nss-tools-3.36.0-5.el7_5.x86_64                           30/181 
+  Updating   : openldap-2.4.44-15.el7_5.x86_64                           31/181 
+  Updating   : 12:dhcp-libs-4.2.5-68.el7_5.1.x86_64                      32/181 
+  Updating   : 12:dhcp-common-4.2.5-68.el7_5.1.x86_64                    33/181 
+  Updating   : 12:dhclient-4.2.5-68.el7_5.1.x86_64                       34/181 
+  Updating   : selinux-policy-3.13.1-192.el7_5.6.noarch                  35/181 
+  Updating   : libsss_nss_idmap-1.16.0-19.el7_5.5.x86_64                 36/181 
+  Updating   : libsss_idmap-1.16.0-19.el7_5.5.x86_64                     37/181 
+  Updating   : kpartx-0.4.9-119.el7_5.1.x86_64                           38/181 
+  Updating   : dracut-033-535.el7_5.1.x86_64                             39/181 
+  Updating   : dracut-network-033-535.el7_5.1.x86_64                     40/181 
+  Updating   : kernel-tools-libs-3.10.0-862.11.6.el7.x86_64              41/181 
+  Updating   : linux-firmware-20180220-62.2.git6d51311.el7_5.noarch      42/181 
+  Installing : kernel-3.10.0-862.11.6.el7.x86_64                         43/181 
+  Updating   : kmod-kvdo-6.1.0.181-17.el7_5.x86_64                       44/181 
+  Updating   : vdo-6.1.0.168-18.x86_64                                   45/181 
+  Updating   : kernel-tools-3.10.0-862.11.6.el7.x86_64                   46/181 
+  Updating   : kexec-tools-2.0.15-13.el7_5.1.x86_64                      47/181 
+  Updating   : sssd-client-1.16.0-19.el7_5.5.x86_64                      48/181 
+  Updating   : selinux-policy-targeted-3.13.1-192.el7_5.6.noarch         49/181 
+  Updating   : sudo-1.8.19p2-14.el7_5.x86_64                             50/181 
+  Updating   : gnupg2-2.0.22-5.el7_5.x86_64                              51/181 
+  Updating   : 1:NetworkManager-tui-1.10.2-16.el7_5.x86_64               52/181 
+  Updating   : 1:NetworkManager-team-1.10.2-16.el7_5.x86_64              53/181 
+  Updating   : systemtap-runtime-3.2-8.el7_5.x86_64                      54/181 
+  Updating   : e2fsprogs-1.42.9-12.el7_5.x86_64                          55/181 
+  Updating   : tuned-2.9.0-1.el7_5.2.noarch                              56/181 
+  Updating   : audit-2.8.1-3.el7_5.1.x86_64                              57/181 
+  Updating   : 32:bind-utils-9.9.4-61.el7_5.1.x86_64                     58/181 
+  Updating   : 10:qemu-guest-agent-2.8.0-2.el7_5.1.x86_64                59/181 
+  Updating   : rsyslog-8.24.0-16.el7_5.4.x86_64                          60/181 
+  Updating   : systemd-python-219-57.el7_5.1.x86_64                      61/181 
+  Updating   : 2:microcode_ctl-2.1-29.16.el7_5.x86_64                    62/181 
+  Updating   : sos-3.5-9.el7_5.noarch                                    63/181 
+  Updating   : yum-utils-1.1.31-46.el7_5.noarch                          64/181 
+  Updating   : rh-dotnetcore11-dotnetcore-1.1.9-1.el7.x86_64             65/181 
+  Updating   : libgudev1-219-57.el7_5.1.x86_64                           66/181 
+  Updating   : augeas-libs-1.4.0-5.el7_5.1.x86_64                        67/181 
+  Updating   : iwl6000g2a-firmware-17.168.5.3-62.2.el7_5.noarch          68/181 
+  Updating   : iwl5000-firmware-8.83.5.1_1-62.2.el7_5.noarch             69/181 
+  Updating   : rhui-azure-rhel7-2.2-74.noarch                            70/181 
+  Updating   : tzdata-2018e-3.el7.noarch                                 71/181 
+  Updating   : iwl135-firmware-18.168.6.1-62.2.el7_5.noarch              72/181 
+  Updating   : iwl6050-firmware-41.28.5.1-62.2.el7_5.noarch              73/181 
+  Updating   : iwl7260-firmware-22.0.7.0-62.2.el7_5.noarch               74/181 
+  Updating   : iwl2000-firmware-18.168.6.1-62.2.el7_5.noarch             75/181 
+  Updating   : binutils-2.27-28.base.el7_5.1.x86_64                      76/181 
+  Updating   : iwl3945-firmware-15.32.2.9-62.2.el7_5.noarch              77/181 
+  Updating   : iwl6000g2b-firmware-17.168.5.2-62.2.el7_5.noarch          78/181 
+  Updating   : iwl3160-firmware-22.0.7.0-62.2.el7_5.noarch               79/181 
+  Updating   : iwl5150-firmware-8.24.2.2-62.2.el7_5.noarch               80/181 
+  Updating   : iwl100-firmware-39.31.5.1-62.2.el7_5.noarch               81/181 
+  Updating   : 1:iwl1000-firmware-39.31.5.1-62.2.el7_5.noarch            82/181 
+  Updating   : ca-certificates-2018.2.22-70.0.el7_5.noarch               83/181 
+  Updating   : iwl4965-firmware-228.61.2.24-62.2.el7_5.noarch            84/181 
+  Updating   : iwl6000-firmware-9.221.4.1-62.2.el7_5.noarch              85/181 
+  Updating   : iwl105-firmware-18.168.6.1-62.2.el7_5.noarch              86/181 
+  Updating   : iptables-1.4.21-24.1.el7_5.x86_64                         87/181 
+  Updating   : iwl2030-firmware-18.168.6.1-62.2.el7_5.noarch             88/181 
+  Updating   : libgomp-4.8.5-28.el7_5.1.x86_64                           89/181 
+  Updating   : iwl7265-firmware-22.0.7.0-62.2.el7_5.noarch               90/181 
+  Updating   : 1:NetworkManager-config-server-1.10.2-16.el7_5.noarch     91/181 
+  Cleanup    : tuned-2.9.0-1.el7.noarch                                  92/181 
+  Cleanup    : selinux-policy-targeted-3.13.1-192.el7_5.3.noarch         93/181 
+  Cleanup    : yum-utils-1.1.31-45.el7.noarch                            94/181 
+  Cleanup    : sos-3.5-6.el7.noarch                                      95/181 
+  Cleanup    : selinux-policy-3.13.1-192.el7_5.3.noarch                  96/181 
+  Cleanup    : iwl6000g2a-firmware-17.168.5.3-62.el7.noarch              97/181 
+  Cleanup    : iwl5000-firmware-8.83.5.1_1-62.el7.noarch                 98/181 
+  Cleanup    : rhui-azure-rhel7-2.1-19.noarch                            99/181 
+  Cleanup    : tzdata-2018d-1.el7.noarch                                100/181 
+  Cleanup    : iwl135-firmware-18.168.6.1-62.el7.noarch                 101/181 
+  Cleanup    : iwl6050-firmware-41.28.5.1-62.el7.noarch                 102/181 
+  Cleanup    : iwl7260-firmware-22.0.7.0-62.el7.noarch                  103/181 
+  Cleanup    : iwl2000-firmware-18.168.6.1-62.el7.noarch                104/181 
+  Cleanup    : iwl3945-firmware-15.32.2.9-62.el7.noarch                 105/181 
+  Cleanup    : iwl6000g2b-firmware-17.168.5.2-62.el7.noarch             106/181 
+  Cleanup    : iwl3160-firmware-22.0.7.0-62.el7.noarch                  107/181 
+  Cleanup    : iwl5150-firmware-8.24.2.2-62.el7.noarch                  108/181 
+  Cleanup    : iwl100-firmware-39.31.5.1-62.el7.noarch                  109/181 
+  Cleanup    : 1:iwl1000-firmware-39.31.5.1-62.el7.noarch               110/181 
+  Cleanup    : ca-certificates-2017.2.20-71.el7.noarch                  111/181 
+  Cleanup    : iwl4965-firmware-228.61.2.24-62.el7.noarch               112/181 
+  Cleanup    : iwl6000-firmware-9.221.4.1-62.el7.noarch                 113/181 
+  Cleanup    : iwl105-firmware-18.168.6.1-62.el7.noarch                 114/181 
+  Cleanup    : iwl2030-firmware-18.168.6.1-62.el7.noarch                115/181 
+  Cleanup    : iwl7265-firmware-22.0.7.0-62.el7.noarch                  116/181 
+  Cleanup    : linux-firmware-20180220-62.git6d51311.el7.noarch         117/181 
+  Cleanup    : 1:NetworkManager-config-server-1.10.2-13.el7.noarch      118/181 
+  Cleanup    : 1:NetworkManager-tui-1.10.2-13.el7.x86_64                119/181 
+  Cleanup    : systemtap-runtime-3.2-4.el7.x86_64                       120/181 
+  Cleanup    : systemd-python-219-57.el7.x86_64                         121/181 
+  Cleanup    : e2fsprogs-1.42.9-11.el7.x86_64                           122/181 
+Removed symlink /etc/systemd/system/multi-user.target.wants/vdo.service.
+  Cleanup    : vdo-6.1.0.149-16.x86_64                                  123/181 
+  Cleanup    : rsyslog-8.24.0-16.el7.x86_64                             124/181 
+  Cleanup    : audit-2.8.1-3.el7.x86_64                                 125/181 
+  Cleanup    : sssd-client-1.16.0-19.el7.x86_64                         126/181 
+  Cleanup    : 10:qemu-guest-agent-2.8.0-2.el7.x86_64                   127/181 
+  Cleanup    : 32:bind-utils-9.9.4-61.el7.x86_64                        128/181 
+  Cleanup    : kexec-tools-2.0.15-13.el7.x86_64                         129/181 
+  Cleanup    : rh-dotnetcore11-dotnetcore-1.1.7-1.el7.x86_64            130/181 
+  Cleanup    : dracut-network-033-535.el7.x86_64                        131/181 
+  Cleanup    : 12:dhclient-4.2.5-68.el7.x86_64                          132/181 
+  Cleanup    : systemd-sysv-219-57.el7.x86_64                           133/181 
+  Cleanup    : dracut-033-535.el7.x86_64                                134/181 
+  Cleanup    : initscripts-9.49.41-1.el7.x86_64                         135/181 
+  Cleanup    : util-linux-2.23.2-52.el7.x86_64                          136/181 
+  Cleanup    : 32:bind-libs-lite-9.9.4-61.el7.x86_64                    137/181 
+  Cleanup    : 32:bind-libs-9.9.4-61.el7.x86_64                         138/181 
+  Cleanup    : python-perf-3.10.0-862.el7.x86_64                        139/181 
+  Cleanup    : 1:NetworkManager-team-1.10.2-13.el7.x86_64               140/181 
+  Cleanup    : 1:NetworkManager-1.10.2-13.el7.x86_64                    141/181 
+  Cleanup    : 1:NetworkManager-libnm-1.10.2-13.el7.x86_64              142/181 
+  Cleanup    : sudo-1.8.19p2-13.el7.x86_64                              143/181 
+  Cleanup    : 12:dhcp-common-4.2.5-68.el7.x86_64                       144/181 
+  Cleanup    : 12:dhcp-libs-4.2.5-68.el7.x86_64                         145/181 
+  Cleanup    : python-2.7.5-68.el7.x86_64                               146/181 
+  Cleanup    : procps-ng-3.3.10-17.el7.x86_64                           147/181 
+  Cleanup    : libstdc++-4.8.5-28.el7.x86_64                            148/181 
+  Cleanup    : e2fsprogs-libs-1.42.9-11.el7.x86_64                      149/181 
+  Cleanup    : libss-1.42.9-11.el7.x86_64                               150/181 
+  Cleanup    : augeas-libs-1.4.0-5.el7.x86_64                           151/181 
+  Cleanup    : kernel-tools-3.10.0-862.el7.x86_64                       152/181 
+  Cleanup    : 2:microcode_ctl-2.1-29.el7.x86_64                        153/181 
+  Cleanup    : systemd-219-57.el7.x86_64                                154/181 
+  Cleanup    : libmount-2.23.2-52.el7.x86_64                            155/181 
+  Cleanup    : libblkid-2.23.2-52.el7.x86_64                            156/181 
+  Cleanup    : libgudev1-219-57.el7.x86_64                              157/181 
+  Cleanup    : systemd-libs-219-57.el7.x86_64                           158/181 
+  Cleanup    : gnupg2-2.0.22-4.el7.x86_64                               159/181 
+  Cleanup    : 32:bind-license-9.9.4-61.el7.noarch                      160/181 
+  Cleanup    : kmod-kvdo-6.1.0.153-15.el7.x86_64                        161/181 
+  Cleanup    : openldap-2.4.44-13.el7.x86_64                            162/181 
+  Cleanup    : nss-tools-3.34.0-4.el7.x86_64                            163/181 
+  Cleanup    : nss-sysinit-3.34.0-4.el7.x86_64                          164/181 
+  Cleanup    : nss-3.34.0-4.el7.x86_64                                  165/181 
+  Cleanup    : nss-softokn-3.34.0-2.el7.x86_64                          166/181 
+  Cleanup    : nss-softokn-freebl-3.34.0-2.el7.x86_64                   167/181 
+  Cleanup    : nss-util-3.34.0-2.el7.x86_64                             168/181 
+  Cleanup    : nspr-4.17.0-1.el7.x86_64                                 169/181 
+  Cleanup    : libgcc-4.8.5-28.el7.x86_64                               170/181 
+  Cleanup    : libuuid-2.23.2-52.el7.x86_64                             171/181 
+  Cleanup    : audit-libs-2.8.1-3.el7.x86_64                            172/181 
+  Cleanup    : kernel-tools-libs-3.10.0-862.el7.x86_64                  173/181 
+  Cleanup    : libcom_err-1.42.9-11.el7.x86_64                          174/181 
+  Cleanup    : python-libs-2.7.5-68.el7.x86_64                          175/181 
+  Cleanup    : kpartx-0.4.9-119.el7.x86_64                              176/181 
+  Cleanup    : libsss_idmap-1.16.0-19.el7.x86_64                        177/181 
+  Cleanup    : libsss_nss_idmap-1.16.0-19.el7.x86_64                    178/181 
+  Cleanup    : binutils-2.27-27.base.el7.x86_64                         179/181 
+  Cleanup    : iptables-1.4.21-24.el7.x86_64                            180/181 
+  Cleanup    : libgomp-4.8.5-28.el7.x86_64                              181/181 
+  Verifying  : 1:NetworkManager-config-server-1.10.2-16.el7_5.noarch      1/181 
+  Verifying  : linux-firmware-20180220-62.2.git6d51311.el7_5.noarch       2/181 
+  Verifying  : iwl7265-firmware-22.0.7.0-62.2.el7_5.noarch                3/181 
+  Verifying  : libgomp-4.8.5-28.el7_5.1.x86_64                            4/181 
+  Verifying  : 1:NetworkManager-tui-1.10.2-16.el7_5.x86_64                5/181 
+  Verifying  : libcom_err-1.42.9-12.el7_5.x86_64                          6/181 
+  Verifying  : procps-ng-3.3.10-17.el7_5.2.x86_64                         7/181 
+  Verifying  : openldap-2.4.44-15.el7_5.x86_64                            8/181 
+  Verifying  : 32:bind-license-9.9.4-61.el7_5.1.noarch                    9/181 
+  Verifying  : tuned-2.9.0-1.el7_5.2.noarch                              10/181 
+  Verifying  : iwl2030-firmware-18.168.6.1-62.2.el7_5.noarch             11/181 
+  Verifying  : kernel-tools-libs-3.10.0-862.11.6.el7.x86_64              12/181 
+  Verifying  : iptables-1.4.21-24.1.el7_5.x86_64                         13/181 
+  Verifying  : systemtap-runtime-3.2-8.el7_5.x86_64                      14/181 
+  Verifying  : rh-dotnetcore11-dotnetcore-1.1.9-1.el7.x86_64             15/181 
+  Verifying  : util-linux-2.23.2-52.el7_5.1.x86_64                       16/181 
+  Verifying  : 1:NetworkManager-1.10.2-16.el7_5.x86_64                   17/181 
+  Verifying  : iwl105-firmware-18.168.6.1-62.2.el7_5.noarch              18/181 
+  Verifying  : 12:dhcp-common-4.2.5-68.el7_5.1.x86_64                    19/181 
+  Verifying  : kexec-tools-2.0.15-13.el7_5.1.x86_64                      20/181 
+  Verifying  : kpartx-0.4.9-119.el7_5.1.x86_64                           21/181 
+  Verifying  : 32:bind-utils-9.9.4-61.el7_5.1.x86_64                     22/181 
+  Verifying  : nss-util-3.36.0-1.el7_5.x86_64                            23/181 
+  Verifying  : 32:bind-libs-lite-9.9.4-61.el7_5.1.x86_64                 24/181 
+  Verifying  : 10:qemu-guest-agent-2.8.0-2.el7_5.1.x86_64                25/181 
+  Verifying  : kernel-3.10.0-862.11.6.el7.x86_64                         26/181 
+  Verifying  : libsss_idmap-1.16.0-19.el7_5.5.x86_64                     27/181 
+  Verifying  : sos-3.5-9.el7_5.noarch                                    28/181 
+  Verifying  : sudo-1.8.19p2-14.el7_5.x86_64                             29/181 
+  Verifying  : dracut-network-033-535.el7_5.1.x86_64                     30/181 
+  Verifying  : e2fsprogs-1.42.9-12.el7_5.x86_64                          31/181 
+  Verifying  : systemd-219-57.el7_5.1.x86_64                             32/181 
+  Verifying  : iwl6000-firmware-9.221.4.1-62.2.el7_5.noarch              33/181 
+  Verifying  : libuuid-2.23.2-52.el7_5.1.x86_64                          34/181 
+  Verifying  : libgcc-4.8.5-28.el7_5.1.x86_64                            35/181 
+  Verifying  : iwl4965-firmware-228.61.2.24-62.2.el7_5.noarch            36/181 
+  Verifying  : libblkid-2.23.2-52.el7_5.1.x86_64                         37/181 
+  Verifying  : rsyslog-8.24.0-16.el7_5.4.x86_64                          38/181 
+  Verifying  : python-2.7.5-69.el7_5.x86_64                              39/181 
+  Verifying  : dracut-033-535.el7_5.1.x86_64                             40/181 
+  Verifying  : ca-certificates-2018.2.22-70.0.el7_5.noarch               41/181 
+  Verifying  : audit-libs-2.8.1-3.el7_5.1.x86_64                         42/181 
+  Verifying  : systemd-python-219-57.el7_5.1.x86_64                      43/181 
+  Verifying  : 32:bind-libs-9.9.4-61.el7_5.1.x86_64                      44/181 
+  Verifying  : 1:iwl1000-firmware-39.31.5.1-62.2.el7_5.noarch            45/181 
+  Verifying  : initscripts-9.49.41-1.el7_5.1.x86_64                      46/181 
+  Verifying  : iwl100-firmware-39.31.5.1-62.2.el7_5.noarch               47/181 
+  Verifying  : 12:dhcp-libs-4.2.5-68.el7_5.1.x86_64                      48/181 
+  Verifying  : iwl5150-firmware-8.24.2.2-62.2.el7_5.noarch               49/181 
+  Verifying  : iwl3160-firmware-22.0.7.0-62.2.el7_5.noarch               50/181 
+  Verifying  : yum-utils-1.1.31-46.el7_5.noarch                          51/181 
+  Verifying  : gnupg2-2.0.22-5.el7_5.x86_64                              52/181 
+  Verifying  : libss-1.42.9-12.el7_5.x86_64                              53/181 
+  Verifying  : python-libs-2.7.5-69.el7_5.x86_64                         54/181 
+  Verifying  : libgudev1-219-57.el7_5.1.x86_64                           55/181 
+  Verifying  : e2fsprogs-libs-1.42.9-12.el7_5.x86_64                     56/181 
+  Verifying  : iwl6000g2b-firmware-17.168.5.2-62.2.el7_5.noarch          57/181 
+  Verifying  : selinux-policy-targeted-3.13.1-192.el7_5.6.noarch         58/181 
+  Verifying  : iwl3945-firmware-15.32.2.9-62.2.el7_5.noarch              59/181 
+  Verifying  : binutils-2.27-28.base.el7_5.1.x86_64                      60/181 
+  Verifying  : systemd-sysv-219-57.el7_5.1.x86_64                        61/181 
+  Verifying  : 2:microcode_ctl-2.1-29.16.el7_5.x86_64                    62/181 
+  Verifying  : nss-softokn-freebl-3.36.0-5.el7_5.x86_64                  63/181 
+  Verifying  : kmod-kvdo-6.1.0.181-17.el7_5.x86_64                       64/181 
+  Verifying  : nspr-4.19.0-1.el7_5.x86_64                                65/181 
+  Verifying  : sssd-client-1.16.0-19.el7_5.5.x86_64                      66/181 
+  Verifying  : nss-softokn-3.36.0-5.el7_5.x86_64                         67/181 
+  Verifying  : iwl2000-firmware-18.168.6.1-62.2.el7_5.noarch             68/181 
+  Verifying  : nss-tools-3.36.0-5.el7_5.x86_64                           69/181 
+  Verifying  : iwl7260-firmware-22.0.7.0-62.2.el7_5.noarch               70/181 
+  Verifying  : audit-2.8.1-3.el7_5.1.x86_64                              71/181 
+  Verifying  : vdo-6.1.0.168-18.x86_64                                   72/181 
+  Verifying  : kernel-tools-3.10.0-862.11.6.el7.x86_64                   73/181 
+  Verifying  : nss-sysinit-3.36.0-5.el7_5.x86_64                         74/181 
+  Verifying  : iwl6050-firmware-41.28.5.1-62.2.el7_5.noarch              75/181 
+  Verifying  : iwl135-firmware-18.168.6.1-62.2.el7_5.noarch              76/181 
+  Verifying  : 1:NetworkManager-libnm-1.10.2-16.el7_5.x86_64             77/181 
+  Verifying  : nss-3.36.0-5.el7_5.x86_64                                 78/181 
+  Verifying  : libmount-2.23.2-52.el7_5.1.x86_64                         79/181 
+  Verifying  : libsss_nss_idmap-1.16.0-19.el7_5.5.x86_64                 80/181 
+  Verifying  : 1:NetworkManager-team-1.10.2-16.el7_5.x86_64              81/181 
+  Verifying  : systemd-libs-219-57.el7_5.1.x86_64                        82/181 
+  Verifying  : tzdata-2018e-3.el7.noarch                                 83/181 
+  Verifying  : 12:dhclient-4.2.5-68.el7_5.1.x86_64                       84/181 
+  Verifying  : rhui-azure-rhel7-2.2-74.noarch                            85/181 
+  Verifying  : iwl5000-firmware-8.83.5.1_1-62.2.el7_5.noarch             86/181 
+  Verifying  : python-perf-3.10.0-862.11.6.el7.x86_64                    87/181 
+  Verifying  : augeas-libs-1.4.0-5.el7_5.1.x86_64                        88/181 
+  Verifying  : iwl6000g2a-firmware-17.168.5.3-62.2.el7_5.noarch          89/181 
+  Verifying  : selinux-policy-3.13.1-192.el7_5.6.noarch                  90/181 
+  Verifying  : libstdc++-4.8.5-28.el7_5.1.x86_64                         91/181 
+  Verifying  : python-libs-2.7.5-68.el7.x86_64                           92/181 
+  Verifying  : nss-sysinit-3.34.0-4.el7.x86_64                           93/181 
+  Verifying  : iwl5150-firmware-8.24.2.2-62.el7.noarch                   94/181 
+  Verifying  : libgomp-4.8.5-28.el7.x86_64                               95/181 
+  Verifying  : yum-utils-1.1.31-45.el7.noarch                            96/181 
+  Verifying  : libstdc++-4.8.5-28.el7.x86_64                             97/181 
+  Verifying  : iwl6000g2b-firmware-17.168.5.2-62.el7.noarch              98/181 
+  Verifying  : iwl4965-firmware-228.61.2.24-62.el7.noarch                99/181 
+  Verifying  : iwl6000-firmware-9.221.4.1-62.el7.noarch                 100/181 
+  Verifying  : 1:iwl1000-firmware-39.31.5.1-62.el7.noarch               101/181 
+  Verifying  : 2:microcode_ctl-2.1-29.el7.x86_64                        102/181 
+  Verifying  : libgcc-4.8.5-28.el7.x86_64                               103/181 
+  Verifying  : kmod-kvdo-6.1.0.153-15.el7.x86_64                        104/181 
+  Verifying  : kexec-tools-2.0.15-13.el7.x86_64                         105/181 
+  Verifying  : linux-firmware-20180220-62.git6d51311.el7.noarch         106/181 
+  Verifying  : vdo-6.1.0.149-16.x86_64                                  107/181 
+  Verifying  : iwl7265-firmware-22.0.7.0-62.el7.noarch                  108/181 
+  Verifying  : libmount-2.23.2-52.el7.x86_64                            109/181 
+  Verifying  : dracut-033-535.el7.x86_64                                110/181 
+  Verifying  : util-linux-2.23.2-52.el7.x86_64                          111/181 
+  Verifying  : systemd-sysv-219-57.el7.x86_64                           112/181 
+  Verifying  : libsss_idmap-1.16.0-19.el7.x86_64                        113/181 
+  Verifying  : tzdata-2018d-1.el7.noarch                                114/181 
+  Verifying  : dracut-network-033-535.el7.x86_64                        115/181 
+  Verifying  : nss-util-3.34.0-2.el7.x86_64                             116/181 
+  Verifying  : 1:NetworkManager-config-server-1.10.2-13.el7.noarch      117/181 
+  Verifying  : systemd-python-219-57.el7.x86_64                         118/181 
+  Verifying  : iptables-1.4.21-24.el7.x86_64                            119/181 
+  Verifying  : 32:bind-libs-lite-9.9.4-61.el7.x86_64                    120/181 
+  Verifying  : 32:bind-utils-9.9.4-61.el7.x86_64                        121/181 
+  Verifying  : kernel-tools-3.10.0-862.el7.x86_64                       122/181 
+  Verifying  : gnupg2-2.0.22-4.el7.x86_64                               123/181 
+  Verifying  : rh-dotnetcore11-dotnetcore-1.1.7-1.el7.x86_64            124/181 
+  Verifying  : iwl3160-firmware-22.0.7.0-62.el7.noarch                  125/181 
+  Verifying  : 32:bind-libs-9.9.4-61.el7.x86_64                         126/181 
+  Verifying  : iwl100-firmware-39.31.5.1-62.el7.noarch                  127/181 
+  Verifying  : libcom_err-1.42.9-11.el7.x86_64                          128/181 
+  Verifying  : iwl6050-firmware-41.28.5.1-62.el7.noarch                 129/181 
+  Verifying  : e2fsprogs-libs-1.42.9-11.el7.x86_64                      130/181 
+  Verifying  : iwl7260-firmware-22.0.7.0-62.el7.noarch                  131/181 
+  Verifying  : binutils-2.27-27.base.el7.x86_64                         132/181 
+  Verifying  : 12:dhclient-4.2.5-68.el7.x86_64                          133/181 
+  Verifying  : tuned-2.9.0-1.el7.noarch                                 134/181 
+  Verifying  : 1:NetworkManager-1.10.2-13.el7.x86_64                    135/181 
+  Verifying  : 12:dhcp-libs-4.2.5-68.el7.x86_64                         136/181 
+  Verifying  : audit-2.8.1-3.el7.x86_64                                 137/181 
+  Verifying  : selinux-policy-3.13.1-192.el7_5.3.noarch                 138/181 
+  Verifying  : 1:NetworkManager-tui-1.10.2-13.el7.x86_64                139/181 
+  Verifying  : kernel-tools-libs-3.10.0-862.el7.x86_64                  140/181 
+  Verifying  : iwl105-firmware-18.168.6.1-62.el7.noarch                 141/181 
+  Verifying  : 32:bind-license-9.9.4-61.el7.noarch                      142/181 
+  Verifying  : initscripts-9.49.41-1.el7.x86_64                         143/181 
+  Verifying  : nss-softokn-3.34.0-2.el7.x86_64                          144/181 
+  Verifying  : iwl3945-firmware-15.32.2.9-62.el7.noarch                 145/181 
+  Verifying  : 10:qemu-guest-agent-2.8.0-2.el7.x86_64                   146/181 
+  Verifying  : ca-certificates-2017.2.20-71.el7.noarch                  147/181 
+  Verifying  : 1:NetworkManager-libnm-1.10.2-13.el7.x86_64              148/181 
+  Verifying  : libuuid-2.23.2-52.el7.x86_64                             149/181 
+  Verifying  : libsss_nss_idmap-1.16.0-19.el7.x86_64                    150/181 
+  Verifying  : systemd-219-57.el7.x86_64                                151/181 
+  Verifying  : rsyslog-8.24.0-16.el7.x86_64                             152/181 
+  Verifying  : audit-libs-2.8.1-3.el7.x86_64                            153/181 
+  Verifying  : selinux-policy-targeted-3.13.1-192.el7_5.3.noarch        154/181 
+  Verifying  : openldap-2.4.44-13.el7.x86_64                            155/181 
+  Verifying  : 1:NetworkManager-team-1.10.2-13.el7.x86_64               156/181 
+  Verifying  : nss-softokn-freebl-3.34.0-2.el7.x86_64                   157/181 
+  Verifying  : sos-3.5-6.el7.noarch                                     158/181 
+  Verifying  : nspr-4.17.0-1.el7.x86_64                                 159/181 
+  Verifying  : nss-tools-3.34.0-4.el7.x86_64                            160/181 
+  Verifying  : iwl2000-firmware-18.168.6.1-62.el7.noarch                161/181 
+  Verifying  : iwl2030-firmware-18.168.6.1-62.el7.noarch                162/181 
+  Verifying  : python-2.7.5-68.el7.x86_64                               163/181 
+  Verifying  : iwl6000g2a-firmware-17.168.5.3-62.el7.noarch             164/181 
+  Verifying  : python-perf-3.10.0-862.el7.x86_64                        165/181 
+  Verifying  : iwl135-firmware-18.168.6.1-62.el7.noarch                 166/181 
+  Verifying  : libss-1.42.9-11.el7.x86_64                               167/181 
+  Verifying  : procps-ng-3.3.10-17.el7.x86_64                           168/181 
+  Verifying  : systemtap-runtime-3.2-4.el7.x86_64                       169/181 
+  Verifying  : libblkid-2.23.2-52.el7.x86_64                            170/181 
+  Verifying  : sudo-1.8.19p2-13.el7.x86_64                              171/181 
+  Verifying  : kpartx-0.4.9-119.el7.x86_64                              172/181 
+  Verifying  : 12:dhcp-common-4.2.5-68.el7.x86_64                       173/181 
+  Verifying  : libgudev1-219-57.el7.x86_64                              174/181 
+  Verifying  : nss-3.34.0-4.el7.x86_64                                  175/181 
+  Verifying  : rhui-azure-rhel7-2.1-19.noarch                           176/181 
+  Verifying  : augeas-libs-1.4.0-5.el7.x86_64                           177/181 
+  Verifying  : iwl5000-firmware-8.83.5.1_1-62.el7.noarch                178/181 
+  Verifying  : systemd-libs-219-57.el7.x86_64                           179/181 
+  Verifying  : sssd-client-1.16.0-19.el7.x86_64                         180/181 
+  Verifying  : e2fsprogs-1.42.9-11.el7.x86_64                           181/181 
+
+Installed:
+  kernel.x86_64 0:3.10.0-862.11.6.el7                                           
+
+Updated:
+  NetworkManager.x86_64 1:1.10.2-16.el7_5                                       
+  NetworkManager-config-server.noarch 1:1.10.2-16.el7_5                         
+  NetworkManager-libnm.x86_64 1:1.10.2-16.el7_5                                 
+  NetworkManager-team.x86_64 1:1.10.2-16.el7_5                                  
+  NetworkManager-tui.x86_64 1:1.10.2-16.el7_5                                   
+  audit.x86_64 0:2.8.1-3.el7_5.1                                                
+  audit-libs.x86_64 0:2.8.1-3.el7_5.1                                           
+  augeas-libs.x86_64 0:1.4.0-5.el7_5.1                                          
+  bind-libs.x86_64 32:9.9.4-61.el7_5.1                                          
+  bind-libs-lite.x86_64 32:9.9.4-61.el7_5.1                                     
+  bind-license.noarch 32:9.9.4-61.el7_5.1                                       
+  bind-utils.x86_64 32:9.9.4-61.el7_5.1                                         
+  binutils.x86_64 0:2.27-28.base.el7_5.1                                        
+  ca-certificates.noarch 0:2018.2.22-70.0.el7_5                                 
+  dhclient.x86_64 12:4.2.5-68.el7_5.1                                           
+  dhcp-common.x86_64 12:4.2.5-68.el7_5.1                                        
+  dhcp-libs.x86_64 12:4.2.5-68.el7_5.1                                          
+  dracut.x86_64 0:033-535.el7_5.1                                               
+  dracut-network.x86_64 0:033-535.el7_5.1                                       
+  e2fsprogs.x86_64 0:1.42.9-12.el7_5                                            
+  e2fsprogs-libs.x86_64 0:1.42.9-12.el7_5                                       
+  gnupg2.x86_64 0:2.0.22-5.el7_5                                                
+  initscripts.x86_64 0:9.49.41-1.el7_5.1                                        
+  iptables.x86_64 0:1.4.21-24.1.el7_5                                           
+  iwl100-firmware.noarch 0:39.31.5.1-62.2.el7_5                                 
+  iwl1000-firmware.noarch 1:39.31.5.1-62.2.el7_5                                
+  iwl105-firmware.noarch 0:18.168.6.1-62.2.el7_5                                
+  iwl135-firmware.noarch 0:18.168.6.1-62.2.el7_5                                
+  iwl2000-firmware.noarch 0:18.168.6.1-62.2.el7_5                               
+  iwl2030-firmware.noarch 0:18.168.6.1-62.2.el7_5                               
+  iwl3160-firmware.noarch 0:22.0.7.0-62.2.el7_5                                 
+  iwl3945-firmware.noarch 0:15.32.2.9-62.2.el7_5                                
+  iwl4965-firmware.noarch 0:228.61.2.24-62.2.el7_5                              
+  iwl5000-firmware.noarch 0:8.83.5.1_1-62.2.el7_5                               
+  iwl5150-firmware.noarch 0:8.24.2.2-62.2.el7_5                                 
+  iwl6000-firmware.noarch 0:9.221.4.1-62.2.el7_5                                
+  iwl6000g2a-firmware.noarch 0:17.168.5.3-62.2.el7_5                            
+  iwl6000g2b-firmware.noarch 0:17.168.5.2-62.2.el7_5                            
+  iwl6050-firmware.noarch 0:41.28.5.1-62.2.el7_5                                
+  iwl7260-firmware.noarch 0:22.0.7.0-62.2.el7_5                                 
+  iwl7265-firmware.noarch 0:22.0.7.0-62.2.el7_5                                 
+  kernel-tools.x86_64 0:3.10.0-862.11.6.el7                                     
+  kernel-tools-libs.x86_64 0:3.10.0-862.11.6.el7                                
+  kexec-tools.x86_64 0:2.0.15-13.el7_5.1                                        
+  kmod-kvdo.x86_64 0:6.1.0.181-17.el7_5                                         
+  kpartx.x86_64 0:0.4.9-119.el7_5.1                                             
+  libblkid.x86_64 0:2.23.2-52.el7_5.1                                           
+  libcom_err.x86_64 0:1.42.9-12.el7_5                                           
+  libgcc.x86_64 0:4.8.5-28.el7_5.1                                              
+  libgomp.x86_64 0:4.8.5-28.el7_5.1                                             
+  libgudev1.x86_64 0:219-57.el7_5.1                                             
+  libmount.x86_64 0:2.23.2-52.el7_5.1                                           
+  libss.x86_64 0:1.42.9-12.el7_5                                                
+  libsss_idmap.x86_64 0:1.16.0-19.el7_5.5                                       
+  libsss_nss_idmap.x86_64 0:1.16.0-19.el7_5.5                                   
+  libstdc++.x86_64 0:4.8.5-28.el7_5.1                                           
+  libuuid.x86_64 0:2.23.2-52.el7_5.1                                            
+  linux-firmware.noarch 0:20180220-62.2.git6d51311.el7_5                        
+  microcode_ctl.x86_64 2:2.1-29.16.el7_5                                        
+  nspr.x86_64 0:4.19.0-1.el7_5                                                  
+  nss.x86_64 0:3.36.0-5.el7_5                                                   
+  nss-softokn.x86_64 0:3.36.0-5.el7_5                                           
+  nss-softokn-freebl.x86_64 0:3.36.0-5.el7_5                                    
+  nss-sysinit.x86_64 0:3.36.0-5.el7_5                                           
+  nss-tools.x86_64 0:3.36.0-5.el7_5                                             
+  nss-util.x86_64 0:3.36.0-1.el7_5                                              
+  openldap.x86_64 0:2.4.44-15.el7_5                                             
+  procps-ng.x86_64 0:3.3.10-17.el7_5.2                                          
+  python.x86_64 0:2.7.5-69.el7_5                                                
+  python-libs.x86_64 0:2.7.5-69.el7_5                                           
+  python-perf.x86_64 0:3.10.0-862.11.6.el7                                      
+  qemu-guest-agent.x86_64 10:2.8.0-2.el7_5.1                                    
+  rh-dotnetcore11-dotnetcore.x86_64 0:1.1.9-1.el7                               
+  rhui-azure-rhel7.noarch 0:2.2-74                                              
+  rsyslog.x86_64 0:8.24.0-16.el7_5.4                                            
+  selinux-policy.noarch 0:3.13.1-192.el7_5.6                                    
+  selinux-policy-targeted.noarch 0:3.13.1-192.el7_5.6                           
+  sos.noarch 0:3.5-9.el7_5                                                      
+  sssd-client.x86_64 0:1.16.0-19.el7_5.5                                        
+  sudo.x86_64 0:1.8.19p2-14.el7_5                                               
+  systemd.x86_64 0:219-57.el7_5.1                                               
+  systemd-libs.x86_64 0:219-57.el7_5.1                                          
+  systemd-python.x86_64 0:219-57.el7_5.1                                        
+  systemd-sysv.x86_64 0:219-57.el7_5.1                                          
+  systemtap-runtime.x86_64 0:3.2-8.el7_5                                        
+  tuned.noarch 0:2.9.0-1.el7_5.2                                                
+  tzdata.noarch 0:2018e-3.el7                                                   
+  util-linux.x86_64 0:2.23.2-52.el7_5.1                                         
+  vdo.x86_64 0:6.1.0.168-18                                                     
+  yum-utils.noarch 0:1.1.31-46.el7_5                                            
+
+Complete!
+cat > /etc/yum.repos.d/Gluster.repo <<'EOF'
+[gluster312]
+name=Gluster 3.12
+baseurl=http://mirror.centos.org/centos/7/storage/$basearch/gluster-3.12/
+gpgcheck=0
+enabled=1
+EOF
+
+yum install glusterfs glusterfs-cli glusterfs-libs glusterfs-server -y
+Loaded plugins: langpacks, product-id, search-disabled-repos
+Resolving Dependencies
+--> Running transaction check
+---> Package glusterfs.x86_64 0:3.12.14-1.el7 will be installed
+---> Package glusterfs-cli.x86_64 0:3.12.14-1.el7 will be installed
+---> Package glusterfs-libs.x86_64 0:3.12.14-1.el7 will be installed
+---> Package glusterfs-server.x86_64 0:3.12.14-1.el7 will be installed
+--> Processing Dependency: glusterfs-fuse = 3.12.14-1.el7 for package: glusterfs-server-3.12.14-1.el7.x86_64
+--> Processing Dependency: glusterfs-client-xlators = 3.12.14-1.el7 for package: glusterfs-server-3.12.14-1.el7.x86_64
+--> Processing Dependency: glusterfs-api = 3.12.14-1.el7 for package: glusterfs-server-3.12.14-1.el7.x86_64
+--> Processing Dependency: libgfapi.so.0(GFAPI_PRIVATE_3.7.0)(64bit) for package: glusterfs-server-3.12.14-1.el7.x86_64
+--> Processing Dependency: libgfapi.so.0(GFAPI_PRIVATE_3.4.0)(64bit) for package: glusterfs-server-3.12.14-1.el7.x86_64
+--> Processing Dependency: libgfapi.so.0(GFAPI_3.7.4)(64bit) for package: glusterfs-server-3.12.14-1.el7.x86_64
+--> Processing Dependency: libgfapi.so.0(GFAPI_3.7.0)(64bit) for package: glusterfs-server-3.12.14-1.el7.x86_64
+--> Processing Dependency: libgfapi.so.0(GFAPI_3.6.0)(64bit) for package: glusterfs-server-3.12.14-1.el7.x86_64
+--> Processing Dependency: libgfapi.so.0(GFAPI_3.5.1)(64bit) for package: glusterfs-server-3.12.14-1.el7.x86_64
+--> Processing Dependency: libgfapi.so.0(GFAPI_3.4.2)(64bit) for package: glusterfs-server-3.12.14-1.el7.x86_64
+--> Processing Dependency: libgfapi.so.0(GFAPI_3.4.0)(64bit) for package: glusterfs-server-3.12.14-1.el7.x86_64
+--> Processing Dependency: liburcu-cds.so.6()(64bit) for package: glusterfs-server-3.12.14-1.el7.x86_64
+--> Processing Dependency: liburcu-bp.so.6()(64bit) for package: glusterfs-server-3.12.14-1.el7.x86_64
+--> Processing Dependency: libgfapi.so.0()(64bit) for package: glusterfs-server-3.12.14-1.el7.x86_64
+--> Running transaction check
+---> Package glusterfs-api.x86_64 0:3.12.14-1.el7 will be installed
+---> Package glusterfs-client-xlators.x86_64 0:3.12.14-1.el7 will be installed
+---> Package glusterfs-fuse.x86_64 0:3.12.14-1.el7 will be installed
+--> Processing Dependency: psmisc for package: glusterfs-fuse-3.12.14-1.el7.x86_64
+---> Package userspace-rcu.x86_64 0:0.10.0-3.el7 will be installed
+--> Running transaction check
+---> Package psmisc.x86_64 0:22.20-15.el7 will be installed
+--> Finished Dependency Resolution
+
+Dependencies Resolved
+
+================================================================================
+ Package                Arch   Version       Repository                    Size
+================================================================================
+Installing:
+ glusterfs              x86_64 3.12.14-1.el7 gluster312                   559 k
+ glusterfs-cli          x86_64 3.12.14-1.el7 gluster312                   198 k
+ glusterfs-libs         x86_64 3.12.14-1.el7 gluster312                   400 k
+ glusterfs-server       x86_64 3.12.14-1.el7 gluster312                   1.2 M
+Installing for dependencies:
+ glusterfs-api          x86_64 3.12.14-1.el7 gluster312                    98 k
+ glusterfs-client-xlators
+                        x86_64 3.12.14-1.el7 gluster312                   864 k
+ glusterfs-fuse         x86_64 3.12.14-1.el7 gluster312                   142 k
+ psmisc                 x86_64 22.20-15.el7  rhui-rhel-7-server-rhui-rpms 141 k
+ userspace-rcu          x86_64 0.10.0-3.el7  gluster312                    93 k
+
+Transaction Summary
+================================================================================
+Install  4 Packages (+5 Dependent packages)
+
+Total download size: 3.7 M
+Installed size: 13 M
+Downloading packages:
+--------------------------------------------------------------------------------
+Total                                               10 MB/s | 3.7 MB  00:00     
+Running transaction check
+Running transaction test
+Transaction test succeeded
+Running transaction
+  Installing : glusterfs-libs-3.12.14-1.el7.x86_64                          1/9 
+  Installing : glusterfs-client-xlators-3.12.14-1.el7.x86_64                2/9 
+  Installing : glusterfs-3.12.14-1.el7.x86_64                               3/9 
+  Installing : glusterfs-api-3.12.14-1.el7.x86_64                           4/9 
+  Installing : glusterfs-cli-3.12.14-1.el7.x86_64                           5/9 
+  Installing : psmisc-22.20-15.el7.x86_64                                   6/9 
+  Installing : glusterfs-fuse-3.12.14-1.el7.x86_64                          7/9 
+  Installing : userspace-rcu-0.10.0-3.el7.x86_64                            8/9 
+  Installing : glusterfs-server-3.12.14-1.el7.x86_64                        9/9 
+  Verifying  : glusterfs-client-xlators-3.12.14-1.el7.x86_64                1/9 
+  Verifying  : glusterfs-server-3.12.14-1.el7.x86_64                        2/9 
+  Verifying  : glusterfs-3.12.14-1.el7.x86_64                               3/9 
+  Verifying  : userspace-rcu-0.10.0-3.el7.x86_64                            4/9 
+  Verifying  : glusterfs-api-3.12.14-1.el7.x86_64                           5/9 
+  Verifying  : psmisc-22.20-15.el7.x86_64                                   6/9 
+  Verifying  : glusterfs-cli-3.12.14-1.el7.x86_64                           7/9 
+  Verifying  : glusterfs-libs-3.12.14-1.el7.x86_64                          8/9 
+  Verifying  : glusterfs-fuse-3.12.14-1.el7.x86_64                          9/9 
+
+Installed:
+  glusterfs.x86_64 0:3.12.14-1.el7      glusterfs-cli.x86_64 0:3.12.14-1.el7   
+  glusterfs-libs.x86_64 0:3.12.14-1.el7 glusterfs-server.x86_64 0:3.12.14-1.el7
+
+Dependency Installed:
+  glusterfs-api.x86_64 0:3.12.14-1.el7                                          
+  glusterfs-client-xlators.x86_64 0:3.12.14-1.el7                               
+  glusterfs-fuse.x86_64 0:3.12.14-1.el7                                         
+  psmisc.x86_64 0:22.20-15.el7                                                  
+  userspace-rcu.x86_64 0:0.10.0-3.el7                                           
+
+Complete!
+
+#prepare the disks
+pvcreate /dev/sdc
+File descriptor 7 (/dev/urandom) leaked on pvcreate invocation. Parent PID 3020: bash
+File descriptor 10 (/dev/urandom) leaked on pvcreate invocation. Parent PID 3020: bash
+File descriptor 63 (pipe:[29881]) leaked on pvcreate invocation. Parent PID 3020: bash
+  Physical volume "/dev/sdc" successfully created.
+pvcreate /dev/sdd
+File descriptor 7 (/dev/urandom) leaked on pvcreate invocation. Parent PID 3020: bash
+File descriptor 10 (/dev/urandom) leaked on pvcreate invocation. Parent PID 3020: bash
+File descriptor 63 (pipe:[29881]) leaked on pvcreate invocation. Parent PID 3020: bash
+  Physical volume "/dev/sdd" successfully created.
+vgcreate vg_gluster /dev/sdc /dev/sdd
+File descriptor 7 (/dev/urandom) leaked on vgcreate invocation. Parent PID 3020: bash
+File descriptor 10 (/dev/urandom) leaked on vgcreate invocation. Parent PID 3020: bash
+File descriptor 63 (pipe:[29881]) leaked on vgcreate invocation. Parent PID 3020: bash
+  Volume group "vg_gluster" successfully created
+
+lvcreate -L 1999G -n brick1 vg_gluster
+File descriptor 7 (/dev/urandom) leaked on lvcreate invocation. Parent PID 3020: bash
+File descriptor 10 (/dev/urandom) leaked on lvcreate invocation. Parent PID 3020: bash
+File descriptor 63 (pipe:[29881]) leaked on lvcreate invocation. Parent PID 3020: bash
+  Logical volume "brick1" created.
+
+mkfs.xfs /dev/vg_gluster/brick1
+meta-data=/dev/vg_gluster/brick1 isize=512    agcount=4, agsize=131006464 blks
+         =                       sectsz=4096  attr=2, projid32bit=1
+         =                       crc=1        finobt=0, sparse=0
+data     =                       bsize=4096   blocks=524025856, imaxpct=5
+         =                       sunit=0      swidth=0 blks
+naming   =version 2              bsize=4096   ascii-ci=0 ftype=1
+log      =internal log           bsize=4096   blocks=255872, version=2
+         =                       sectsz=4096  sunit=1 blks, lazy-count=1
+realtime =none                   extsz=4096   blocks=0, rtextents=0
+
+mkdir -p /bricks/db2data
+
+mount /dev/vg_gluster/brick1 /bricks/db2data/
+
+mkdir -p /bricks/db2data/db2data
+
+cat >> /etc/fstab <<EOF
+/dev/vg_gluster/brick1  /bricks/db2data    xfs     defaults    0 0
+EOF
+
+#firewall
+#TODO: allow on interface eth1 instead of eth0
+firewall-cmd --zone=public --add-port=24007-24010/tcp --permanent
+success
+firewall-cmd --zone=public --add-port=49152-49160/tcp --permanent
+success
+firewall-cmd --zone=public --add-port=3260/tcp --permanent
+success
+firewall-cmd --reload
+success
+
+#start gluster
+systemctl enable glusterd
+Created symlink from /etc/systemd/system/multi-user.target.wants/glusterd.service to /usr/lib/systemd/system/glusterd.service.
+systemctl start glusterd
+
+#gluster block
+
+yum -y install http://cbs.centos.org/kojifiles/packages/tcmu-runner/1.3.0/0.2rc4.el7/x86_64/libtcmu-1.3.0-0.2rc4.el7.x86_64.rpm
+Loaded plugins: langpacks, product-id, search-disabled-repos
+Examining /var/tmp/yum-root-Ciqa37/libtcmu-1.3.0-0.2rc4.el7.x86_64.rpm: libtcmu-1.3.0-0.2rc4.el7.x86_64
+Marking /var/tmp/yum-root-Ciqa37/libtcmu-1.3.0-0.2rc4.el7.x86_64.rpm to be installed
+Resolving Dependencies
+--> Running transaction check
+---> Package libtcmu.x86_64 0:1.3.0-0.2rc4.el7 will be installed
+--> Finished Dependency Resolution
+
+Dependencies Resolved
+
+================================================================================
+ Package   Arch     Version            Repository                          Size
+================================================================================
+Installing:
+ libtcmu   x86_64   1.3.0-0.2rc4.el7   /libtcmu-1.3.0-0.2rc4.el7.x86_64   103 k
+
+Transaction Summary
+================================================================================
+Install  1 Package
+
+Total size: 103 k
+Installed size: 103 k
+Downloading packages:
+Running transaction check
+Running transaction test
+Transaction test succeeded
+Running transaction
+  Installing : libtcmu-1.3.0-0.2rc4.el7.x86_64                              1/1 
+  Verifying  : libtcmu-1.3.0-0.2rc4.el7.x86_64                              1/1 
+
+Installed:
+  libtcmu.x86_64 0:1.3.0-0.2rc4.el7                                             
+
+Complete!
+yum -y install http://cbs.centos.org/kojifiles/packages/tcmu-runner/1.3.0/0.2rc4.el7/x86_64/tcmu-runner-1.3.0-0.2rc4.el7.x86_64.rpm
+Loaded plugins: langpacks, product-id, search-disabled-repos
+Examining /var/tmp/yum-root-Ciqa37/tcmu-runner-1.3.0-0.2rc4.el7.x86_64.rpm: tcmu-runner-1.3.0-0.2rc4.el7.x86_64
+Marking /var/tmp/yum-root-Ciqa37/tcmu-runner-1.3.0-0.2rc4.el7.x86_64.rpm to be installed
+Resolving Dependencies
+--> Running transaction check
+---> Package tcmu-runner.x86_64 0:1.3.0-0.2rc4.el7 will be installed
+--> Processing Dependency: targetcli for package: tcmu-runner-1.3.0-0.2rc4.el7.x86_64
+--> Running transaction check
+---> Package targetcli.noarch 0:2.1.fb46-6.el7_5 will be installed
+--> Processing Dependency: python-rtslib >= 2.1.fb41 for package: targetcli-2.1.fb46-6.el7_5.noarch
+--> Processing Dependency: python-configshell for package: targetcli-2.1.fb46-6.el7_5.noarch
+--> Running transaction check
+---> Package python-configshell.noarch 1:1.1.fb23-4.el7_5 will be installed
+--> Processing Dependency: pyparsing for package: 1:python-configshell-1.1.fb23-4.el7_5.noarch
+--> Processing Dependency: python-urwid for package: 1:python-configshell-1.1.fb23-4.el7_5.noarch
+---> Package python-rtslib.noarch 0:2.1.fb63-12.el7_5 will be installed
+--> Processing Dependency: python-kmod for package: python-rtslib-2.1.fb63-12.el7_5.noarch
+--> Running transaction check
+---> Package pyparsing.noarch 0:1.5.6-9.el7 will be installed
+---> Package python-kmod.x86_64 0:0.9-4.el7 will be installed
+---> Package python-urwid.x86_64 0:1.1.1-3.el7 will be installed
+--> Finished Dependency Resolution
+
+Dependencies Resolved
+
+================================================================================
+ Package         Arch   Version            Repository                      Size
+================================================================================
+Installing:
+ tcmu-runner     x86_64 1.3.0-0.2rc4.el7   /tcmu-runner-1.3.0-0.2rc4.el7.x86_64
+                                                                          167 k
+Installing for dependencies:
+ pyparsing       noarch 1.5.6-9.el7        rhui-rhel-7-server-rhui-rpms    94 k
+ python-configshell
+                 noarch 1:1.1.fb23-4.el7_5 rhui-rhel-7-server-rhui-rpms    67 k
+ python-kmod     x86_64 0.9-4.el7          rhui-rhel-7-server-rhui-rpms    57 k
+ python-rtslib   noarch 2.1.fb63-12.el7_5  rhui-rhel-7-server-rhui-rpms   100 k
+ python-urwid    x86_64 1.1.1-3.el7        rhui-rhel-7-server-rhui-rpms   654 k
+ targetcli       noarch 2.1.fb46-6.el7_5   rhui-rhel-7-server-rhui-rpms    67 k
+
+Transaction Summary
+================================================================================
+Install  1 Package (+6 Dependent packages)
+
+Total size: 1.2 M
+Total download size: 1.0 M
+Installed size: 4.8 M
+Downloading packages:
+--------------------------------------------------------------------------------
+Total                                              2.0 MB/s | 1.0 MB  00:00     
+Running transaction check
+Running transaction test
+Transaction test succeeded
+Running transaction
+  Installing : python-kmod-0.9-4.el7.x86_64                                 1/7 
+  Installing : python-rtslib-2.1.fb63-12.el7_5.noarch                       2/7 
+  Installing : pyparsing-1.5.6-9.el7.noarch                                 3/7 
+  Installing : python-urwid-1.1.1-3.el7.x86_64                              4/7 
+  Installing : 1:python-configshell-1.1.fb23-4.el7_5.noarch                 5/7 
+  Installing : targetcli-2.1.fb46-6.el7_5.noarch                            6/7 
+  Installing : tcmu-runner-1.3.0-0.2rc4.el7.x86_64                          7/7 
+  Verifying  : python-urwid-1.1.1-3.el7.x86_64                              1/7 
+  Verifying  : tcmu-runner-1.3.0-0.2rc4.el7.x86_64                          2/7 
+  Verifying  : python-rtslib-2.1.fb63-12.el7_5.noarch                       3/7 
+  Verifying  : targetcli-2.1.fb46-6.el7_5.noarch                            4/7 
+  Verifying  : pyparsing-1.5.6-9.el7.noarch                                 5/7 
+  Verifying  : 1:python-configshell-1.1.fb23-4.el7_5.noarch                 6/7 
+  Verifying  : python-kmod-0.9-4.el7.x86_64                                 7/7 
+
+Installed:
+  tcmu-runner.x86_64 0:1.3.0-0.2rc4.el7                                         
+
+Dependency Installed:
+  pyparsing.noarch 0:1.5.6-9.el7                                                
+  python-configshell.noarch 1:1.1.fb23-4.el7_5                                  
+  python-kmod.x86_64 0:0.9-4.el7                                                
+  python-rtslib.noarch 0:2.1.fb63-12.el7_5                                      
+  python-urwid.x86_64 0:1.1.1-3.el7                                             
+  targetcli.noarch 0:2.1.fb46-6.el7_5                                           
+
+Complete!
+yum -y install http://cbs.centos.org/kojifiles/packages/tcmu-runner/1.3.0/0.2rc4.el7/x86_64/tcmu-runner-handler-glfs-1.3.0-0.2rc4.el7.x86_64.rpm
+Loaded plugins: langpacks, product-id, search-disabled-repos
+Examining /var/tmp/yum-root-Ciqa37/tcmu-runner-handler-glfs-1.3.0-0.2rc4.el7.x86_64.rpm: tcmu-runner-handler-glfs-1.3.0-0.2rc4.el7.x86_64
+Marking /var/tmp/yum-root-Ciqa37/tcmu-runner-handler-glfs-1.3.0-0.2rc4.el7.x86_64.rpm to be installed
+Resolving Dependencies
+--> Running transaction check
+---> Package tcmu-runner-handler-glfs.x86_64 0:1.3.0-0.2rc4.el7 will be installed
+--> Finished Dependency Resolution
+
+Dependencies Resolved
+
+================================================================================
+ Package Arch   Version Repository                                         Size
+================================================================================
+Installing:
+ tcmu-runner-handler-glfs
+         x86_64 1.3.0-0.2rc4.el7
+                        /tcmu-runner-handler-glfs-1.3.0-0.2rc4.el7.x86_64  16 k
+
+Transaction Summary
+================================================================================
+Install  1 Package
+
+Total size: 16 k
+Installed size: 16 k
+Downloading packages:
+Running transaction check
+Running transaction test
+Transaction test succeeded
+Running transaction
+  Installing : tcmu-runner-handler-glfs-1.3.0-0.2rc4.el7.x86_64             1/1 
+  Verifying  : tcmu-runner-handler-glfs-1.3.0-0.2rc4.el7.x86_64             1/1 
+
+Installed:
+  tcmu-runner-handler-glfs.x86_64 0:1.3.0-0.2rc4.el7                            
+
+Complete!
+yum -y install http://cbs.centos.org/kojifiles/packages/gluster-block/0.3/2.el7/x86_64/gluster-block-0.3-2.el7.x86_64.rpm
+Loaded plugins: langpacks, product-id, search-disabled-repos
+Examining /var/tmp/yum-root-Ciqa37/gluster-block-0.3-2.el7.x86_64.rpm: gluster-block-0.3-2.el7.x86_64
+Marking /var/tmp/yum-root-Ciqa37/gluster-block-0.3-2.el7.x86_64.rpm to be installed
+Resolving Dependencies
+--> Running transaction check
+---> Package gluster-block.x86_64 0:0.3-2.el7 will be installed
+--> Finished Dependency Resolution
+
+Dependencies Resolved
+
+================================================================================
+ Package         Arch     Version       Repository                         Size
+================================================================================
+Installing:
+ gluster-block   x86_64   0.3-2.el7     /gluster-block-0.3-2.el7.x86_64   265 k
+
+Transaction Summary
+================================================================================
+Install  1 Package
+
+Total size: 265 k
+Installed size: 265 k
+Downloading packages:
+Running transaction check
+Running transaction test
+Transaction test succeeded
+Running transaction
+  Installing : gluster-block-0.3-2.el7.x86_64                               1/1 
+  Verifying  : gluster-block-0.3-2.el7.x86_64                               1/1 
+
+Installed:
+  gluster-block.x86_64 0:0.3-2.el7                                              
+
+Complete!
+
+systemctl start gluster-blockd
+systemctl enable gluster-blockd
+Created symlink from /etc/systemd/system/multi-user.target.wants/gluster-blockd.service to /usr/lib/systemd/system/gluster-blockd.service.
+systemctl status gluster-blockd
+● gluster-blockd.service - Gluster block storage utility
+   Loaded: loaded (/usr/lib/systemd/system/gluster-blockd.service; enabled; vendor preset: disabled)
+   Active: active (running) since Tue 2018-09-18 05:18:47 UTC; 63ms ago
+ Main PID: 48907 (gluster-blockd)
+   CGroup: /system.slice/gluster-blockd.service
+           ├─48907 /usr/sbin/gluster-blockd --glfs-lru-count 5 --log-level INFO
+           ├─48925 sh -c targetcli /backstores/user:glfs ls > /dev/null
+           └─48926 /usr/bin/python /usr/bin/targetcli /backstores/user:glfs ls
+
+Sep 18 05:18:47 g0 systemd[1]: Started Gluster block storage utility.
+Sep 18 05:18:47 g0 systemd[1]: Starting Gluster block storage utility...
