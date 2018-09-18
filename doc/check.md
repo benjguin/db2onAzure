@@ -1,12 +1,14 @@
 # Check the setup and troubleshoot
 
+Once the `deploy.sh` execution has finished, you need to check if everything deployed correctly.
+
 ## init variables
 
 ```bash
 source init.sh
 ```
 
-## connect to the infrastructure
+## Connect to the infrastructure
 
 You can connect to the infrastructure with the following command line:
 
@@ -39,7 +41,7 @@ Last login: Tue Sep 18 07:27:42 2018 from 192.168.0.5
 [rhel@d0 ~]$
 ```
 
-## check logs
+## Check logs
 
 Here is a list of log files you want to check. You can compare them to the samples that are available in the `sample_logs` folder in this repo:
 
@@ -56,7 +58,7 @@ Once you've checked that the logs look good, connect to the deployed nodes to fu
 
 Here is a typical routine:
 
-NB: You'll find output examples below. You can also find information from the commands in the following documentation:
+NB: You'll find output examples below. You can also find information from the commands in the following IBM documentation:
 - [Retrieving file system information](https://www.ibm.com/support/knowledgecenter/en/SSEPGG_11.1.0/com.ibm.db2.luw.admin.sd.doc/doc/c0056704.html)
 - [mmgetstate command](https://www.ibm.com/support/knowledgecenter/SSFKCN_4.1.0/com.ibm.cluster.gpfs.v4r1.gpfs100.doc/bl1adm_mmgetstate.htm)
 - [mmlscluster command](https://www.ibm.com/support/knowledgecenter/SSFKCN_4.1.0/com.ibm.cluster.gpfs.v4r1.gpfs100.doc/bl1adm_mmlscluster.htm)

@@ -9,9 +9,10 @@ DB2 pureScale setup on Azure
 
 ## main files and folders
 
+- The [documentation](doc/README.md) provides a step by step procedure to use the ARM templates and scripts. 
 - `deployment/deploy.sh` is the main script to deploy everything
 - `deployment/otherScripts/` folder contains that may be useful for some tasks 
-- `KB.md` has a number of know issues and how they could be fixe or diagnosed
+- The [tests](tests/README.md) folder contains test samples (with SQL statements for now).
 
 ## Topology
 
@@ -36,4 +37,3 @@ DB2 CF | cf{vm_number} | 192.168.{subnet}.3{vm_number}
 Windows Client | wcli0 | 192.168.{subnet}.4{vm_number}
 Witness | witn0 | 192.168.{subnet}.6{vm_number}
 
-The [documentation](doc/README.md) provides a step by step procedure to use the ARM templates and scripts. 
