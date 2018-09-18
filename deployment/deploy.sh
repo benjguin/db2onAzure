@@ -247,8 +247,8 @@ fi
 if [ ! -f "${tempLocalFolder}/rhelid_rsa" ]; then
 	echo 'generating ssh keys'
 	# for production, Azure key vaults or othe means should be leveraged
-	ssh-keygen -t rsa -f ${tempLocalFolder}rhelid_rsa -q -N ""
-	ssh-keygen -t rsa -f ${tempLocalFolder}rootid_rsa -q -N ""
+	ssh-keygen -t rsa -f ${tempLocalFolder}/rhelid_rsa -q -N ""
+	ssh-keygen -t rsa -f ${tempLocalFolder}/rootid_rsa -q -N ""
 else
 	echo "reusing ssh key files available in folder ${tempLocalFolder}"
 fi
