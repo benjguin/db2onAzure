@@ -35,6 +35,14 @@ date
 date
 ```
 
+Typical deployment time for the ARM templates are:
+
+![](img/azure008.png)
+
+After the ARM templates are deployed, there are also additional scripts running.
+
+You can find an example of what the terminal reads in [sample_deployment_log.txt](sample_deployment_log.txt).
+
 ## Follow up the deployment
 
 In order to follow the deployment, you can issue commands like the following in another terminal, where you also executed `source 01init.sh`:
