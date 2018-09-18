@@ -40,3 +40,4 @@ ssh-keygen -y -f ~/.ssh/myfile > ~/.ssh/myfile.pub
 
 - move logs from /tmp to /var/log
 - `INSTANCE_SHARED_MOUNT       = /db2sd_1804a` should be replaced by a more generic name (1804a refers to April 2018, first instance).
+- have a trailing slah on all folder path and don't bother about scripts that generate paths with consecutive `/` characters - Linux interprets `foo/bar`and `foo//bar` the same way.

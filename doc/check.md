@@ -1,8 +1,12 @@
 # Check the setup and troubleshoot
 
+## init variables
+
 ```bash
 source init.sh
 ```
+
+## connect to the infrastructure
 
 You can connect to the infrastructure with the following command line:
 
@@ -35,8 +39,9 @@ Last login: Tue Sep 18 07:27:42 2018 from 192.168.0.5
 [rhel@d0 ~]$
 ```
 
+## check logs
 
-Here is a list of log files you want to check:
+Here is a list of log files you want to check. You can compare them to the samples that are available in the `sample_logs` folder in this repo:
 
 File name | nodes | logs the execution of ... 
 ----------|-------|---------------------------
@@ -45,9 +50,17 @@ File name | nodes | logs the execution of ...
 /tmp/postARM-prepare-an.log | jumpbox | In the post ARM phase, nodes must be prepared before setting accelerated networking. This is what the [fromjumpbox-prepare-an.sh](../deployment/postARMscripts/fromjumpbox-prepare-an.sh) script does.
 /tmp/db2setup_001.log | d0 | the actual DB2 setup, which may contain additional links to other log files.
 
+## Issue a few commands to check if DB2 runs correctly
+
 Once you've checked that the logs look good, connect to the deployed nodes to further check the state of the system.
 
 Here is a typical routine:
+
+NB: You'll find output examples below. You can also find information from the commands in the following documentation:
+- [Retrieving file system information](https://www.ibm.com/support/knowledgecenter/en/SSEPGG_11.1.0/com.ibm.db2.luw.admin.sd.doc/doc/c0056704.html)
+- [mmgetstate command](https://www.ibm.com/support/knowledgecenter/SSFKCN_4.1.0/com.ibm.cluster.gpfs.v4r1.gpfs100.doc/bl1adm_mmgetstate.htm)
+- [mmlscluster command](https://www.ibm.com/support/knowledgecenter/SSFKCN_4.1.0/com.ibm.cluster.gpfs.v4r1.gpfs100.doc/bl1adm_mmlscluster.htm)
+- [lsrpdomain Command](https://www.ibm.com/support/knowledgecenter/SGVKBA_3.2/commands/lsrpdomain.html)
 
 ```bash
 ssh rhel@$jumpbox
@@ -191,8 +204,97 @@ tcp        0      0 0.0.0.0:50000           0.0.0.0:*               LISTEN
 [rhel@d1 ~]$
 ```
 
+## Check the Gluster FS volumes
+
+```bash
+ssh rhel@$jumpbox
+ssh g0
+sudo gluster-block list db2data
+```
+
+this should return:
+
+```
+data
+quorum
+log
+shared
+```
+
+------------------
+
+Other commands to try:
+
+```bash
+ssh rhel@$jumpbox
+ssh g0
+targetcli ls
+```
+
+------------------
+
+
+```bash
+ssh rhel@$jumpbox
+ssh d0
+ls -ls /dev/mapper
+```
+
+this should return:
+
+```
+total 0
+0 crw------- 1 root root 10, 236 Sep 18 05:30 control
+0 lrwxrwxrwx 1 root root       7 Sep 18 05:34 db2data1 -> ../dm-2
+0 lrwxrwxrwx 1 root root       7 Sep 18 05:34 db2log1 -> ../dm-3
+0 lrwxrwxrwx 1 root root       7 Sep 18 05:55 db2shared -> ../dm-1
+0 lrwxrwxrwx 1 root root       7 Sep 18 05:35 db2tieb -> ../dm-0
+```
+
+----------------
+
+```bash
+ssh rhel@$jumpbox
+ssh d0
+lsblk
+```
+
+this should return something like:
+
+```
+NAME        MAJ:MIN RM  SIZE RO TYPE  MOUNTPOINT
+fd0           2:0    1    4K  0 disk
+sda           8:0    0   32G  0 disk
+├─sda1        8:1    0  500M  0 part  /boot
+└─sda2        8:2    0 31.5G  0 part  /
+sdb           8:16   0   28G  0 disk
+└─sdb1        8:17   0   28G  0 part  /mnt/resource
+sdc           8:32   0  2.4T  0 disk
+sdd           8:48   0  2.4T  0 disk
+└─db2data1  253:2    0  2.4T  0 mpath
+sde           8:64   0   10G  0 disk
+└─db2shared 253:1    0   10G  0 mpath
+sdf           8:80   0  2.4T  0 disk
+└─db2data1  253:2    0  2.4T  0 mpath
+sdg           8:96   0   10G  0 disk
+└─db2shared 253:1    0   10G  0 mpath
+sdh           8:112  0  500G  0 disk
+└─db2log1   253:3    0  500G  0 mpath
+sdi           8:128  0   10G  0 disk
+└─db2tieb   253:0    0   10G  0 mpath
+sdj           8:144  0  500G  0 disk
+└─db2log1   253:3    0  500G  0 mpath
+sdk           8:160  0   10G  0 disk
+└─db2tieb   253:0    0   10G  0 mpath
+sdl           8:176  0   10G  0 disk
+└─db2tieb   253:0    0   10G  0 mpath
+sdm           8:192  0  500G  0 disk
+└─db2log1   253:3    0  500G  0 mpath
+sdn           8:208  0   10G  0 disk
+└─db2shared 253:1    0   10G  0 mpath
+```
+
+
 ## Troubleshoot
 
 For troubleshooting, please check the [KB](KB.md).
-
-DISK STRUCTURE

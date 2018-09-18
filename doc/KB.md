@@ -55,6 +55,12 @@ This happens when the deployment will result in more cores than allowed in the A
 
 [Resolving "The transaction log for the database is full" error](http://www-01.ibm.com/support/docview.wss?uid=swg21472442)
 
+## KB020 - IBM documentation
+
+- <https://www.ibm.com/analytics/us/en/db2/trials/>
+- [Installing a Db2 pureScale environment (Linux)](https://www.ibm.com/support/knowledgecenter/en/SSEPGG_11.1.0/com.ibm.db2.luw.qb.server.doc/doc/t0061541.html)
+
+
 ## Other articles in the KB archive
 
 You may find other articles in the [KB archive](archive/KB_archive.md).
