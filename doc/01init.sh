@@ -1,7 +1,9 @@
 #!/bin/bash
 
 # a suffix that is based on the date (yymmdd + a letter from a to z so you have 26 tries a day!). You may prefer to use other means to create resource group or deployment names.
-dateid="180918a"
+if [ -z $dateid ]; then
+    dateid="180918a"
+fi
 
 # subscription name or subscription ID
 subscription="Azure bengui"

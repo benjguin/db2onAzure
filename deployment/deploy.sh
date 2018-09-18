@@ -164,6 +164,11 @@ if [[ -z "$jumpboxPublicName" ]]; then
 	read jumpboxPublicName
 fi
 
+if [[ "$(dig +short ${jumpboxPublicName}.${location}.cloudapp.azure.com)" ]]; then
+	echo "${jumpboxPublicName}.${location}.cloudapp.azure.com is an existing dns record. Choose a different jumpbox name"
+	exit 1
+fi
+
 if [[ -z "$tempLocalFolder" ]]; then
 	echo "$tempLocalFolder not found, defaulting to current folder"
 	tempLocalFolder="${DIR}/"
