@@ -75,15 +75,29 @@ sudo su - db2sdin1 # use db2user instead for single VMs
 
 db2 get instance
 db2 list database directory
-db2 create database test1 # this may take a few minutes
+# next line may take a few minutes
+db2 create database test1 
 db2 list database directory
 db2 activate database test1
 db2 connect to test1
-db2 get db cfg | grep LOG
-db2 update db cfg using LOGFILSIZ 1000000
-db2 update db cfg using LOGPRIMARY 127
-db2 update db cfg using LOGSECOND 127
-db2 connect reset
-db2 restart database test1
 ```
 
+## Install client tools on the Windows VM
+
+Connect to wcli0 thru an ssh tunnel:
+
+```
+ssh -L 127.0.0.1:3390:192.168.0.40:3389 rhel@$jumpbox
+```
+
+then mstsc to 127.0.0.1:3390 with `adwin` / $adwinPassword.
+
+- install DB2 client
+    - get Download and install IBM Data Studio Version 4.1.x from IBM Web Site
+        - for instance, you can download the `ibm_ds4130_win.zip` file.
+        - unblock it, copy it to D;\, then unzip it
+    - NB: there are 2 parts in the installation:
+        - install the installer
+        - use the installer to install the software
+- Accept Windows updates
+    - reboot

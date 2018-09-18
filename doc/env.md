@@ -127,6 +127,28 @@ Here are the base commands:
 
 ```
 
+## make sure you have your personal ssh keys
+
+You have to have your personal key that will give you access to the jumpbox. This can be done with a command like `ssh-keygen`.
+
+By default `ssh-keygen` will generate a key pair: 
+- the private key is in the `~/.ssh/id_rsa` file
+- the public key is in the `~/.ssh/id_rsa.pub` file.
+
+This is why the `01init.sh` example has this line: `pubKeyPath=~/.ssh/id_rsa.pub`, which means you will authenticate with that default key to the jumpbox in Azure.
+
+NB: The deployment script also creates a key pair that will be sent to the jumpbox and authorized by all the other nodes inside the deployment.
+
+![](img/ssh001.png)
+
+Picture: courtesy of Stephane!
+
+Your SSH keypair is used for the authentication between your local laptop and the jumpbox. 
+Then you become user `rhel` on the jumpbox and you can jump to any other node.
+
+One advantage is that, if Bob has access to the jumpbox, he can authorize Alice to connect to the jumpbox by adding here public key to the `rhel@$jmpbox:~/.ssh/authorized_keys`.
+Once this is done, Alice has access to the whole platform.
+
 ## login and set the right subscription
 
 Set a variable with your subscription name or subscription ID. For example: 

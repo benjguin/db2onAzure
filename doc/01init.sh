@@ -56,6 +56,7 @@ deploymentName="deployment_$dateid"
 pubKeyPath=~/.ssh/id_rsa.pub
 
 # This local temp folder is where ssh keys for the platform are generated. If you deploy several times, they can be reused from there.
+# This folder should exist
 tempLocalFolder=/mnt/c/afac/
 
 # do you want to use accelerated networking on the GlusterFS nodes?
