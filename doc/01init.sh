@@ -24,17 +24,19 @@ lisbitsgenericfilename=lis-rpms-4.2.x.tar.gz
 # Db2 setup file
 db2bitsfilename=v11.1_linuxx64_server_t.tar.gz
 
-# Shared access signature to access the LIS bits
-lisbitssas=`az storage blob generate-sas --account-name $stor1 --container-name "setup" --policy-name "readuntileofcy2020" --name "$lisbitsgenericfilename" --output tsv`
-
-# Shared access signature to access the Db2 bits
-db2bitssas=`az storage blob generate-sas --account-name $stor1 --container-name "setup" --policy-name "readuntileofcy2020" --name "$db2bitsfilename" --output tsv`
-
-# Full URL where scripts can access the LIS bits
-lisbits="https://${stor1}.blob.core.windows.net/setup/${lisbitsgenericfilename}?${lisbitssas}"
-
-# Full URL where scripts can access the Db2 bits
-db2bits="https://${stor1}.blob.core.windows.net/setup/${db2bitsfilename}?${db2bitssas}"
+#allows to use other url 
+if [-z $lisbits ]; then
+    # Shared access signature to access the LIS bits
+    lisbitssas=`az storage blob generate-sas --account-name $stor1 --container-name "setup" --policy-name "readuntileofcy2020" --name "$lisbitsgenericfilename" --output tsv`
+    # Full URL where scripts can access the LIS bits
+    lisbits="https://${stor1}.blob.core.windows.net/setup/${lisbitsgenericfilename}?${lisbitssas}"  
+fi
+if [-z $db2bits ]; then
+    # Shared access signature to access the Db2 bits
+    db2bitssas=`az storage blob generate-sas --account-name $stor1 --container-name "setup" --policy-name "readuntileofcy2020" --name "$db2bitsfilename" --output tsv`
+    # Full URL where scripts can access the Db2 bits
+    db2bits="https://${stor1}.blob.core.windows.net/setup/${db2bitsfilename}?${db2bitssas}"
+fi
 
 # URL of the GitHub repo where all this code is made available
 githubRepoCloneUrl=git@github.com:benjguin/db2onAzure.git
