@@ -1,7 +1,5 @@
 #!/bin/bash
 
-<<<<<<< Updated upstream
-
 # in the init-private, I set $lisbits and $db2bits urls to reuse existing ones
 current_dir=`dirname $0`
 . $current_dir/01init-private.sh
