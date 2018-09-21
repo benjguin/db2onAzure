@@ -4,14 +4,15 @@
 
 In the current setup, we have several Db2 members accessing several disks in a GlusterFS cluster.
 
-## add tests
+## Add tests
 
-A first simple version could be to add SQL statements that put some load on the database.
+A first simple version include SQL statements that put some load on the database.
 
 Then, we should also add a way to test with a more realistic workload. The following tools may be good candidates:
 - [HammerDB](https://hammerdb.com/)
+- TBD
 
-## leverage other tools for IOs
+## Leverage other tools for IOs
 
 The following tools may be tried to see how they can enhance the current setup:
 - [dysk](https://github.com/khenidak/dysk)
@@ -39,4 +40,5 @@ ssh-keygen -y -f ~/.ssh/myfile > ~/.ssh/myfile.pub
 ## Several small enhancements
 
 - move logs from /tmp to /var/log
-- `INSTANCE_SHARED_MOUNT       = /db2sd_1804a` should be replaced by a more generic name (1804a refers to April 2018, first instance).
+- `INSTANCE_SHARED_MOUNT       = /db2sd_1804a` should be replaced by a more generic name (1804a refers to instance #a in April 2018).
+- have a trailing slah on all folder path and don't bother about scripts that generate paths with consecutive `/` characters - Linux interprets `foo/bar`and `foo//bar` the same way.

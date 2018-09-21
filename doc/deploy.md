@@ -32,12 +32,11 @@ source 01init.sh
 cd $localGitFolderpath/db2OnAzure/deployment
 date
 ./deploy.sh -s "$subscription" -g "$rg" -l "$location" -n "$deploymentName" -k "$pubKeyPath" -p "$adwinPassword" -d "$db2bits" -u "$gitrawurl" -j "$jumpboxPublicName" -t "$tempLocalFolder" -a "$acceleratedNetworkingOnGlusterfs" -c "$acceleratedNetworkingOnDB2" -e "$acceleratedNetworkingOnOthers" -b "$lisbits" -y $nbDb2MemberVms
-date
 ```
 
 `deploy.sh` has two main phases:
 - ARM deployment which includes scripts execution on each node, managed by the ARM template (see `az group deployment create` in [deploy.sh](../deployment/deploy.sh)) . Look for `"publisher": "Microsoft.Azure.Extensions"` and `"type": "CustomScript"` in the ARM templates like [template.json](../deployment/template.json).
-- post ARM scripts. These scripts are launched by the `deploy.sh` script, after the ARM deployment itself is finsihed. They include actions that reboot nodes or link groups of nodes together (e.g.: a DB2 member needs a disk that is exposed by the whole Gluster FS cluster).
+- post ARM scripts. These scripts are launched by the `deploy.sh` script, after the ARM deployment itself is finished. They include actions that reboot nodes or link groups of nodes together (e.g.: a DB2 member needs a disk that is exposed by the whole Gluster FS cluster).
 
 Typical deployment time for the ARM templates are:
 

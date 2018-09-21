@@ -133,9 +133,9 @@ You have to have your personal key that will give you access to the jumpbox. Thi
 
 By default `ssh-keygen` will generate a key pair: 
 - the private key is in the `~/.ssh/id_rsa` file
-- the public key is in the `~/.ssh/id_rsa.pub` file.
+- the public key is in the `~/.ssh/id_rsa.pub` file. This is why the `01init.sh` example has this line: `pubKeyPath=~/.ssh/id_rsa.pub`, which means you will authenticate with that default key to the jumpbox in Azure.
 
-This is why the `01init.sh` example has this line: `pubKeyPath=~/.ssh/id_rsa.pub`, which means you will authenticate with that default key to the jumpbox in Azure.
+You should create a key pair with no pass phrase, because the script needs to connect to the jumpbox in an unattended way (see line `ssh -o StrictHostKeyChecking=no rhel@$jumpbox "bash -v /tmp/fromjumpbox.sh $nbDb2MemberVms $nbDb2CfVms $acceleratedNetworkingOnDB2 &> >(tee -a /tmp/postARM.log)"` in `deploy.sh`). 
 
 NB: The deployment script also creates a key pair that will be sent to the jumpbox and authorized by all the other nodes inside the deployment.
 

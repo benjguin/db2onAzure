@@ -1,6 +1,10 @@
 # Prepare the bits
 
-The deployment needs two files that you need to download first from the IBM and Microsoft web sites, and then make them available to the scripts that would download them in an unattended way from the different nodes that need them.
+The deployment needs two files. 
+You have to download them first from the IBM and Microsoft web sites.
+Then you'll make them available to the scripts that will download them in an unattended way from the different nodes (VMs) that need them.
+
+This page describes how to make the files available on a storage account, protected from public use by a shared access signature.
 
 File name | Description | URL
 ----------|-------------|-----
@@ -77,6 +81,8 @@ Then we can get the shared access signature URLs from those blobs:
 lisbitssas=`az storage blob generate-sas --account-name $stor1 --container-name "setup" --policy-name "readuntileofcy2020" --name "$lisbitsgenericfilename" --output tsv`
 db2bitssas=`az storage blob generate-sas --account-name $stor1 --container-name "setup" --policy-name "readuntileofcy2020" --name "$db2bitsfilename" --output tsv`
 ```
+
+Those 2 last variables will be redefined in the `01init.sh` script and passed to the `deploy.sh` script as parameter values.
 
 ## clone the db2OnAzure GitHub repo
 
