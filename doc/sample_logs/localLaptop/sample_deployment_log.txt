@@ -1,0 +1,1946 @@
+myuser@mymachine:~$ #!/bin/bash
+myuser@mymachine:~$
+myuser@mymachine:~$ # a suffix that is based on the date (yymmdd + a letter from a to z so you have 26 tries a day!). You may prefer to use other means to create resource group or deployment names.
+myuser@mymachine:~$ dateid="180918a"
+myuser@mymachine:~$
+myuser@mymachine:~$ # subscription name or subscription ID
+myuser@mymachine:~$ subscription="Azure bengui"
+myuser@mymachine:~$
+myuser@mymachine:~$ # storage account name where the bits are made available for the setup scripts
+myuser@mymachine:~$ stor1=db27up34
+myuser@mymachine:~$
+myuser@mymachine:~$ # Admin password for the `adwin` accoun on the Window VM
+myuser@mymachine:~$ adwinPassword="BHxutbsp82________"
+myuser@mymachine:~$
+myuser@mymachine:~$ # Azure region where everything will be deployed
+myuser@mymachine:~$ location="westeurope"
+myuser@mymachine:~$
+myuser@mymachine:~$ # local folder where the db2OnAzure git folder is cloned
+myuser@mymachine:~$ localGitFolderpath=/mnt/c/dev/GitHub/benjguin
+myuser@mymachine:~$
+myuser@mymachine:~$ # Linux Integration Services v4.2 for Hyper-V and Azure bits. The minor version may change so the bits are made available to the scripts with a generic minro version of `x`.
+myuser@mymachine:~$ lisbitsgenericfilename=lis-rpms-4.2.x.tar.gz
+myuser@mymachine:~$
+myuser@mymachine:~$ # Db2 setup file
+myuser@mymachine:~$ db2bitsfilename=v11.1_linuxx64_server_t.tar.gz
+myuser@mymachine:~$
+myuser@mymachine:~$ # Shared access signature to access the LIS bits
+myuser@mymachine:~$ lisbitssas=`az storage blob generate-sas --account-name $stor1 --container-name "setup" --policy-name "readuntileofcy2020" --name "$lisbitsgenericfilename" --output tsv`
+myuser@mymachine:~$
+myuser@mymachine:~$ # Shared access signature to access the Db2 bits
+myuser@mymachine:~$ db2bitssas=`az storage blob generate-sas --account-name $stor1 --container-name "setup" --policy-name "readuntileofcy2020" --name "$db2bitsfilename" --output tsv`
+myuser@mymachine:~$
+myuser@mymachine:~$ # Full URL where scripts can access the LIS bits
+myuser@mymachine:~$ lisbits="https://${stor1}.blob.core.windows.net/setup/${lisbitsgenericfilename}?${lisbitssas}"
+myuser@mymachine:~$
+myuser@mymachine:~$ # Full URL where scripts can access the Db2 bits
+myuser@mymachine:~$ db2bits="https://${stor1}.blob.core.windows.net/setup/${db2bitsfilename}?${db2bitssas}"
+myuser@mymachine:~$
+myuser@mymachine:~$ # URL of the GitHub repo where all this code is made available
+myuser@mymachine:~$ githubRepoCloneUrl=git@github.com:benjguin/db2onAzure.git
+myuser@mymachine:~$
+myuser@mymachine:~$ # raw path on GitHub where the ARM templates and scripts will download other ARM templates and scripts
+myuser@mymachine:~$ gitrawurl='https://raw.githubusercontent.com/benjguin/db2onAzure/doc1/'
+myuser@mymachine:~$
+myuser@mymachine:~$ # Azure resource group where the Db2 setup will be deployed
+myuser@mymachine:~$ rg="a_${dateid}"
+myuser@mymachine:~$
+myuser@mymachine:~$ # name under which the Azure deployment will be logged
+myuser@mymachine:~$ deploymentName="deployment_$dateid"
+myuser@mymachine:~$
+myuser@mymachine:~$ # Path to the SSH public key that will be authorized in the jumpbox
+myuser@mymachine:~$ pubKeyPath=~/.ssh/id_rsa.pub
+myuser@mymachine:~$
+myuser@mymachine:~$ # This local temp folder is where ssh keys for the platform are generated. If you deploy several times, they can be reused from there.
+myuser@mymachine:~$ tempLocalFolder=/mnt/c/afac/
+myuser@mymachine:~$
+myuser@mymachine:~$ # do you want to use accelerated networking on the GlusterFS nodes?
+myuser@mymachine:~$ acceleratedNetworkingOnGlusterfs=true
+myuser@mymachine:~$
+myuser@mymachine:~$ # do you want to use accelerated networking on the Db2 nodes?
+myuser@mymachine:~$ acceleratedNetworkingOnDB2=true
+myuser@mymachine:~$
+myuser@mymachine:~$ # do you want to use accelerated networking on other nodes (jumpbox, Windows and witness nodes)
+myuser@mymachine:~$ acceleratedNetworkingOnOthers=true
+myuser@mymachine:~$
+myuser@mymachine:~$ # Number of Db2 members in the Db2 pureScale cluster. default is 2.
+myuser@mymachine:~$ nbDb2MemberVms=2
+myuser@mymachine:~$
+myuser@mymachine:~$ # NB: the nbDb2CfVms variable is not set as the deployment as only been tested with the default value of 2, and more would not be supported.
+myuser@mymachine:~$
+myuser@mymachine:~$ # DNS name that will be given to the public IP address
+myuser@mymachine:~$ jumpboxPublicName="j${dateid}"
+myuser@mymachine:~$
+myuser@mymachine:~$ # public URL where the jumbox can be accessed. You can typically connect with ssh rhel@$jumbox
+myuser@mymachine:~$ jumpbox="${jumpboxPublicName}.${location}.cloudapp.azure.com"
+myuser@mymachine:~$ echo $jumpbox
+j180918a.westeurope.cloudapp.azure.com
+myuser@mymachine:~$ cd $localGitFolderpath/db2OnAzure/deployment
+myuser@mymachine:/mnt/c/dev/GitHub/benjguin/db2OnAzure/deployment$ date
+Tue Sep 18 07:07:25 DST 2018
+myuser@mymachine:/mnt/c/dev/GitHub/benjguin/db2OnAzure/deployment$ ./deploy.sh -s "$subscription" -g "$rg" -l "$location" -n "$deploymentName" -k "$pubKeyPath" -p "$adwinPassword" -d "$db2bits" -u "$gitrawurl" -j "$jumpboxPublicName" -t "$tempLocalFolder" -a "$acceleratedNetworkingOnGlusterfs" -c "$acceleratedNetworkingOnDB2" -e "$acceleratedNetworkingOnOthers" -b "$lisbits" -y $nbDb2MemberVms
+Resource group 'a_180918a' could not be found.
+Resource group with name a_180918a could not be found. Creating new resource group..
++ az group create --name a_180918a --location westeurope
+reusing ssh key files available in folder /mnt/c/afac/
+Starting deployment...
+Name                ResourceGroup
+------------------  ---------------
+deployment_180918a  a_180918a
+Template has been successfully deployed
+Warning: Permanently added 'j180918a.westeurope.cloudapp.azure.com,40.114.202.241' (ECDSA) to the list of known hosts.
+wait4reboots_src.sh                                                                                                                                                                                                                  100%  605     0.6KB/s   00:00
+fromjumpbox.sh                                                                                                                                                                                                                       100% 2780     2.7KB/s   00:00
+fromd0_root.sh                                                                                                                                                                                                                       100% 4263     4.2KB/s   00:00
+fromd0getwwids_root.sh                                                                                                                                                                                                               100% 2034     2.0KB/s   00:00
+fromg0_root.sh                                                                                                                                                                                                                       100% 1185     1.2KB/s   00:00
+fromdcfan_root.sh                                                                                                                                                                                                                    100%  460     0.5KB/s   00:00
+fromjumpbox-prepare-an.sh                                                                                                                                                                                                            100%  715     0.7KB/s   00:00
+#!/bin/bash
+
+nbDb2MemberVms=$1
+nbDb2CfVms=$2
+lisbits=$3
+
+nbGlusterfsVms=3
+
+db2servers=()
+for (( i=0; i<$nbDb2MemberVms; i++ ))
+do
+    db2servers+=(192.168.0.2$i)
+done
+
+for (( i=0; i<$nbDb2CfVms; i++ ))
+do
+    db2servers+=(192.168.0.3$i)
+done
+
+# reboot DB2 servers so that they have the right kernel
+for db2srv in "${db2servers[@]}"
+do
+    ssh $db2srv sudo shutdown -r now
+done
+Warning: Permanently added '192.168.0.20' (ECDSA) to the list of known hosts.
+Connection to 192.168.0.20 closed by remote host.
+Warning: Permanently added '192.168.0.21' (ECDSA) to the list of known hosts.
+Connection to 192.168.0.21 closed by remote host.
+Warning: Permanently added '192.168.0.30' (ECDSA) to the list of known hosts.
+Connection to 192.168.0.30 closed by remote host.
+Warning: Permanently added '192.168.0.31' (ECDSA) to the list of known hosts.
+Connection to 192.168.0.31 closed by remote host.
+
+# wait for the reboots to finish
+source /tmp/wait4reboots_src.sh
+# this file is intended to be sourced
+for db2srv in "${db2servers[@]}"
+do
+    echo "waiting for $db2srv to reboot"
+    stay="true"
+    tries=0
+    while [ "$stay" == "true" ]
+    do
+        ssh $db2srv whoami
+        x=`ssh $db2srv whoami | grep rhel | wc -l`
+        if [ "$x" == "1" ]
+        then
+            stay="false"
+        else
+            if [ $tries -gt 10 ]
+            then
+                echo "Servers did not reboot correctly"
+                exit 1
+            fi
+            echo "waiting for 30 seconds ..."
+            sleep 30s
+            ((tries=tries+1))
+        fi
+    done
+done
+waiting for 192.168.0.20 to reboot
+rhel
+ssh $db2srv whoami | grep rhel | wc -l
+waiting for 192.168.0.21 to reboot
+rhel
+ssh $db2srv whoami | grep rhel | wc -l
+waiting for 192.168.0.30 to reboot
+rhel
+ssh $db2srv whoami | grep rhel | wc -l
+waiting for 192.168.0.31 to reboot
+rhel
+ssh $db2srv whoami | grep rhel | wc -l
+
+for db2srv in "${db2servers[@]}"
+do
+    scp /tmp/fromdcfan_root.sh ${db2srv}:/tmp/
+    ssh $db2srv "sudo bash -v /tmp/fromdcfan_root.sh"
+done
+#!/bin/bash
+
+# this is called only when accelerated network is needed on DB2 nodes
+
+# remove unused versions of the kernel to avoid this message: your running kernel 3.10.0-514.el7.x86_64 is not your latest installed kernel, aborting installation
+rpm -q kernel
+kernel-3.10.0-514.el7.x86_64
+kernel-3.10.0-514.28.1.el7.x86_64
+uname -r
+3.10.0-514.el7.x86_64
+yum remove -y kernel-3.10.0-514.28.1.el7.x86_64
+Loaded plugins: langpacks, product-id, search-disabled-repos
+Resolving Dependencies
+--> Running transaction check
+---> Package kernel.x86_64 0:3.10.0-514.28.1.el7 will be erased
+--> Finished Dependency Resolution
+
+Dependencies Resolved
+
+================================================================================
+ Package   Arch      Version                   Repository                  Size
+================================================================================
+Removing:
+ kernel    x86_64    3.10.0-514.28.1.el7       @rhel-7-server-eus-rpms    148 M
+
+Transaction Summary
+================================================================================
+Remove  1 Package
+
+Installed size: 148 M
+Downloading packages:
+Running transaction check
+Running transaction test
+Transaction test succeeded
+Running transaction
+  Erasing    : kernel-3.10.0-514.28.1.el7.x86_64                            1/1
+  Verifying  : kernel-3.10.0-514.28.1.el7.x86_64                            1/1
+
+Removed:
+  kernel.x86_64 0:3.10.0-514.28.1.el7
+
+Complete!
+rpm -q kernel
+kernel-3.10.0-514.el7.x86_64
+
+cd /tmp/lis/LISISO
+bash ./install.sh
+Removing Hyper-V daemons
+Invoking release specific install file in directory RHEL73
+Installing the Linux Integration Services for Microsoft Hyper-V...
+Preparing...                          ########################################
+Updating / installing...
+kmod-microsoft-hyper-v-4.2.6-20180820 ########################################
+microsoft-hyper-v-4.2.6-20180820      ########################################
+Running unbonding script.
+Saving old initramfs
+Installing new initramfs
+Starting KVP Daemon....
+Starting VSS Daemon....
+Starting FCOPY Daemon....
+microsoft-hyper-v-debuginfo-4.2.6-2018########################################
+ Linux Integration Services for Hyper-V has been installed. Please reboot your system.
+
+# need to reboot before deallocating and set accelerated network to true
+shutdown -r now
+Connection to 192.168.0.20 closed by remote host.
+#!/bin/bash
+
+# this is called only when accelerated network is needed on DB2 nodes
+
+# remove unused versions of the kernel to avoid this message: your running kernel 3.10.0-514.el7.x86_64 is not your latest installed kernel, aborting installation
+rpm -q kernel
+kernel-3.10.0-514.el7.x86_64
+kernel-3.10.0-514.28.1.el7.x86_64
+uname -r
+3.10.0-514.el7.x86_64
+yum remove -y kernel-3.10.0-514.28.1.el7.x86_64
+Loaded plugins: langpacks, product-id, search-disabled-repos
+Resolving Dependencies
+--> Running transaction check
+---> Package kernel.x86_64 0:3.10.0-514.28.1.el7 will be erased
+--> Finished Dependency Resolution
+
+Dependencies Resolved
+
+================================================================================
+ Package   Arch      Version                   Repository                  Size
+================================================================================
+Removing:
+ kernel    x86_64    3.10.0-514.28.1.el7       @rhel-7-server-eus-rpms    148 M
+
+Transaction Summary
+================================================================================
+Remove  1 Package
+
+Installed size: 148 M
+Downloading packages:
+Running transaction check
+Running transaction test
+Transaction test succeeded
+Running transaction
+  Erasing    : kernel-3.10.0-514.28.1.el7.x86_64                            1/1
+  Verifying  : kernel-3.10.0-514.28.1.el7.x86_64                            1/1
+
+Removed:
+  kernel.x86_64 0:3.10.0-514.28.1.el7
+
+Complete!
+rpm -q kernel
+kernel-3.10.0-514.el7.x86_64
+
+cd /tmp/lis/LISISO
+bash ./install.sh
+Removing Hyper-V daemons
+Invoking release specific install file in directory RHEL73
+Installing the Linux Integration Services for Microsoft Hyper-V...
+Preparing...                          ########################################
+Updating / installing...
+kmod-microsoft-hyper-v-4.2.6-20180820 ########################################
+microsoft-hyper-v-4.2.6-20180820      ########################################
+Running unbonding script.
+Saving old initramfs
+Installing new initramfs
+Starting KVP Daemon....
+Starting VSS Daemon....
+Starting FCOPY Daemon....
+microsoft-hyper-v-debuginfo-4.2.6-2018########################################
+ Linux Integration Services for Hyper-V has been installed. Please reboot your system.
+
+# need to reboot before deallocating and set accelerated network to true
+shutdown -r now
+Connection to 192.168.0.21 closed by remote host.
+#!/bin/bash
+
+# this is called only when accelerated network is needed on DB2 nodes
+
+# remove unused versions of the kernel to avoid this message: your running kernel 3.10.0-514.el7.x86_64 is not your latest installed kernel, aborting installation
+rpm -q kernel
+kernel-3.10.0-514.el7.x86_64
+kernel-3.10.0-514.28.1.el7.x86_64
+uname -r
+3.10.0-514.el7.x86_64
+yum remove -y kernel-3.10.0-514.28.1.el7.x86_64
+Loaded plugins: langpacks, product-id, search-disabled-repos
+Resolving Dependencies
+--> Running transaction check
+---> Package kernel.x86_64 0:3.10.0-514.28.1.el7 will be erased
+--> Finished Dependency Resolution
+
+Dependencies Resolved
+
+================================================================================
+ Package   Arch      Version                   Repository                  Size
+================================================================================
+Removing:
+ kernel    x86_64    3.10.0-514.28.1.el7       @rhel-7-server-eus-rpms    148 M
+
+Transaction Summary
+================================================================================
+Remove  1 Package
+
+Installed size: 148 M
+Downloading packages:
+Running transaction check
+Running transaction test
+Transaction test succeeded
+Running transaction
+  Erasing    : kernel-3.10.0-514.28.1.el7.x86_64                            1/1
+  Verifying  : kernel-3.10.0-514.28.1.el7.x86_64                            1/1
+
+Removed:
+  kernel.x86_64 0:3.10.0-514.28.1.el7
+
+Complete!
+rpm -q kernel
+kernel-3.10.0-514.el7.x86_64
+
+cd /tmp/lis/LISISO
+bash ./install.sh
+Removing Hyper-V daemons
+Invoking release specific install file in directory RHEL73
+Installing the Linux Integration Services for Microsoft Hyper-V...
+Preparing...                          ########################################
+Updating / installing...
+kmod-microsoft-hyper-v-4.2.6-20180820 ########################################
+microsoft-hyper-v-4.2.6-20180820      ########################################
+Running unbonding script.
+Saving old initramfs
+Installing new initramfs
+Starting KVP Daemon....
+Starting VSS Daemon....
+Starting FCOPY Daemon....
+microsoft-hyper-v-debuginfo-4.2.6-2018########################################
+ Linux Integration Services for Hyper-V has been installed. Please reboot your system.
+
+# need to reboot before deallocating and set accelerated network to true
+shutdown -r now
+Connection to 192.168.0.30 closed by remote host.
+#!/bin/bash
+
+# this is called only when accelerated network is needed on DB2 nodes
+
+# remove unused versions of the kernel to avoid this message: your running kernel 3.10.0-514.el7.x86_64 is not your latest installed kernel, aborting installation
+rpm -q kernel
+kernel-3.10.0-514.el7.x86_64
+kernel-3.10.0-514.28.1.el7.x86_64
+uname -r
+3.10.0-514.el7.x86_64
+yum remove -y kernel-3.10.0-514.28.1.el7.x86_64
+Loaded plugins: langpacks, product-id, search-disabled-repos
+Resolving Dependencies
+--> Running transaction check
+---> Package kernel.x86_64 0:3.10.0-514.28.1.el7 will be erased
+--> Finished Dependency Resolution
+
+Dependencies Resolved
+
+================================================================================
+ Package   Arch      Version                   Repository                  Size
+================================================================================
+Removing:
+ kernel    x86_64    3.10.0-514.28.1.el7       @rhel-7-server-eus-rpms    148 M
+
+Transaction Summary
+================================================================================
+Remove  1 Package
+
+Installed size: 148 M
+Downloading packages:
+Running transaction check
+Running transaction test
+Transaction test succeeded
+Running transaction
+  Erasing    : kernel-3.10.0-514.28.1.el7.x86_64                            1/1
+  Verifying  : kernel-3.10.0-514.28.1.el7.x86_64                            1/1
+
+Removed:
+  kernel.x86_64 0:3.10.0-514.28.1.el7
+
+Complete!
+rpm -q kernel
+kernel-3.10.0-514.el7.x86_64
+
+cd /tmp/lis/LISISO
+bash ./install.sh
+Removing Hyper-V daemons
+Invoking release specific install file in directory RHEL73
+Installing the Linux Integration Services for Microsoft Hyper-V...
+Preparing...                          ########################################
+Updating / installing...
+kmod-microsoft-hyper-v-4.2.6-20180820 ########################################
+microsoft-hyper-v-4.2.6-20180820      ########################################
+Running unbonding script.
+Saving old initramfs
+Installing new initramfs
+Starting KVP Daemon....
+Starting VSS Daemon....
+Starting FCOPY Daemon....
+microsoft-hyper-v-debuginfo-4.2.6-2018########################################
+ Linux Integration Services for Hyper-V has been installed. Please reboot your system.
+
+# need to reboot before deallocating and set accelerated network to true
+shutdown -r now
+Connection to 192.168.0.31 closed by remote host.
+
+# need to wait for the reboot to finish before deallocating and set accelerated network to true
+source /tmp/wait4reboots_src.sh
+# this file is intended to be sourced
+for db2srv in "${db2servers[@]}"
+do
+    echo "waiting for $db2srv to reboot"
+    stay="true"
+    tries=0
+    while [ "$stay" == "true" ]
+    do
+        ssh $db2srv whoami
+        x=`ssh $db2srv whoami | grep rhel | wc -l`
+        if [ "$x" == "1" ]
+        then
+            stay="false"
+        else
+            if [ $tries -gt 10 ]
+            then
+                echo "Servers did not reboot correctly"
+                exit 1
+            fi
+            echo "waiting for 30 seconds ..."
+            sleep 30s
+            ((tries=tries+1))
+        fi
+    done
+done
+waiting for 192.168.0.20 to reboot
+rhel
+ssh $db2srv whoami | grep rhel | wc -l
+waiting for 192.168.0.21 to reboot
+rhel
+ssh $db2srv whoami | grep rhel | wc -l
+waiting for 192.168.0.30 to reboot
+rhel
+ssh $db2srv whoami | grep rhel | wc -l
+waiting for 192.168.0.31 to reboot
+ssh: connect to host 192.168.0.31 port 22: Connection refused
+ssh $db2srv whoami | grep rhel | wc -l
+ssh: connect to host 192.168.0.31 port 22: Connection refused
+waiting for 30 seconds ...
+ssh: connect to host 192.168.0.31 port 22: Connection refused
+ssh $db2srv whoami | grep rhel | wc -l
+ssh: connect to host 192.168.0.31 port 22: Connection refused
+waiting for 30 seconds ...
+rhel
+ssh $db2srv whoami | grep rhel | wc -l
+adding accelerated network to d0. First wait for deallocation to finish.
+dbg-180608a [d0]
+d0 power state:         "code": "PowerState/running",
+dbg-180608b [d0] [        "code": "PowerState/running",] [0]
+waiting for 30 seconds ...
+dbg-180608a [d0]
+d0 power state:         "code": "PowerState/deallocating",
+dbg-180608b [d0] [        "code": "PowerState/deallocating",] [0]
+waiting for 30 seconds ...
+dbg-180608a [d0]
+d0 power state:         "code": "PowerState/deallocated",
+dbg-180608b [d0] [        "code": "PowerState/deallocated",] [1]
+d0 is deallocated
+False                          False                 westeurope  d0_db2be       False      Succeeded            a_180918a        cf870239-907a-4a23-87f0-f9351858995e
+False                          False                 westeurope  d0_db2fe       False      Succeeded            a_180918a        b9957c66-d365-4c31-9932-b161cd275915
+False                          False                 westeurope  d0_gfsfe       False      Succeeded            a_180918a        4a82201f-ad36-43c1-9e26-c50e1d2012b3
+False                          False                 westeurope  d0_main        True       Succeeded            a_180918a        11ddbb53-7416-4f86-8637-fa7aa682b924
+dbg-180608c [d0]
+dbg-180608d [d0] [1]
+EnableAcceleratedNetworking    EnableIpForwarding    Location    Name     Primary    ProvisioningState    ResourceGroup    ResourceGuid
+-----------------------------  --------------------  ----------  -------  ---------  -------------------  ---------------  ------------------------------------
+True                           False                 westeurope  d0_main  True       Succeeded            a_180918a        11ddbb53-7416-4f86-8637-fa7aa682b924
+dbg-180608e [d0]
+EnableAcceleratedNetworking    EnableIpForwarding    Location    Name      Primary    ProvisioningState    ResourceGroup    ResourceGuid
+-----------------------------  --------------------  ----------  --------  ---------  -------------------  ---------------  ------------------------------------
+True                           False                 westeurope  d0_db2be  False      Succeeded            a_180918a        cf870239-907a-4a23-87f0-f9351858995e
+dbg-180608f [d0]
+EnableAcceleratedNetworking    EnableIpForwarding    Location    Name      Primary    ProvisioningState    ResourceGroup    ResourceGuid
+-----------------------------  --------------------  ----------  --------  ---------  -------------------  ---------------  ------------------------------------
+True                           False                 westeurope  d0_gfsfe  False      Succeeded            a_180918a        4a82201f-ad36-43c1-9e26-c50e1d2012b3
+dbg-180608g [d0]
+dbg-180608h [d0] [1]
+EnableAcceleratedNetworking    EnableIpForwarding    Location    Name      Primary    ProvisioningState    ResourceGroup    ResourceGuid
+-----------------------------  --------------------  ----------  --------  ---------  -------------------  ---------------  ------------------------------------
+True                           False                 westeurope  d0_db2fe  False      Succeeded            a_180918a        b9957c66-d365-4c31-9932-b161cd275915
+dbg-180608i [d0] [1]
+dbg-180608j [d0] [1]
+True                           False                 westeurope  d0_db2be       False      Succeeded            a_180918a        cf870239-907a-4a23-87f0-f9351858995e
+True                           False                 westeurope  d0_db2fe       False      Succeeded            a_180918a        b9957c66-d365-4c31-9932-b161cd275915
+True                           False                 westeurope  d0_gfsfe       False      Succeeded            a_180918a        4a82201f-ad36-43c1-9e26-c50e1d2012b3
+True                           False                 westeurope  d0_main        True       Succeeded            a_180918a        11ddbb53-7416-4f86-8637-fa7aa682b924
+dbg-180608k [d0] [1]
+dbg-180608l [d0] [1]
+adding accelerated network to d1. First wait for deallocation to finish.
+dbg-180608a [d1]
+d1 power state:         "code": "PowerState/deallocating",
+dbg-180608b [d1] [        "code": "PowerState/deallocating",] [0]
+waiting for 30 seconds ...
+dbg-180608a [d1]
+d1 power state:         "code": "PowerState/deallocated",
+dbg-180608b [d1] [        "code": "PowerState/deallocated",] [1]
+d1 is deallocated
+False                          False                 westeurope  d1_db2be       False      Succeeded            a_180918a        42034ced-39bc-4295-9d49-cb96df5072a6
+False                          False                 westeurope  d1_db2fe       False      Succeeded            a_180918a        22f11c40-e8be-441c-b828-ab8717a56f80
+False                          False                 westeurope  d1_gfsfe       False      Succeeded            a_180918a        d23158be-877f-4edd-bd7e-421300ec9f8d
+False                          False                 westeurope  d1_main        True       Succeeded            a_180918a        c1f7ff37-f7d0-42c9-92aa-2eb437ff8ca4
+dbg-180608c [d1]
+dbg-180608d [d1] [1]
+EnableAcceleratedNetworking    EnableIpForwarding    Location    Name     Primary    ProvisioningState    ResourceGroup    ResourceGuid
+-----------------------------  --------------------  ----------  -------  ---------  -------------------  ---------------  ------------------------------------
+True                           False                 westeurope  d1_main  True       Succeeded            a_180918a        c1f7ff37-f7d0-42c9-92aa-2eb437ff8ca4
+dbg-180608e [d1]
+EnableAcceleratedNetworking    EnableIpForwarding    Location    Name      Primary    ProvisioningState    ResourceGroup    ResourceGuid
+-----------------------------  --------------------  ----------  --------  ---------  -------------------  ---------------  ------------------------------------
+True                           False                 westeurope  d1_db2be  False      Succeeded            a_180918a        42034ced-39bc-4295-9d49-cb96df5072a6
+dbg-180608f [d1]
+EnableAcceleratedNetworking    EnableIpForwarding    Location    Name      Primary    ProvisioningState    ResourceGroup    ResourceGuid
+-----------------------------  --------------------  ----------  --------  ---------  -------------------  ---------------  ------------------------------------
+True                           False                 westeurope  d1_gfsfe  False      Succeeded            a_180918a        d23158be-877f-4edd-bd7e-421300ec9f8d
+dbg-180608g [d1]
+dbg-180608h [d1] [1]
+EnableAcceleratedNetworking    EnableIpForwarding    Location    Name      Primary    ProvisioningState    ResourceGroup    ResourceGuid
+-----------------------------  --------------------  ----------  --------  ---------  -------------------  ---------------  ------------------------------------
+True                           False                 westeurope  d1_db2fe  False      Succeeded            a_180918a        22f11c40-e8be-441c-b828-ab8717a56f80
+dbg-180608i [d1] [1]
+dbg-180608j [d1] [1]
+True                           False                 westeurope  d1_db2be       False      Succeeded            a_180918a        42034ced-39bc-4295-9d49-cb96df5072a6
+True                           False                 westeurope  d1_db2fe       False      Succeeded            a_180918a        22f11c40-e8be-441c-b828-ab8717a56f80
+True                           False                 westeurope  d1_gfsfe       False      Succeeded            a_180918a        d23158be-877f-4edd-bd7e-421300ec9f8d
+True                           False                 westeurope  d1_main        True       Succeeded            a_180918a        c1f7ff37-f7d0-42c9-92aa-2eb437ff8ca4
+dbg-180608k [d1] [1]
+dbg-180608l [d1] [1]
+adding accelerated network to cf0. First wait for deallocation to finish.
+dbg-180608a [cf0]
+cf0 power state:         "code": "PowerState/deallocated",
+dbg-180608b [cf0] [        "code": "PowerState/deallocated",] [1]
+cf0 is deallocated
+False                          False                 westeurope  cf0_db2be      False      Succeeded            a_180918a        57224a92-82f6-435a-8aec-424eaa3881fb
+False                          False                 westeurope  cf0_gfsfe      False      Succeeded            a_180918a        a1565acc-de41-4d63-9d55-de425fe7982d
+False                          False                 westeurope  cf0_main       True       Succeeded            a_180918a        823e47e0-fa4b-4fc9-bd54-2a3a0b834dfb
+dbg-180608c [cf0]
+dbg-180608d [cf0] [0]
+EnableAcceleratedNetworking    EnableIpForwarding    Location    Name      Primary    ProvisioningState    ResourceGroup    ResourceGuid
+-----------------------------  --------------------  ----------  --------  ---------  -------------------  ---------------  ------------------------------------
+True                           False                 westeurope  cf0_main  True       Succeeded            a_180918a        823e47e0-fa4b-4fc9-bd54-2a3a0b834dfb
+dbg-180608e [cf0]
+EnableAcceleratedNetworking    EnableIpForwarding    Location    Name       Primary    ProvisioningState    ResourceGroup    ResourceGuid
+-----------------------------  --------------------  ----------  ---------  ---------  -------------------  ---------------  ------------------------------------
+True                           False                 westeurope  cf0_db2be  False      Succeeded            a_180918a        57224a92-82f6-435a-8aec-424eaa3881fb
+dbg-180608f [cf0]
+EnableAcceleratedNetworking    EnableIpForwarding    Location    Name       Primary    ProvisioningState    ResourceGroup    ResourceGuid
+-----------------------------  --------------------  ----------  ---------  ---------  -------------------  ---------------  ------------------------------------
+True                           False                 westeurope  cf0_gfsfe  False      Succeeded            a_180918a        a1565acc-de41-4d63-9d55-de425fe7982d
+dbg-180608g [cf0]
+dbg-180608j [cf0] [0]
+True                           False                 westeurope  cf0_db2be      False      Succeeded            a_180918a        57224a92-82f6-435a-8aec-424eaa3881fb
+True                           False                 westeurope  cf0_gfsfe      False      Succeeded            a_180918a        a1565acc-de41-4d63-9d55-de425fe7982d
+True                           False                 westeurope  cf0_main       True       Succeeded            a_180918a        823e47e0-fa4b-4fc9-bd54-2a3a0b834dfb
+dbg-180608k [cf0] [0]
+dbg-180608l [cf0] [0]
+adding accelerated network to cf1. First wait for deallocation to finish.
+dbg-180608a [cf1]
+cf1 power state:         "code": "PowerState/deallocated",
+dbg-180608b [cf1] [        "code": "PowerState/deallocated",] [1]
+cf1 is deallocated
+False                          False                 westeurope                     cf1_db2be      False      Succeeded            a_180918a        b14dee21-81bd-40ff-8c53-03e7204fdd7c
+False                          False                 westeurope                     cf1_gfsfe      False      Succeeded            a_180918a        5c38075f-da06-4715-8f1a-e60aa2bce9d4
+False                          False                 westeurope                     cf1_main       True       Succeeded            a_180918a        721d1a0f-68aa-40bb-b2ab-c61da8eb038c
+dbg-180608c [cf1]
+dbg-180608d [cf1] [0]
+EnableAcceleratedNetworking    EnableIpForwarding    Location    Name      Primary    ProvisioningState    ResourceGroup    ResourceGuid
+-----------------------------  --------------------  ----------  --------  ---------  -------------------  ---------------  ------------------------------------
+True                           False                 westeurope  cf1_main  True       Succeeded            a_180918a        721d1a0f-68aa-40bb-b2ab-c61da8eb038c
+dbg-180608e [cf1]
+EnableAcceleratedNetworking    EnableIpForwarding    Location    Name       Primary    ProvisioningState    ResourceGroup    ResourceGuid
+-----------------------------  --------------------  ----------  ---------  ---------  -------------------  ---------------  ------------------------------------
+True                           False                 westeurope  cf1_db2be  False      Succeeded            a_180918a        b14dee21-81bd-40ff-8c53-03e7204fdd7c
+dbg-180608f [cf1]
+EnableAcceleratedNetworking    EnableIpForwarding    Location    Name       Primary    ProvisioningState    ResourceGroup    ResourceGuid
+-----------------------------  --------------------  ----------  ---------  ---------  -------------------  ---------------  ------------------------------------
+True                           False                 westeurope  cf1_gfsfe  False      Succeeded            a_180918a        5c38075f-da06-4715-8f1a-e60aa2bce9d4
+dbg-180608g [cf1]
+dbg-180608j [cf1] [0]
+True                           False                 westeurope                     cf1_db2be      False      Succeeded            a_180918a        b14dee21-81bd-40ff-8c53-03e7204fdd7c
+True                           False                 westeurope                     cf1_gfsfe      False      Succeeded            a_180918a        5c38075f-da06-4715-8f1a-e60aa2bce9d4
+True                           False                 westeurope                     cf1_main       True       Succeeded            a_180918a        721d1a0f-68aa-40bb-b2ab-c61da8eb038c
+dbg-180608k [cf1] [0]
+dbg-180608l [cf1] [0]
+dbg-180608m
+dbg-180608n
+#!/bin/bash..
+
+nbDb2MemberVms=$1
+nbDb2CfVms=$2
+acceleratedNetworkingOnDB2=$3
+
+nbGlusterfsVms=3
+
+sudo bash -c "echo \"192.168.0.5 jumpbox\" >> /etc/hosts"
+sudo bash -c "echo \"192.168.0.40 wcli0\" >> /etc/hosts"
+sudo bash -c "echo \"192.168.0.60 witn0\" >> /etc/hosts"
+
+db2servers=()
+for (( i=0; i<$nbDb2MemberVms; i++ ))
+do
+    db2servers+=(192.168.0.2$i)
+    sudo bash -c "echo \"192.168.0.2${i} d${i}\" >> /etc/hosts"
+done
+
+for (( i=0; i<$nbDb2CfVms; i++ ))
+do
+    db2servers+=(192.168.0.3$i)
+    sudo bash -c "echo \"192.168.0.3${i} cf${i}\" >> /etc/hosts"
+done
+
+if [ "$acceleratedNetworkingOnDB2" == "false" ]
+then
+    # reboot DB2 servers so that they have the right kernel version
+    for db2srv in "${db2servers[@]}"
+    do
+        ssh $db2srv sudo shutdown -r now
+    done
+fi
+
+scp /tmp/fromg0_root.sh 192.168.0.10:/tmp/
+Warning: Permanently added '192.168.0.10' (ECDSA) to the list of known hosts.
+ssh 192.168.0.10 sudo -n -u root -s "bash -v /tmp/fromg0_root.sh"
+#Gluster setup - execute on one node only!
+
+gluster peer probe g0b
+peer probe: success. Probe on localhost not needed
+gluster peer probe g1b
+peer probe: success.
+gluster peer probe g2b
+peer probe: success.
+
+gluster pool list
+UUID                                    Hostname        State
+5a018304-de8e-4ea2-bbd6-0f3b7605221d    g1b             Connected
+6dd51e69-c222-4c7b-9958-f22e670d6701    g2b             Connected
+a36ea8f8-e09f-4aaa-a3dc-027f7d826dcf    localhost       Connected
+
+stay="true"
+tries=0
+while [ "$stay" == "true" ]
+do
+    gluster peer status
+    x=`gluster peer status | grep "Peer in Cluster" | wc -l`
+    if [ "$x" == "2" ]
+    then
+        stay="false"
+    else
+        if [ $tries -gt 10 ]
+        then
+            echo "Gluster FS cluster failed to start correctly"
+            exit 1
+        fi
+        echo "waiting for 30 seconds ..."
+        sleep 30s
+        ((tries=tries+1))
+    fi
+done
+Number of Peers: 2
+
+Hostname: g1b
+Uuid: 5a018304-de8e-4ea2-bbd6-0f3b7605221d
+State: Peer in Cluster (Connected)
+
+Hostname: g2b
+Uuid: 6dd51e69-c222-4c7b-9958-f22e670d6701
+State: Accepted peer request (Connected)
+gluster peer status | grep "Peer in Cluster" | wc -l
+waiting for 30 seconds ...
+Number of Peers: 2
+
+Hostname: g1b
+Uuid: 5a018304-de8e-4ea2-bbd6-0f3b7605221d
+State: Peer in Cluster (Connected)
+
+Hostname: g2b
+Uuid: 6dd51e69-c222-4c7b-9958-f22e670d6701
+State: Peer in Cluster (Connected)
+gluster peer status | grep "Peer in Cluster" | wc -l
+
+#create gluster volumes
+gluster volume create db2data replica 3 g0b:/bricks/db2data/db2data g1b:/bricks/db2data/db2data g2b:/bricks/db2data/db2data
+volume create: db2data: success: please start the volume to access data
+
+gluster volume start db2data
+volume start: db2data: success
+
+mkdir -p /db2/data
+mount -t glusterfs g0b:/db2data /db2/data/
+
+
+#create gluster-block device file
+gluster-block create db2data/data ha 3 192.168.1.10,192.168.1.11,192.168.1.12 2480GiB
+IQN: iqn.2016-12.org.gluster-block:4a5e880a-1f83-4449-8ee1-fe413f396395
+PORTAL(S):  192.168.1.10:3260 192.168.1.11:3260 192.168.1.12:3260
+RESULT: SUCCESS
+gluster-block create db2data/quorum ha 3 192.168.1.10,192.168.1.11,192.168.1.12 10GiB
+IQN: iqn.2016-12.org.gluster-block:46756d05-6b85-4101-8dda-83128a13b707
+PORTAL(S):  192.168.1.10:3260 192.168.1.11:3260 192.168.1.12:3260
+RESULT: SUCCESS
+gluster-block create db2data/log ha 3 192.168.1.10,192.168.1.11,192.168.1.12 500GiB
+IQN: iqn.2016-12.org.gluster-block:98441a52-f7ab-4319-8a20-62e11e819e7a
+PORTAL(S):  192.168.1.10:3260 192.168.1.11:3260 192.168.1.12:3260
+RESULT: SUCCESS
+gluster-block create db2data/shared ha 3 192.168.1.10,192.168.1.11,192.168.1.12 10GiB
+IQN: iqn.2016-12.org.gluster-block:ee2a1af8-c7d1-4e74-bbbf-644a5678bedd
+PORTAL(S):  192.168.1.10:3260 192.168.1.11:3260 192.168.1.12:3260
+RESULT: SUCCESS
+
+for (( i=0; i<$nbGlusterfsVms; i++ ))
+do
+    sudo bash -c "echo \"192.168.0.1${i} g${i}\" >> /etc/hosts"
+done
+
+# wait for the reboots or starts to finish
+source /tmp/wait4reboots_src.sh
+# this file is intended to be sourced
+for db2srv in "${db2servers[@]}"
+do
+    echo "waiting for $db2srv to reboot"
+    stay="true"
+    tries=0
+    while [ "$stay" == "true" ]
+    do
+        ssh $db2srv whoami
+        x=`ssh $db2srv whoami | grep rhel | wc -l`
+        if [ "$x" == "1" ]
+        then
+            stay="false"
+        else
+            if [ $tries -gt 10 ]
+            then
+                echo "Servers did not reboot correctly"
+                exit 1
+            fi
+            echo "waiting for 30 seconds ..."
+            sleep 30s
+            ((tries=tries+1))
+        fi
+    done
+done
+waiting for 192.168.0.20 to reboot
+rhel
+ssh $db2srv whoami | grep rhel | wc -l
+waiting for 192.168.0.21 to reboot
+rhelunning ..
+ssh $db2srv whoami | grep rhel | wc -l
+waiting for 192.168.0.30 to reboot
+rhelunning ..
+ssh $db2srv whoami | grep rhel | wc -l
+waiting for 192.168.0.31 to reboot
+ssh: connect to host 192.168.0.31 port 22: Connection refused
+ssh $db2srv whoami | grep rhel | wc -l
+ssh: connect to host 192.168.0.31 port 22: Connection refused
+waiting for 30 seconds ...
+rhelunning ..
+ssh $db2srv whoami | grep rhel | wc -l
+
+scp /tmp/fromd0getwwids_root.sh 192.168.0.20:/tmp/
+ssh 192.168.0.20 sudo -n -u root -s "bash -v /tmp/fromd0getwwids_root.sh"
+#!/bin/bash
+
+cat > /etc/multipath.conf <<EOF
+defaults {
+    user_friendly_names no
+    bindings_file /etc/multipath/bindings4db2
+    max_fds max
+    flush_on_last_del yes
+    queue_without_daemon no
+    dev_loss_tmo infinity
+    fast_io_fail_tmo 5
+}
+blacklist {
+    wwid "SAdaptec*"
+    devnode "^hd[a-z]"
+    devnode "^(ram|raw|loop|fd|md|dm-|sr|scd|st)[0-9]*"
+    devnode "^sda[0-9]*"
+    devnode "^sdb[0-9]*"
+    devnode "^sdc[0-9]*"
+    devnode "^cciss.*"
+}
+EOF
+
+modprobe dm-multipath
+systemctl start multipathd
+sleep 1s
+multipath -l.
+iscsiadm -m discovery -t sendtargets -p 192.168.1.10
+192.168.1.10:3260,1 iqn.2016-12.org.gluster-block:4a5e880a-1f83-4449-8ee1-fe413f396395
+192.168.1.11:3260,2 iqn.2016-12.org.gluster-block:4a5e880a-1f83-4449-8ee1-fe413f396395
+192.168.1.12:3260,3 iqn.2016-12.org.gluster-block:4a5e880a-1f83-4449-8ee1-fe413f396395
+192.168.1.10:3260,1 iqn.2016-12.org.gluster-block:46756d05-6b85-4101-8dda-83128a13b707
+192.168.1.11:3260,2 iqn.2016-12.org.gluster-block:46756d05-6b85-4101-8dda-83128a13b707
+192.168.1.12:3260,3 iqn.2016-12.org.gluster-block:46756d05-6b85-4101-8dda-83128a13b707
+192.168.1.10:3260,1 iqn.2016-12.org.gluster-block:98441a52-f7ab-4319-8a20-62e11e819e7a
+192.168.1.11:3260,2 iqn.2016-12.org.gluster-block:98441a52-f7ab-4319-8a20-62e11e819e7a
+192.168.1.12:3260,3 iqn.2016-12.org.gluster-block:98441a52-f7ab-4319-8a20-62e11e819e7a
+192.168.1.10:3260,1 iqn.2016-12.org.gluster-block:ee2a1af8-c7d1-4e74-bbbf-644a5678bedd
+192.168.1.11:3260,2 iqn.2016-12.org.gluster-block:ee2a1af8-c7d1-4e74-bbbf-644a5678bedd
+192.168.1.12:3260,3 iqn.2016-12.org.gluster-block:ee2a1af8-c7d1-4e74-bbbf-644a5678bedd
+iscsiadm -m node -L automatic
+Logging in to [iface: default, target: iqn.2016-12.org.gluster-block:4a5e880a-1f83-4449-8ee1-fe413f396395, portal: 192.168.1.10,3260] (multiple)
+Logging in to [iface: default, target: iqn.2016-12.org.gluster-block:4a5e880a-1f83-4449-8ee1-fe413f396395, portal: 192.168.1.11,3260] (multiple)
+Logging in to [iface: default, target: iqn.2016-12.org.gluster-block:4a5e880a-1f83-4449-8ee1-fe413f396395, portal: 192.168.1.12,3260] (multiple)
+Logging in to [iface: default, target: iqn.2016-12.org.gluster-block:46756d05-6b85-4101-8dda-83128a13b707, portal: 192.168.1.10,3260] (multiple)
+Logging in to [iface: default, target: iqn.2016-12.org.gluster-block:46756d05-6b85-4101-8dda-83128a13b707, portal: 192.168.1.11,3260] (multiple)
+Logging in to [iface: default, target: iqn.2016-12.org.gluster-block:46756d05-6b85-4101-8dda-83128a13b707, portal: 192.168.1.12,3260] (multiple)
+Logging in to [iface: default, target: iqn.2016-12.org.gluster-block:98441a52-f7ab-4319-8a20-62e11e819e7a, portal: 192.168.1.10,3260] (multiple)
+Logging in to [iface: default, target: iqn.2016-12.org.gluster-block:98441a52-f7ab-4319-8a20-62e11e819e7a, portal: 192.168.1.11,3260] (multiple)
+Logging in to [iface: default, target: iqn.2016-12.org.gluster-block:98441a52-f7ab-4319-8a20-62e11e819e7a, portal: 192.168.1.12,3260] (multiple)
+Logging in to [iface: default, target: iqn.2016-12.org.gluster-block:ee2a1af8-c7d1-4e74-bbbf-644a5678bedd, portal: 192.168.1.10,3260] (multiple)
+Logging in to [iface: default, target: iqn.2016-12.org.gluster-block:ee2a1af8-c7d1-4e74-bbbf-644a5678bedd, portal: 192.168.1.11,3260] (multiple)
+Logging in to [iface: default, target: iqn.2016-12.org.gluster-block:ee2a1af8-c7d1-4e74-bbbf-644a5678bedd, portal: 192.168.1.12,3260] (multiple)
+Login to [iface: default, target: iqn.2016-12.org.gluster-block:4a5e880a-1f83-4449-8ee1-fe413f396395, portal: 192.168.1.10,3260] successful.
+Login to [iface: default, target: iqn.2016-12.org.gluster-block:4a5e880a-1f83-4449-8ee1-fe413f396395, portal: 192.168.1.11,3260] successful.
+Login to [iface: default, target: iqn.2016-12.org.gluster-block:4a5e880a-1f83-4449-8ee1-fe413f396395, portal: 192.168.1.12,3260] successful.
+Login to [iface: default, target: iqn.2016-12.org.gluster-block:46756d05-6b85-4101-8dda-83128a13b707, portal: 192.168.1.10,3260] successful.
+Login to [iface: default, target: iqn.2016-12.org.gluster-block:46756d05-6b85-4101-8dda-83128a13b707, portal: 192.168.1.11,3260] successful.
+Login to [iface: default, target: iqn.2016-12.org.gluster-block:46756d05-6b85-4101-8dda-83128a13b707, portal: 192.168.1.12,3260] successful.
+Login to [iface: default, target: iqn.2016-12.org.gluster-block:98441a52-f7ab-4319-8a20-62e11e819e7a, portal: 192.168.1.10,3260] successful.
+Login to [iface: default, target: iqn.2016-12.org.gluster-block:98441a52-f7ab-4319-8a20-62e11e819e7a, portal: 192.168.1.11,3260] successful.
+Login to [iface: default, target: iqn.2016-12.org.gluster-block:98441a52-f7ab-4319-8a20-62e11e819e7a, portal: 192.168.1.12,3260] successful.
+Login to [iface: default, target: iqn.2016-12.org.gluster-block:ee2a1af8-c7d1-4e74-bbbf-644a5678bedd, portal: 192.168.1.10,3260] successful.
+Login to [iface: default, target: iqn.2016-12.org.gluster-block:ee2a1af8-c7d1-4e74-bbbf-644a5678bedd, portal: 192.168.1.11,3260] successful.
+Login to [iface: default, target: iqn.2016-12.org.gluster-block:ee2a1af8-c7d1-4e74-bbbf-644a5678bedd, portal: 192.168.1.12,3260] successful.
+iscsiadm -m session
+tcp: [1] 192.168.1.10:3260,1 iqn.2016-12.org.gluster-block:4a5e880a-1f83-4449-8ee1-fe413f396395 (non-flash)
+tcp: [10] 192.168.1.12:3260,3 iqn.2016-12.org.gluster-block:4a5e880a-1f83-4449-8ee1-fe413f396395 (non-flash)
+tcp: [11] 192.168.1.10:3260,1 iqn.2016-12.org.gluster-block:46756d05-6b85-4101-8dda-83128a13b707 (non-flash)
+tcp: [12] 192.168.1.11:3260,2 iqn.2016-12.org.gluster-block:46756d05-6b85-4101-8dda-83128a13b707 (non-flash)
+tcp: [2] 192.168.1.12:3260,3 iqn.2016-12.org.gluster-block:46756d05-6b85-4101-8dda-83128a13b707 (non-flash)
+tcp: [3] 192.168.1.10:3260,1 iqn.2016-12.org.gluster-block:98441a52-f7ab-4319-8a20-62e11e819e7a (non-flash)
+tcp: [4] 192.168.1.11:3260,2 iqn.2016-12.org.gluster-block:98441a52-f7ab-4319-8a20-62e11e819e7a (non-flash)
+tcp: [5] 192.168.1.12:3260,3 iqn.2016-12.org.gluster-block:98441a52-f7ab-4319-8a20-62e11e819e7a (non-flash)
+tcp: [6] 192.168.1.10:3260,1 iqn.2016-12.org.gluster-block:ee2a1af8-c7d1-4e74-bbbf-644a5678bedd (non-flash)
+tcp: [7] 192.168.1.11:3260,2 iqn.2016-12.org.gluster-block:ee2a1af8-c7d1-4e74-bbbf-644a5678bedd (non-flash)
+tcp: [8] 192.168.1.12:3260,3 iqn.2016-12.org.gluster-block:ee2a1af8-c7d1-4e74-bbbf-644a5678bedd (non-flash)
+tcp: [9] 192.168.1.11:3260,2 iqn.2016-12.org.gluster-block:4a5e880a-1f83-4449-8ee1-fe413f396395 (non-flash)
+multipath -l
+3600140598441a52f7ab43198a2062e11 dm-2 LIO-ORG ,TCMU device
+size=500G features='0' hwhandler='0' wp=rw
+`-+- policy='service-time 0' prio=0 status=active
+  `- 10:0:0:0 sdi 8:128 active undef unknown
+36001405ee2a1af8c7d14e74bbbf644a5 dm-3 LIO-ORG ,TCMU device
+size=10G features='0' hwhandler='0' wp=rw
+`-+- policy='service-time 0' prio=0 status=active
+  `- 11:0:0:0 sdl 8:176 active undef unknown
+360014054a5e880a1f8344498ee1fe413 dm-1 LIO-ORG ,TCMU device
+size=2.4T features='0' hwhandler='0' wp=rw
+|-+- policy='service-time 0' prio=0 status=active
+| `- 14:0:0:0 sdh 8:112 active undef unknown
+`-+- policy='service-time 0' prio=0 status=enabled
+  `- 15:0:0:0 sdf 8:80  active undef unknown
+3600140546756d056b8541018dda83128 dm-0 LIO-ORG ,TCMU device
+size=10G features='0' hwhandler='0' wp=rw
+|-+- policy='service-time 0' prio=0 status=active
+| `- 7:0:0:0  sdd 8:48  active undef unknown
+`-+- policy='service-time 0' prio=0 status=enabled
+  `- 16:0:0:0 sdj 8:144 active undef unknown
+sleep 5s
+fdisk -l | grep /dev/mapper/3
+Disk /dev/mapper/3600140546756d056b8541018dda83128: 10.7 GB, 10737418240 bytes, 20971520 sectors
+Disk /dev/mapper/360014054a5e880a1f8344498ee1fe413: 2662.9 GB, 2662879723520 bytes, 5200936960 sectors
+Disk /dev/mapper/3600140598441a52f7ab43198a2062e11: 536.9 GB, 536870912000 bytes, 1048576000 sectors
+Disk /dev/mapper/36001405ee2a1af8c7d14e74bbbf644a5: 10.7 GB, 10737418240 bytes, 20971520 sectors
+lsblk
+NAME                                MAJ:MIN RM  SIZE RO TYPE  MOUNTPOINT
+fd0                                   2:0    1    4K  0 disk
+sda                                   8:0    0   32G  0 disk
+├─sda1                                8:1    0  500M  0 part  /boot
+└─sda2                                8:2    0 31.5G  0 part  /
+sdb                                   8:16   0   28G  0 disk
+└─sdb1                                8:17   0   28G  0 part  /mnt/resource
+sdc                                   8:32   0  2.4T  0 disk
+sdd                                   8:48   0   10G  0 disk
+└─3600140546756d056b8541018dda83128 253:0    0   10G  0 mpath
+sde                                   8:64   0   10G  0 disk
+└─36001405ee2a1af8c7d14e74bbbf644a5 253:3    0   10G  0 mpath
+sdf                                   8:80   0  2.4T  0 disk
+└─360014054a5e880a1f8344498ee1fe413 253:1    0  2.4T  0 mpath
+sdg                                   8:96   0   10G  0 disk
+└─36001405ee2a1af8c7d14e74bbbf644a5 253:3    0   10G  0 mpath
+sdh                                   8:112  0  2.4T  0 disk
+└─360014054a5e880a1f8344498ee1fe413 253:1    0  2.4T  0 mpath
+sdi                                   8:128  0  500G  0 disk
+└─3600140598441a52f7ab43198a2062e11 253:2    0  500G  0 mpath
+sdj                                   8:144  0   10G  0 disk
+└─3600140546756d056b8541018dda83128 253:0    0   10G  0 mpath
+sdk                                   8:160  0   10G  0 disk
+└─3600140546756d056b8541018dda83128 253:0    0   10G  0 mpath
+sdl                                   8:176  0   10G  0 disk
+└─36001405ee2a1af8c7d14e74bbbf644a5 253:3    0   10G  0 mpath
+sdm                                   8:192  0  500G  0 disk
+└─3600140598441a52f7ab43198a2062e11 253:2    0  500G  0 mpath
+sdn                                   8:208  0  500G  0 disk
+└─3600140598441a52f7ab43198a2062e11 253:2    0  500G  0 mpath
+ls -ls /dev/mapper
+total 0
+0 lrwxrwxrwx 1 root root       7 Sep 18 05:34 3600140546756d056b8541018dda83128 -> ../dm-0
+0 lrwxrwxrwx 1 root root       7 Sep 18 05:34 360014054a5e880a1f8344498ee1fe413 -> ../dm-1
+0 lrwxrwxrwx 1 root root       7 Sep 18 05:34 3600140598441a52f7ab43198a2062e11 -> ../dm-2
+0 lrwxrwxrwx 1 root root       7 Sep 18 05:34 36001405ee2a1af8c7d14e74bbbf644a5 -> ../dm-3
+0 crw------- 1 root root 10, 236 Sep 18 05:30 control
+
+# sample output:
+# [root@d1 rhel]# fdisk -l | grep /dev/mapper/3
+# Disk /dev/mapper/36001405149ee39c319845aaa710099a7: 2662.9 GB, 2662879723520 bytes, 5200936960 sectors
+# Disk /dev/mapper/36001405484ba6ab80934f2290a2b579f: 10.7 GB, 10737418240 bytes, 20971520 sectors
+# Disk /dev/mapper/36001405bfc71ff861174f2bbb0bfea37: 536.9 GB, 536870912000 bytes, 1048576000 sectors
+# Disk /dev/mapper/36001405645b2e72c56142ef97932cb95: 10.7 GB, 10737418240 bytes, 20971520 sectors
+
+wwiddb2data1=`fdisk -l | grep /dev/mapper/3 | grep ': 2' | awk '{sub(/\/dev\/mapper\//,""); sub(/:/,""); print $2}'`
+fdisk -l | grep /dev/mapper/3 | grep ': 2' | awk '{sub(/\/dev\/mapper\//,""); sub(/:/,""); print $2}'
+wwiddb2log1=`fdisk -l | grep /dev/mapper/3 | grep ': 5' | awk '{sub(/\/dev\/mapper\//,""); sub(/:/,""); print $2}'`
+fdisk -l | grep /dev/mapper/3 | grep ': 5' | awk '{sub(/\/dev\/mapper\//,""); sub(/:/,""); print $2}'
+wwiddb2shared=`fdisk -l | grep /dev/mapper/3 | grep ': 1' | head -1 | awk '{sub(/\/dev\/mapper\//,""); sub(/:/,""); print $2}'`
+fdisk -l | grep /dev/mapper/3 | grep ': 1' | head -1 | awk '{sub(/\/dev\/mapper\//,""); sub(/:/,""); print $2}'
+wwiddb2tieb=`fdisk -l | grep /dev/mapper/3 | grep ': 1' | tail -1 | awk '{sub(/\/dev\/mapper\//,""); sub(/:/,""); print $2}'`
+fdisk -l | grep /dev/mapper/3 | grep ': 1' | tail -1 | awk '{sub(/\/dev\/mapper\//,""); sub(/:/,""); print $2}'
+
+cat > /tmp/initwwids.sh <<EOF
+wwiddb2data1=$wwiddb2data1
+wwiddb2log1=$wwiddb2log1
+wwiddb2shared=$wwiddb2shared
+wwiddb2tieb=$wwiddb2tieb
+EOF
+
+# remove connections before changing configuration (bad reboots on d0 were seen)
+iscsiadm -m session
+tcp: [1] 192.168.1.10:3260,1 iqn.2016-12.org.gluster-block:4a5e880a-1f83-4449-8ee1-fe413f396395 (non-flash)
+tcp: [10] 192.168.1.12:3260,3 iqn.2016-12.org.gluster-block:4a5e880a-1f83-4449-8ee1-fe413f396395 (non-flash)
+tcp: [11] 192.168.1.10:3260,1 iqn.2016-12.org.gluster-block:46756d05-6b85-4101-8dda-83128a13b707 (non-flash)
+tcp: [12] 192.168.1.11:3260,2 iqn.2016-12.org.gluster-block:46756d05-6b85-4101-8dda-83128a13b707 (non-flash)
+tcp: [2] 192.168.1.12:3260,3 iqn.2016-12.org.gluster-block:46756d05-6b85-4101-8dda-83128a13b707 (non-flash)
+tcp: [3] 192.168.1.10:3260,1 iqn.2016-12.org.gluster-block:98441a52-f7ab-4319-8a20-62e11e819e7a (non-flash)
+tcp: [4] 192.168.1.11:3260,2 iqn.2016-12.org.gluster-block:98441a52-f7ab-4319-8a20-62e11e819e7a (non-flash)
+tcp: [5] 192.168.1.12:3260,3 iqn.2016-12.org.gluster-block:98441a52-f7ab-4319-8a20-62e11e819e7a (non-flash)
+tcp: [6] 192.168.1.10:3260,1 iqn.2016-12.org.gluster-block:ee2a1af8-c7d1-4e74-bbbf-644a5678bedd (non-flash)
+tcp: [7] 192.168.1.11:3260,2 iqn.2016-12.org.gluster-block:ee2a1af8-c7d1-4e74-bbbf-644a5678bedd (non-flash)
+tcp: [8] 192.168.1.12:3260,3 iqn.2016-12.org.gluster-block:ee2a1af8-c7d1-4e74-bbbf-644a5678bedd (non-flash)
+tcp: [9] 192.168.1.11:3260,2 iqn.2016-12.org.gluster-block:4a5e880a-1f83-4449-8ee1-fe413f396395 (non-flash)
+iscsiadm -m session -u
+Logging out of session [sid: 1, target: iqn.2016-12.org.gluster-block:4a5e880a-1f83-4449-8ee1-fe413f396395, portal: 192.168.1.10,3260]
+Logging out of session [sid: 10, target: iqn.2016-12.org.gluster-block:4a5e880a-1f83-4449-8ee1-fe413f396395, portal: 192.168.1.12,3260]
+Logging out of session [sid: 9, target: iqn.2016-12.org.gluster-block:4a5e880a-1f83-4449-8ee1-fe413f396395, portal: 192.168.1.11,3260]
+Logging out of session [sid: 11, target: iqn.2016-12.org.gluster-block:46756d05-6b85-4101-8dda-83128a13b707, portal: 192.168.1.10,3260]
+Logging out of session [sid: 12, target: iqn.2016-12.org.gluster-block:46756d05-6b85-4101-8dda-83128a13b707, portal: 192.168.1.11,3260]
+Logging out of session [sid: 2, target: iqn.2016-12.org.gluster-block:46756d05-6b85-4101-8dda-83128a13b707, portal: 192.168.1.12,3260]
+Logging out of session [sid: 3, target: iqn.2016-12.org.gluster-block:98441a52-f7ab-4319-8a20-62e11e819e7a, portal: 192.168.1.10,3260]
+Logging out of session [sid: 4, target: iqn.2016-12.org.gluster-block:98441a52-f7ab-4319-8a20-62e11e819e7a, portal: 192.168.1.11,3260]
+Logging out of session [sid: 5, target: iqn.2016-12.org.gluster-block:98441a52-f7ab-4319-8a20-62e11e819e7a, portal: 192.168.1.12,3260]
+Logging out of session [sid: 6, target: iqn.2016-12.org.gluster-block:ee2a1af8-c7d1-4e74-bbbf-644a5678bedd, portal: 192.168.1.10,3260]
+Logging out of session [sid: 7, target: iqn.2016-12.org.gluster-block:ee2a1af8-c7d1-4e74-bbbf-644a5678bedd, portal: 192.168.1.11,3260]
+Logging out of session [sid: 8, target: iqn.2016-12.org.gluster-block:ee2a1af8-c7d1-4e74-bbbf-644a5678bedd, portal: 192.168.1.12,3260]
+Logout of [sid: 1, target: iqn.2016-12.org.gluster-block:4a5e880a-1f83-4449-8ee1-fe413f396395, portal: 192.168.1.10,3260] successful.
+Logout of [sid: 10, target: iqn.2016-12.org.gluster-block:4a5e880a-1f83-4449-8ee1-fe413f396395, portal: 192.168.1.12,3260] successful.
+Logout of [sid: 9, target: iqn.2016-12.org.gluster-block:4a5e880a-1f83-4449-8ee1-fe413f396395, portal: 192.168.1.11,3260] successful.
+Logout of [sid: 11, target: iqn.2016-12.org.gluster-block:46756d05-6b85-4101-8dda-83128a13b707, portal: 192.168.1.10,3260] successful.
+Logout of [sid: 12, target: iqn.2016-12.org.gluster-block:46756d05-6b85-4101-8dda-83128a13b707, portal: 192.168.1.11,3260] successful.
+Logout of [sid: 2, target: iqn.2016-12.org.gluster-block:46756d05-6b85-4101-8dda-83128a13b707, portal: 192.168.1.12,3260] successful.
+Logout of [sid: 3, target: iqn.2016-12.org.gluster-block:98441a52-f7ab-4319-8a20-62e11e819e7a, portal: 192.168.1.10,3260] successful.
+Logout of [sid: 4, target: iqn.2016-12.org.gluster-block:98441a52-f7ab-4319-8a20-62e11e819e7a, portal: 192.168.1.11,3260] successful.
+Logout of [sid: 5, target: iqn.2016-12.org.gluster-block:98441a52-f7ab-4319-8a20-62e11e819e7a, portal: 192.168.1.12,3260] successful.
+Logout of [sid: 6, target: iqn.2016-12.org.gluster-block:ee2a1af8-c7d1-4e74-bbbf-644a5678bedd, portal: 192.168.1.10,3260] successful.
+Logout of [sid: 7, target: iqn.2016-12.org.gluster-block:ee2a1af8-c7d1-4e74-bbbf-644a5678bedd, portal: 192.168.1.11,3260] successful.
+Logout of [sid: 8, target: iqn.2016-12.org.gluster-block:ee2a1af8-c7d1-4e74-bbbf-644a5678bedd, portal: 192.168.1.12,3260] successful.
+iscsiadm -m node -p 192.168.1.10 --op=delete
+systemctl stop multipathd
+scp 192.168.0.20:/tmp/initwwids.sh /tmp/initwwids.sh
+source /tmp/initwwids.sh
+wwiddb2data1=360014054a5e880a1f8344498ee1fe413
+wwiddb2log1=3600140598441a52f7ab43198a2062e11
+wwiddb2shared=3600140546756d056b8541018dda83128
+wwiddb2tieb=36001405ee2a1af8c7d14e74bbbf644a5
+
+# setup multipath.conf
+cat > /tmp/tmpcmd002.sh <<EOF
+uname -r
+df
+
+cat > /etc/multipath.conf <<EOF2
+defaults {
+    user_friendly_names no
+    bindings_file /etc/multipath/bindings4db2
+    max_fds max
+    flush_on_last_del yes
+    queue_without_daemon no
+    dev_loss_tmo infinity
+    fast_io_fail_tmo 5
+}
+blacklist {
+    wwid "SAdaptec*"
+    devnode "^hd[a-z]"
+    devnode "^(ram|raw|loop|fd|md|dm-|sr|scd|st)[0-9]*"
+    devnode "^sda[0-9]*"
+    devnode "^sdb[0-9]*"
+    devnode "^sdc[0-9]*"
+    devnode "^cciss.*"
+}
+multipaths {
+    multipath {
+        wwid  ${wwiddb2data1}
+        alias db2data1
+    }
+    multipath {
+        wwid  ${wwiddb2log1}
+        alias db2log1
+    }
+    multipath {
+        wwid  ${wwiddb2shared}
+        alias db2shared
+    }
+    multipath {
+        wwid  ${wwiddb2tieb}
+        alias db2tieb
+    }
+}
+EOF2
+
+modprobe dm-multipath
+systemctl start multipathd
+chkconfig multipathd on
+
+iscsiadm -m discovery -t sendtargets -p 192.168.1.10
+iscsiadm -m node -L automatic
+iscsiadm -m session
+multipath -l
+sleep 5s
+lsblk
+ls -ls /dev/mapper
+EOF
+
+for db2srv in "${db2servers[@]}"
+do
+    scp /tmp/tmpcmd002.sh ${db2srv}:/tmp/
+    ssh $db2srv sudo bash -v /tmp/tmpcmd002.sh
+done
+uname -r
+3.10.0-514.el7.x86_64
+df
+Filesystem     1K-blocks    Used Available Use% Mounted on
+/dev/sda2       33025276 7682044  25343232  24% /
+devtmpfs         7166612       0   7166612   0% /dev
+tmpfs            7176232       0   7176232   0% /dev/shm
+tmpfs            7176232    8592   7167640   1% /run
+tmpfs            7176232       0   7176232   0% /sys/fs/cgroup
+/dev/sda1         508580   94784    413796  19% /boot
+/dev/sdb1       28767204 2142240  25140628   8% /mnt/resource
+tmpfs            1435248       0   1435248   0% /run/user/1000
+
+cat > /etc/multipath.conf <<EOF2
+defaults {
+    user_friendly_names no
+    bindings_file /etc/multipath/bindings4db2
+    max_fds max
+    flush_on_last_del yes
+    queue_without_daemon no
+    dev_loss_tmo infinity
+    fast_io_fail_tmo 5
+}
+blacklist {
+    wwid "SAdaptec*"
+    devnode "^hd[a-z]"
+    devnode "^(ram|raw|loop|fd|md|dm-|sr|scd|st)[0-9]*"
+    devnode "^sda[0-9]*"
+    devnode "^sdb[0-9]*"
+    devnode "^sdc[0-9]*"
+    devnode "^cciss.*"
+}
+multipaths {
+    multipath {
+        wwid  360014054a5e880a1f8344498ee1fe413
+        alias db2data1
+    }
+    multipath {
+        wwid  3600140598441a52f7ab43198a2062e11
+        alias db2log1
+    }
+    multipath {
+        wwid  3600140546756d056b8541018dda83128
+        alias db2shared
+    }
+    multipath {
+        wwid  36001405ee2a1af8c7d14e74bbbf644a5
+        alias db2tieb
+    }
+}
+EOF2
+
+modprobe dm-multipath
+systemctl start multipathd
+chkconfig multipathd on
+Note: Forwarding request to 'systemctl enable multipathd.service'.
+
+iscsiadm -m discovery -t sendtargets -p 192.168.1.10
+192.168.1.10:3260,1 iqn.2016-12.org.gluster-block:4a5e880a-1f83-4449-8ee1-fe413f396395
+192.168.1.11:3260,2 iqn.2016-12.org.gluster-block:4a5e880a-1f83-4449-8ee1-fe413f396395
+192.168.1.12:3260,3 iqn.2016-12.org.gluster-block:4a5e880a-1f83-4449-8ee1-fe413f396395
+192.168.1.10:3260,1 iqn.2016-12.org.gluster-block:46756d05-6b85-4101-8dda-83128a13b707
+192.168.1.11:3260,2 iqn.2016-12.org.gluster-block:46756d05-6b85-4101-8dda-83128a13b707
+192.168.1.12:3260,3 iqn.2016-12.org.gluster-block:46756d05-6b85-4101-8dda-83128a13b707
+192.168.1.10:3260,1 iqn.2016-12.org.gluster-block:98441a52-f7ab-4319-8a20-62e11e819e7a
+192.168.1.11:3260,2 iqn.2016-12.org.gluster-block:98441a52-f7ab-4319-8a20-62e11e819e7a
+192.168.1.12:3260,3 iqn.2016-12.org.gluster-block:98441a52-f7ab-4319-8a20-62e11e819e7a
+192.168.1.10:3260,1 iqn.2016-12.org.gluster-block:ee2a1af8-c7d1-4e74-bbbf-644a5678bedd
+192.168.1.11:3260,2 iqn.2016-12.org.gluster-block:ee2a1af8-c7d1-4e74-bbbf-644a5678bedd
+192.168.1.12:3260,3 iqn.2016-12.org.gluster-block:ee2a1af8-c7d1-4e74-bbbf-644a5678bedd
+iscsiadm -m node -L automatic
+Logging in to [iface: default, target: iqn.2016-12.org.gluster-block:4a5e880a-1f83-4449-8ee1-fe413f396395, portal: 192.168.1.10,3260] (multiple)
+Logging in to [iface: default, target: iqn.2016-12.org.gluster-block:4a5e880a-1f83-4449-8ee1-fe413f396395, portal: 192.168.1.11,3260] (multiple)
+Logging in to [iface: default, target: iqn.2016-12.org.gluster-block:4a5e880a-1f83-4449-8ee1-fe413f396395, portal: 192.168.1.12,3260] (multiple)
+Logging in to [iface: default, target: iqn.2016-12.org.gluster-block:46756d05-6b85-4101-8dda-83128a13b707, portal: 192.168.1.10,3260] (multiple)
+Logging in to [iface: default, target: iqn.2016-12.org.gluster-block:46756d05-6b85-4101-8dda-83128a13b707, portal: 192.168.1.11,3260] (multiple)
+Logging in to [iface: default, target: iqn.2016-12.org.gluster-block:46756d05-6b85-4101-8dda-83128a13b707, portal: 192.168.1.12,3260] (multiple)
+Logging in to [iface: default, target: iqn.2016-12.org.gluster-block:98441a52-f7ab-4319-8a20-62e11e819e7a, portal: 192.168.1.10,3260] (multiple)
+Logging in to [iface: default, target: iqn.2016-12.org.gluster-block:98441a52-f7ab-4319-8a20-62e11e819e7a, portal: 192.168.1.11,3260] (multiple)
+Logging in to [iface: default, target: iqn.2016-12.org.gluster-block:98441a52-f7ab-4319-8a20-62e11e819e7a, portal: 192.168.1.12,3260] (multiple)
+Logging in to [iface: default, target: iqn.2016-12.org.gluster-block:ee2a1af8-c7d1-4e74-bbbf-644a5678bedd, portal: 192.168.1.10,3260] (multiple)
+Logging in to [iface: default, target: iqn.2016-12.org.gluster-block:ee2a1af8-c7d1-4e74-bbbf-644a5678bedd, portal: 192.168.1.11,3260] (multiple)
+Logging in to [iface: default, target: iqn.2016-12.org.gluster-block:ee2a1af8-c7d1-4e74-bbbf-644a5678bedd, portal: 192.168.1.12,3260] (multiple)
+Login to [iface: default, target: iqn.2016-12.org.gluster-block:4a5e880a-1f83-4449-8ee1-fe413f396395, portal: 192.168.1.10,3260] successful.
+Login to [iface: default, target: iqn.2016-12.org.gluster-block:4a5e880a-1f83-4449-8ee1-fe413f396395, portal: 192.168.1.11,3260] successful.
+Login to [iface: default, target: iqn.2016-12.org.gluster-block:4a5e880a-1f83-4449-8ee1-fe413f396395, portal: 192.168.1.12,3260] successful.
+Login to [iface: default, target: iqn.2016-12.org.gluster-block:46756d05-6b85-4101-8dda-83128a13b707, portal: 192.168.1.10,3260] successful.
+Login to [iface: default, target: iqn.2016-12.org.gluster-block:46756d05-6b85-4101-8dda-83128a13b707, portal: 192.168.1.11,3260] successful.
+Login to [iface: default, target: iqn.2016-12.org.gluster-block:46756d05-6b85-4101-8dda-83128a13b707, portal: 192.168.1.12,3260] successful.
+Login to [iface: default, target: iqn.2016-12.org.gluster-block:98441a52-f7ab-4319-8a20-62e11e819e7a, portal: 192.168.1.10,3260] successful.
+Login to [iface: default, target: iqn.2016-12.org.gluster-block:98441a52-f7ab-4319-8a20-62e11e819e7a, portal: 192.168.1.11,3260] successful.
+Login to [iface: default, target: iqn.2016-12.org.gluster-block:98441a52-f7ab-4319-8a20-62e11e819e7a, portal: 192.168.1.12,3260] successful.
+Login to [iface: default, target: iqn.2016-12.org.gluster-block:ee2a1af8-c7d1-4e74-bbbf-644a5678bedd, portal: 192.168.1.10,3260] successful.
+Login to [iface: default, target: iqn.2016-12.org.gluster-block:ee2a1af8-c7d1-4e74-bbbf-644a5678bedd, portal: 192.168.1.11,3260] successful.
+Login to [iface: default, target: iqn.2016-12.org.gluster-block:ee2a1af8-c7d1-4e74-bbbf-644a5678bedd, portal: 192.168.1.12,3260] successful.
+iscsiadm -m session
+tcp: [13] 192.168.1.10:3260,1 iqn.2016-12.org.gluster-block:4a5e880a-1f83-4449-8ee1-fe413f396395 (non-flash)
+tcp: [14] 192.168.1.11:3260,2 iqn.2016-12.org.gluster-block:4a5e880a-1f83-4449-8ee1-fe413f396395 (non-flash)
+tcp: [15] 192.168.1.12:3260,3 iqn.2016-12.org.gluster-block:4a5e880a-1f83-4449-8ee1-fe413f396395 (non-flash)
+tcp: [16] 192.168.1.11:3260,2 iqn.2016-12.org.gluster-block:46756d05-6b85-4101-8dda-83128a13b707 (non-flash)
+tcp: [17] 192.168.1.12:3260,3 iqn.2016-12.org.gluster-block:46756d05-6b85-4101-8dda-83128a13b707 (non-flash)
+tcp: [18] 192.168.1.11:3260,2 iqn.2016-12.org.gluster-block:98441a52-f7ab-4319-8a20-62e11e819e7a (non-flash)
+tcp: [19] 192.168.1.10:3260,1 iqn.2016-12.org.gluster-block:ee2a1af8-c7d1-4e74-bbbf-644a5678bedd (non-flash)
+tcp: [20] 192.168.1.11:3260,2 iqn.2016-12.org.gluster-block:ee2a1af8-c7d1-4e74-bbbf-644a5678bedd (non-flash)
+tcp: [21] 192.168.1.12:3260,3 iqn.2016-12.org.gluster-block:ee2a1af8-c7d1-4e74-bbbf-644a5678bedd (non-flash)
+tcp: [22] 192.168.1.10:3260,1 iqn.2016-12.org.gluster-block:46756d05-6b85-4101-8dda-83128a13b707 (non-flash)
+tcp: [23] 192.168.1.10:3260,1 iqn.2016-12.org.gluster-block:98441a52-f7ab-4319-8a20-62e11e819e7a (non-flash)
+tcp: [24] 192.168.1.12:3260,3 iqn.2016-12.org.gluster-block:98441a52-f7ab-4319-8a20-62e11e819e7a (non-flash)
+multipath -l
+db2log1 (3600140598441a52f7ab43198a2062e11) dm-3 LIO-ORG ,TCMU device
+size=500G features='0' hwhandler='0' wp=rw
+|-+- policy='service-time 0' prio=0 status=active
+| `- 28:0:0:0 sdj 8:144 active undef unknown
+|-+- policy='service-time 0' prio=0 status=enabled
+| `- 29:0:0:0 sdm 8:192 active undef unknown
+`-+- policy='service-time 0' prio=0 status=enabled
+  `- 23:0:0:0 sdh 8:112 active undef unknown
+db2tieb (36001405ee2a1af8c7d14e74bbbf644a5) dm-0 LIO-ORG ,TCMU device
+size=10G features='0' hwhandler='0' wp=rw
+|-+- policy='service-time 0' prio=0 status=active
+| `- 26:0:0:0 sdk 8:160 active undef unknown
+|-+- policy='service-time 0' prio=0 status=enabled
+| `- 24:0:0:0 sdl 8:176 active undef unknown
+`-+- policy='service-time 0' prio=0 status=enabled
+  `- 25:0:0:0 sdi 8:128 active undef unknown
+db2data1 (360014054a5e880a1f8344498ee1fe413) dm-2 LIO-ORG ,TCMU device
+size=2.4T features='0' hwhandler='0' wp=rw
+|-+- policy='service-time 0' prio=0 status=active
+| `- 18:0:0:0 sdf 8:80  active undef unknown
+`-+- policy='service-time 0' prio=0 status=enabled
+  `- 19:0:0:0 sdd 8:48  active undef unknown
+db2shared (3600140546756d056b8541018dda83128) dm-1 LIO-ORG ,TCMU device
+size=10G features='0' hwhandler='0' wp=rw
+|-+- policy='service-time 0' prio=0 status=active
+| `- 21:0:0:0 sdg 8:96  active undef unknown
+|-+- policy='service-time 0' prio=0 status=enabled
+| `- 22:0:0:0 sde 8:64  active undef unknown
+`-+- policy='service-time 0' prio=0 status=enabled
+  `- 27:0:0:0 sdn 8:208 active undef unknown
+sleep 5s
+lsblk
+NAME        MAJ:MIN RM  SIZE RO TYPE  MOUNTPOINT
+fd0           2:0    1    4K  0 disk
+sda           8:0    0   32G  0 disk
+├─sda1        8:1    0  500M  0 part  /boot
+└─sda2        8:2    0 31.5G  0 part  /
+sdb           8:16   0   28G  0 disk
+└─sdb1        8:17   0   28G  0 part  /mnt/resource
+sdc           8:32   0  2.4T  0 disk
+sdd           8:48   0  2.4T  0 disk
+└─db2data1  253:2    0  2.4T  0 mpath
+sde           8:64   0   10G  0 disk
+└─db2shared 253:1    0   10G  0 mpath
+sdf           8:80   0  2.4T  0 disk
+└─db2data1  253:2    0  2.4T  0 mpath
+sdg           8:96   0   10G  0 disk
+└─db2shared 253:1    0   10G  0 mpath
+sdh           8:112  0  500G  0 disk
+└─db2log1   253:3    0  500G  0 mpath
+sdi           8:128  0   10G  0 disk
+└─db2tieb   253:0    0   10G  0 mpath
+sdj           8:144  0  500G  0 disk
+└─db2log1   253:3    0  500G  0 mpath
+sdk           8:160  0   10G  0 disk
+└─db2tieb   253:0    0   10G  0 mpath
+sdl           8:176  0   10G  0 disk
+└─db2tieb   253:0    0   10G  0 mpath
+sdm           8:192  0  500G  0 disk
+└─db2log1   253:3    0  500G  0 mpath
+sdn           8:208  0   10G  0 disk
+└─db2shared 253:1    0   10G  0 mpath
+ls -ls /dev/mapper
+total 0
+0 crw------- 1 root root 10, 236 Sep 18 05:30 control
+0 lrwxrwxrwx 1 root root       7 Sep 18 05:34 db2data1 -> ../dm-2
+0 lrwxrwxrwx 1 root root       7 Sep 18 05:34 db2log1 -> ../dm-3
+0 lrwxrwxrwx 1 root root       7 Sep 18 05:34 db2shared -> ../dm-1
+0 lrwxrwxrwx 1 root root       7 Sep 18 05:34 db2tieb -> ../dm-0
+uname -r
+3.10.0-514.el7.x86_64
+df
+Filesystem     1K-blocks    Used Available Use% Mounted on
+/dev/sda2       33025276 7681628  25343648  24% /
+devtmpfs         7166608       0   7166608   0% /dev
+tmpfs            7176232       0   7176232   0% /dev/shm
+tmpfs            7176232    8588   7167644   1% /run
+tmpfs            7176232       0   7176232   0% /sys/fs/cgroup
+/dev/sda1         508580   94788    413792  19% /boot
+/dev/sdb1       28767204 2142240  25140628   8% /mnt/resource
+tmpfs            1435248       0   1435248   0% /run/user/1000
+
+cat > /etc/multipath.conf <<EOF2
+defaults {
+    user_friendly_names no
+    bindings_file /etc/multipath/bindings4db2
+    max_fds max
+    flush_on_last_del yes
+    queue_without_daemon no
+    dev_loss_tmo infinity
+    fast_io_fail_tmo 5
+}
+blacklist {
+    wwid "SAdaptec*"
+    devnode "^hd[a-z]"
+    devnode "^(ram|raw|loop|fd|md|dm-|sr|scd|st)[0-9]*"
+    devnode "^sda[0-9]*"
+    devnode "^sdb[0-9]*"
+    devnode "^sdc[0-9]*"
+    devnode "^cciss.*"
+}
+multipaths {
+    multipath {
+        wwid  360014054a5e880a1f8344498ee1fe413
+        alias db2data1
+    }
+    multipath {
+        wwid  3600140598441a52f7ab43198a2062e11
+        alias db2log1
+    }
+    multipath {
+        wwid  3600140546756d056b8541018dda83128
+        alias db2shared
+    }
+    multipath {
+        wwid  36001405ee2a1af8c7d14e74bbbf644a5
+        alias db2tieb
+    }
+}
+EOF2
+
+modprobe dm-multipath
+systemctl start multipathd
+chkconfig multipathd on
+Note: Forwarding request to 'systemctl enable multipathd.service'.
+
+iscsiadm -m discovery -t sendtargets -p 192.168.1.10
+192.168.1.10:3260,1 iqn.2016-12.org.gluster-block:4a5e880a-1f83-4449-8ee1-fe413f396395
+192.168.1.11:3260,2 iqn.2016-12.org.gluster-block:4a5e880a-1f83-4449-8ee1-fe413f396395
+192.168.1.12:3260,3 iqn.2016-12.org.gluster-block:4a5e880a-1f83-4449-8ee1-fe413f396395
+192.168.1.10:3260,1 iqn.2016-12.org.gluster-block:46756d05-6b85-4101-8dda-83128a13b707
+192.168.1.11:3260,2 iqn.2016-12.org.gluster-block:46756d05-6b85-4101-8dda-83128a13b707
+192.168.1.12:3260,3 iqn.2016-12.org.gluster-block:46756d05-6b85-4101-8dda-83128a13b707
+192.168.1.10:3260,1 iqn.2016-12.org.gluster-block:98441a52-f7ab-4319-8a20-62e11e819e7a
+192.168.1.11:3260,2 iqn.2016-12.org.gluster-block:98441a52-f7ab-4319-8a20-62e11e819e7a
+192.168.1.12:3260,3 iqn.2016-12.org.gluster-block:98441a52-f7ab-4319-8a20-62e11e819e7a
+192.168.1.10:3260,1 iqn.2016-12.org.gluster-block:ee2a1af8-c7d1-4e74-bbbf-644a5678bedd
+192.168.1.11:3260,2 iqn.2016-12.org.gluster-block:ee2a1af8-c7d1-4e74-bbbf-644a5678bedd
+192.168.1.12:3260,3 iqn.2016-12.org.gluster-block:ee2a1af8-c7d1-4e74-bbbf-644a5678bedd
+iscsiadm -m node -L automatic
+Logging in to [iface: default, target: iqn.2016-12.org.gluster-block:4a5e880a-1f83-4449-8ee1-fe413f396395, portal: 192.168.1.10,3260] (multiple)
+Logging in to [iface: default, target: iqn.2016-12.org.gluster-block:4a5e880a-1f83-4449-8ee1-fe413f396395, portal: 192.168.1.11,3260] (multiple)
+Logging in to [iface: default, target: iqn.2016-12.org.gluster-block:4a5e880a-1f83-4449-8ee1-fe413f396395, portal: 192.168.1.12,3260] (multiple)
+Logging in to [iface: default, target: iqn.2016-12.org.gluster-block:46756d05-6b85-4101-8dda-83128a13b707, portal: 192.168.1.10,3260] (multiple)
+Logging in to [iface: default, target: iqn.2016-12.org.gluster-block:46756d05-6b85-4101-8dda-83128a13b707, portal: 192.168.1.11,3260] (multiple)
+Logging in to [iface: default, target: iqn.2016-12.org.gluster-block:46756d05-6b85-4101-8dda-83128a13b707, portal: 192.168.1.12,3260] (multiple)
+Logging in to [iface: default, target: iqn.2016-12.org.gluster-block:98441a52-f7ab-4319-8a20-62e11e819e7a, portal: 192.168.1.10,3260] (multiple)
+Logging in to [iface: default, target: iqn.2016-12.org.gluster-block:98441a52-f7ab-4319-8a20-62e11e819e7a, portal: 192.168.1.11,3260] (multiple)
+Logging in to [iface: default, target: iqn.2016-12.org.gluster-block:98441a52-f7ab-4319-8a20-62e11e819e7a, portal: 192.168.1.12,3260] (multiple)
+Logging in to [iface: default, target: iqn.2016-12.org.gluster-block:ee2a1af8-c7d1-4e74-bbbf-644a5678bedd, portal: 192.168.1.10,3260] (multiple)
+Logging in to [iface: default, target: iqn.2016-12.org.gluster-block:ee2a1af8-c7d1-4e74-bbbf-644a5678bedd, portal: 192.168.1.11,3260] (multiple)
+Logging in to [iface: default, target: iqn.2016-12.org.gluster-block:ee2a1af8-c7d1-4e74-bbbf-644a5678bedd, portal: 192.168.1.12,3260] (multiple)
+Login to [iface: default, target: iqn.2016-12.org.gluster-block:4a5e880a-1f83-4449-8ee1-fe413f396395, portal: 192.168.1.10,3260] successful.
+Login to [iface: default, target: iqn.2016-12.org.gluster-block:4a5e880a-1f83-4449-8ee1-fe413f396395, portal: 192.168.1.11,3260] successful.
+Login to [iface: default, target: iqn.2016-12.org.gluster-block:4a5e880a-1f83-4449-8ee1-fe413f396395, portal: 192.168.1.12,3260] successful.
+Login to [iface: default, target: iqn.2016-12.org.gluster-block:46756d05-6b85-4101-8dda-83128a13b707, portal: 192.168.1.10,3260] successful.
+Login to [iface: default, target: iqn.2016-12.org.gluster-block:46756d05-6b85-4101-8dda-83128a13b707, portal: 192.168.1.11,3260] successful.
+Login to [iface: default, target: iqn.2016-12.org.gluster-block:46756d05-6b85-4101-8dda-83128a13b707, portal: 192.168.1.12,3260] successful.
+Login to [iface: default, target: iqn.2016-12.org.gluster-block:98441a52-f7ab-4319-8a20-62e11e819e7a, portal: 192.168.1.10,3260] successful.
+Login to [iface: default, target: iqn.2016-12.org.gluster-block:98441a52-f7ab-4319-8a20-62e11e819e7a, portal: 192.168.1.11,3260] successful.
+Login to [iface: default, target: iqn.2016-12.org.gluster-block:98441a52-f7ab-4319-8a20-62e11e819e7a, portal: 192.168.1.12,3260] successful.
+Login to [iface: default, target: iqn.2016-12.org.gluster-block:ee2a1af8-c7d1-4e74-bbbf-644a5678bedd, portal: 192.168.1.10,3260] successful.
+Login to [iface: default, target: iqn.2016-12.org.gluster-block:ee2a1af8-c7d1-4e74-bbbf-644a5678bedd, portal: 192.168.1.11,3260] successful.
+Login to [iface: default, target: iqn.2016-12.org.gluster-block:ee2a1af8-c7d1-4e74-bbbf-644a5678bedd, portal: 192.168.1.12,3260] successful.
+iscsiadm -m session
+tcp: [1] 192.168.1.10:3260,1 iqn.2016-12.org.gluster-block:4a5e880a-1f83-4449-8ee1-fe413f396395 (non-flash)
+tcp: [10] 192.168.1.10:3260,1 iqn.2016-12.org.gluster-block:98441a52-f7ab-4319-8a20-62e11e819e7a (non-flash)
+tcp: [11] 192.168.1.11:3260,2 iqn.2016-12.org.gluster-block:98441a52-f7ab-4319-8a20-62e11e819e7a (non-flash)
+tcp: [12] 192.168.1.10:3260,1 iqn.2016-12.org.gluster-block:ee2a1af8-c7d1-4e74-bbbf-644a5678bedd (non-flash)
+tcp: [2] 192.168.1.10:3260,1 iqn.2016-12.org.gluster-block:46756d05-6b85-4101-8dda-83128a13b707 (non-flash)
+tcp: [3] 192.168.1.12:3260,3 iqn.2016-12.org.gluster-block:98441a52-f7ab-4319-8a20-62e11e819e7a (non-flash)
+tcp: [4] 192.168.1.11:3260,2 iqn.2016-12.org.gluster-block:ee2a1af8-c7d1-4e74-bbbf-644a5678bedd (non-flash)
+tcp: [5] 192.168.1.12:3260,3 iqn.2016-12.org.gluster-block:ee2a1af8-c7d1-4e74-bbbf-644a5678bedd (non-flash)
+tcp: [6] 192.168.1.11:3260,2 iqn.2016-12.org.gluster-block:4a5e880a-1f83-4449-8ee1-fe413f396395 (non-flash)
+tcp: [7] 192.168.1.12:3260,3 iqn.2016-12.org.gluster-block:4a5e880a-1f83-4449-8ee1-fe413f396395 (non-flash)
+tcp: [8] 192.168.1.11:3260,2 iqn.2016-12.org.gluster-block:46756d05-6b85-4101-8dda-83128a13b707 (non-flash)
+tcp: [9] 192.168.1.12:3260,3 iqn.2016-12.org.gluster-block:46756d05-6b85-4101-8dda-83128a13b707 (non-flash)
+multipath -l
+db2tieb (36001405ee2a1af8c7d14e74bbbf644a5) dm-1 LIO-ORG ,TCMU device
+size=10G features='0' hwhandler='0' wp=rw
+`-+- policy='service-time 0' prio=0 status=active
+  `- 9:0:0:0  sdj 8:144 active undef unknown
+db2data1 (360014054a5e880a1f8344498ee1fe413) dm-2 LIO-ORG ,TCMU device
+size=2.4T features='0' hwhandler='0' wp=rw
+`-+- policy='service-time 0' prio=0 status=active
+  `- 12:0:0:0 sdh 8:112 active undef unknown
+db2shared (3600140546756d056b8541018dda83128) dm-0 LIO-ORG ,TCMU device
+size=10G features='0' hwhandler='0' wp=rw
+`-+- policy='service-time 0' prio=0 status=active
+  `- 7:0:0:0  sdd 8:48  active undef unknown
+sleep 5s
+lsblk
+NAME        MAJ:MIN RM  SIZE RO TYPE  MOUNTPOINT
+fd0           2:0    1    4K  0 disk
+sda           8:0    0   32G  0 disk
+├─sda1        8:1    0  500M  0 part  /boot
+└─sda2        8:2    0 31.5G  0 part  /
+sdb           8:16   0   28G  0 disk
+└─sdb1        8:17   0   28G  0 part  /mnt/resource
+sdc           8:32   0  2.4T  0 disk
+sdd           8:48   0   10G  0 disk
+└─db2shared 253:0    0   10G  0 mpath
+sde           8:64   0   10G  0 disk
+└─db2shared 253:0    0   10G  0 mpath
+sdf           8:80   0   10G  0 disk
+└─db2shared 253:0    0   10G  0 mpath
+sdg           8:96   0  500G  0 disk
+└─db2log1   253:3    0  500G  0 mpath
+sdh           8:112  0  2.4T  0 disk
+└─db2data1  253:2    0  2.4T  0 mpath
+sdi           8:128  0   10G  0 disk
+└─db2tieb   253:1    0   10G  0 mpath
+sdj           8:144  0   10G  0 disk
+└─db2tieb   253:1    0   10G  0 mpath
+sdk           8:160  0  500G  0 disk
+└─db2log1   253:3    0  500G  0 mpath
+sdl           8:176  0  500G  0 disk
+└─db2log1   253:3    0  500G  0 mpath
+sdm           8:192  0   10G  0 disk
+└─db2tieb   253:1    0   10G  0 mpath
+sdn           8:208  0  2.4T  0 disk
+└─db2data1  253:2    0  2.4T  0 mpath
+ls -ls /dev/mapper
+total 0
+0 crw------- 1 root root 10, 236 Sep 18 05:31 control
+0 lrwxrwxrwx 1 root root       7 Sep 18 05:34 db2data1 -> ../dm-2
+0 lrwxrwxrwx 1 root root       7 Sep 18 05:34 db2log1 -> ../dm-3
+0 lrwxrwxrwx 1 root root       7 Sep 18 05:34 db2shared -> ../dm-0
+0 lrwxrwxrwx 1 root root       7 Sep 18 05:34 db2tieb -> ../dm-1
+uname -r
+3.10.0-514.el7.x86_64
+df
+Filesystem     1K-blocks    Used Available Use% Mounted on
+/dev/sda2       33025276 7681464  25343812  24% /
+devtmpfs         7166612       0   7166612   0% /dev
+tmpfs            7176232       0   7176232   0% /dev/shm
+tmpfs            7176232    8572   7167660   1% /run
+tmpfs            7176232       0   7176232   0% /sys/fs/cgroup
+/dev/sda1         508580   94784    413796  19% /boot
+/dev/sdb1       28767204 2142240  25140628   8% /mnt/resource
+tmpfs            1435248       0   1435248   0% /run/user/1000
+
+cat > /etc/multipath.conf <<EOF2
+defaults {
+    user_friendly_names no
+    bindings_file /etc/multipath/bindings4db2
+    max_fds max
+    flush_on_last_del yes
+    queue_without_daemon no
+    dev_loss_tmo infinity
+    fast_io_fail_tmo 5
+}
+blacklist {
+    wwid "SAdaptec*"
+    devnode "^hd[a-z]"
+    devnode "^(ram|raw|loop|fd|md|dm-|sr|scd|st)[0-9]*"
+    devnode "^sda[0-9]*"
+    devnode "^sdb[0-9]*"
+    devnode "^sdc[0-9]*"
+    devnode "^cciss.*"
+}
+multipaths {
+    multipath {
+        wwid  360014054a5e880a1f8344498ee1fe413
+        alias db2data1
+    }
+    multipath {
+        wwid  3600140598441a52f7ab43198a2062e11
+        alias db2log1
+    }
+    multipath {
+        wwid  3600140546756d056b8541018dda83128
+        alias db2shared
+    }
+    multipath {
+        wwid  36001405ee2a1af8c7d14e74bbbf644a5
+        alias db2tieb
+    }
+}
+EOF2
+
+modprobe dm-multipath
+systemctl start multipathd
+chkconfig multipathd on
+Note: Forwarding request to 'systemctl enable multipathd.service'.
+
+iscsiadm -m discovery -t sendtargets -p 192.168.1.10
+192.168.1.10:3260,1 iqn.2016-12.org.gluster-block:4a5e880a-1f83-4449-8ee1-fe413f396395
+192.168.1.11:3260,2 iqn.2016-12.org.gluster-block:4a5e880a-1f83-4449-8ee1-fe413f396395
+192.168.1.12:3260,3 iqn.2016-12.org.gluster-block:4a5e880a-1f83-4449-8ee1-fe413f396395
+192.168.1.10:3260,1 iqn.2016-12.org.gluster-block:46756d05-6b85-4101-8dda-83128a13b707
+192.168.1.11:3260,2 iqn.2016-12.org.gluster-block:46756d05-6b85-4101-8dda-83128a13b707
+192.168.1.12:3260,3 iqn.2016-12.org.gluster-block:46756d05-6b85-4101-8dda-83128a13b707
+192.168.1.10:3260,1 iqn.2016-12.org.gluster-block:98441a52-f7ab-4319-8a20-62e11e819e7a
+192.168.1.11:3260,2 iqn.2016-12.org.gluster-block:98441a52-f7ab-4319-8a20-62e11e819e7a
+192.168.1.12:3260,3 iqn.2016-12.org.gluster-block:98441a52-f7ab-4319-8a20-62e11e819e7a
+192.168.1.10:3260,1 iqn.2016-12.org.gluster-block:ee2a1af8-c7d1-4e74-bbbf-644a5678bedd
+192.168.1.11:3260,2 iqn.2016-12.org.gluster-block:ee2a1af8-c7d1-4e74-bbbf-644a5678bedd
+192.168.1.12:3260,3 iqn.2016-12.org.gluster-block:ee2a1af8-c7d1-4e74-bbbf-644a5678bedd
+iscsiadm -m node -L automatic
+Logging in to [iface: default, target: iqn.2016-12.org.gluster-block:4a5e880a-1f83-4449-8ee1-fe413f396395, portal: 192.168.1.10,3260] (multiple)
+Logging in to [iface: default, target: iqn.2016-12.org.gluster-block:4a5e880a-1f83-4449-8ee1-fe413f396395, portal: 192.168.1.11,3260] (multiple)
+Logging in to [iface: default, target: iqn.2016-12.org.gluster-block:4a5e880a-1f83-4449-8ee1-fe413f396395, portal: 192.168.1.12,3260] (multiple)
+Logging in to [iface: default, target: iqn.2016-12.org.gluster-block:46756d05-6b85-4101-8dda-83128a13b707, portal: 192.168.1.10,3260] (multiple)
+Logging in to [iface: default, target: iqn.2016-12.org.gluster-block:46756d05-6b85-4101-8dda-83128a13b707, portal: 192.168.1.11,3260] (multiple)
+Logging in to [iface: default, target: iqn.2016-12.org.gluster-block:46756d05-6b85-4101-8dda-83128a13b707, portal: 192.168.1.12,3260] (multiple)
+Logging in to [iface: default, target: iqn.2016-12.org.gluster-block:98441a52-f7ab-4319-8a20-62e11e819e7a, portal: 192.168.1.10,3260] (multiple)
+Logging in to [iface: default, target: iqn.2016-12.org.gluster-block:98441a52-f7ab-4319-8a20-62e11e819e7a, portal: 192.168.1.11,3260] (multiple)
+Logging in to [iface: default, target: iqn.2016-12.org.gluster-block:98441a52-f7ab-4319-8a20-62e11e819e7a, portal: 192.168.1.12,3260] (multiple)
+Logging in to [iface: default, target: iqn.2016-12.org.gluster-block:ee2a1af8-c7d1-4e74-bbbf-644a5678bedd, portal: 192.168.1.10,3260] (multiple)
+Logging in to [iface: default, target: iqn.2016-12.org.gluster-block:ee2a1af8-c7d1-4e74-bbbf-644a5678bedd, portal: 192.168.1.11,3260] (multiple)
+Logging in to [iface: default, target: iqn.2016-12.org.gluster-block:ee2a1af8-c7d1-4e74-bbbf-644a5678bedd, portal: 192.168.1.12,3260] (multiple)
+Login to [iface: default, target: iqn.2016-12.org.gluster-block:4a5e880a-1f83-4449-8ee1-fe413f396395, portal: 192.168.1.10,3260] successful.
+Login to [iface: default, target: iqn.2016-12.org.gluster-block:4a5e880a-1f83-4449-8ee1-fe413f396395, portal: 192.168.1.11,3260] successful.
+Login to [iface: default, target: iqn.2016-12.org.gluster-block:4a5e880a-1f83-4449-8ee1-fe413f396395, portal: 192.168.1.12,3260] successful.
+Login to [iface: default, target: iqn.2016-12.org.gluster-block:46756d05-6b85-4101-8dda-83128a13b707, portal: 192.168.1.10,3260] successful.
+Login to [iface: default, target: iqn.2016-12.org.gluster-block:46756d05-6b85-4101-8dda-83128a13b707, portal: 192.168.1.11,3260] successful.
+Login to [iface: default, target: iqn.2016-12.org.gluster-block:46756d05-6b85-4101-8dda-83128a13b707, portal: 192.168.1.12,3260] successful.
+Login to [iface: default, target: iqn.2016-12.org.gluster-block:98441a52-f7ab-4319-8a20-62e11e819e7a, portal: 192.168.1.10,3260] successful.
+Login to [iface: default, target: iqn.2016-12.org.gluster-block:98441a52-f7ab-4319-8a20-62e11e819e7a, portal: 192.168.1.11,3260] successful.
+Login to [iface: default, target: iqn.2016-12.org.gluster-block:98441a52-f7ab-4319-8a20-62e11e819e7a, portal: 192.168.1.12,3260] successful.
+Login to [iface: default, target: iqn.2016-12.org.gluster-block:ee2a1af8-c7d1-4e74-bbbf-644a5678bedd, portal: 192.168.1.10,3260] successful.
+Login to [iface: default, target: iqn.2016-12.org.gluster-block:ee2a1af8-c7d1-4e74-bbbf-644a5678bedd, portal: 192.168.1.11,3260] successful.
+Login to [iface: default, target: iqn.2016-12.org.gluster-block:ee2a1af8-c7d1-4e74-bbbf-644a5678bedd, portal: 192.168.1.12,3260] successful.
+iscsiadm -m session
+tcp: [1] 192.168.1.10:3260,1 iqn.2016-12.org.gluster-block:4a5e880a-1f83-4449-8ee1-fe413f396395 (non-flash)
+tcp: [10] 192.168.1.11:3260,2 iqn.2016-12.org.gluster-block:4a5e880a-1f83-4449-8ee1-fe413f396395 (non-flash)
+tcp: [11] 192.168.1.10:3260,1 iqn.2016-12.org.gluster-block:46756d05-6b85-4101-8dda-83128a13b707 (non-flash)
+tcp: [12] 192.168.1.11:3260,2 iqn.2016-12.org.gluster-block:46756d05-6b85-4101-8dda-83128a13b707 (non-flash)
+tcp: [2] 192.168.1.12:3260,3 iqn.2016-12.org.gluster-block:4a5e880a-1f83-4449-8ee1-fe413f396395 (non-flash)
+tcp: [3] 192.168.1.12:3260,3 iqn.2016-12.org.gluster-block:46756d05-6b85-4101-8dda-83128a13b707 (non-flash)
+tcp: [4] 192.168.1.10:3260,1 iqn.2016-12.org.gluster-block:98441a52-f7ab-4319-8a20-62e11e819e7a (non-flash)
+tcp: [5] 192.168.1.11:3260,2 iqn.2016-12.org.gluster-block:98441a52-f7ab-4319-8a20-62e11e819e7a (non-flash)
+tcp: [6] 192.168.1.12:3260,3 iqn.2016-12.org.gluster-block:98441a52-f7ab-4319-8a20-62e11e819e7a (non-flash)
+tcp: [7] 192.168.1.10:3260,1 iqn.2016-12.org.gluster-block:ee2a1af8-c7d1-4e74-bbbf-644a5678bedd (non-flash)
+tcp: [8] 192.168.1.11:3260,2 iqn.2016-12.org.gluster-block:ee2a1af8-c7d1-4e74-bbbf-644a5678bedd (non-flash)
+tcp: [9] 192.168.1.12:3260,3 iqn.2016-12.org.gluster-block:ee2a1af8-c7d1-4e74-bbbf-644a5678bedd (non-flash)
+multipath -l
+db2log1 (3600140598441a52f7ab43198a2062e11) dm-0 LIO-ORG ,TCMU device
+size=500G features='0' hwhandler='0' wp=rw
+|-+- policy='service-time 0' prio=0 status=active
+| `- 11:0:0:0 sdg 8:96  active undef unknown
+|-+- policy='service-time 0' prio=0 status=enabled
+| `- 9:0:0:0  sdd 8:48  active undef unknown
+`-+- policy='service-time 0' prio=0 status=enabled
+  `- 10:0:0:0 sdi 8:128 active undef unknown
+db2tieb (36001405ee2a1af8c7d14e74bbbf644a5) dm-3 LIO-ORG ,TCMU device
+size=10G features='0' hwhandler='0' wp=rw
+|-+- policy='service-time 0' prio=0 status=active
+| `- 12:0:0:0 sdj 8:144 active undef unknown
+|-+- policy='service-time 0' prio=0 status=enabled
+| `- 13:0:0:0 sdn 8:208 active undef unknown
+`-+- policy='service-time 0' prio=0 status=enabled
+  `- 14:0:0:0 sdh 8:112 active undef unknown
+db2data1 (360014054a5e880a1f8344498ee1fe413) dm-1 LIO-ORG ,TCMU device
+size=2.4T features='0' hwhandler='0' wp=rw
+|-+- policy='service-time 0' prio=0 status=active
+| `- 6:0:0:0  sdf 8:80  active undef unknown
+`-+- policy='service-time 0' prio=0 status=enabled
+  `- 15:0:0:0 sdm 8:192 active undef unknown
+db2shared (3600140546756d056b8541018dda83128) dm-2 LIO-ORG ,TCMU device
+size=10G features='0' hwhandler='0' wp=rw
+|-+- policy='service-time 0' prio=0 status=active
+| `- 17:0:0:0 sdl 8:176 active undef unknown
+|-+- policy='service-time 0' prio=0 status=enabled
+| `- 16:0:0:0 sdk 8:160 active undef unknown
+`-+- policy='service-time 0' prio=0 status=enabled
+  `- 8:0:0:0  sde 8:64  active undef unknown
+sleep 5s
+lsblk
+NAME        MAJ:MIN RM  SIZE RO TYPE  MOUNTPOINT
+fd0           2:0    1    4K  0 disk
+sda           8:0    0   32G  0 disk
+├─sda1        8:1    0  500M  0 part  /boot
+└─sda2        8:2    0 31.5G  0 part  /
+sdb           8:16   0   28G  0 disk
+└─sdb1        8:17   0   28G  0 part  /mnt/resource
+sdc           8:32   0  2.4T  0 disk
+sdd           8:48   0  500G  0 disk
+└─db2log1   253:0    0  500G  0 mpath
+sde           8:64   0   10G  0 disk
+└─db2shared 253:2    0   10G  0 mpath
+sdf           8:80   0  2.4T  0 disk
+└─db2data1  253:1    0  2.4T  0 mpath
+sdg           8:96   0  500G  0 disk
+└─db2log1   253:0    0  500G  0 mpath
+sdh           8:112  0   10G  0 disk
+└─db2tieb   253:3    0   10G  0 mpath
+sdi           8:128  0  500G  0 disk
+└─db2log1   253:0    0  500G  0 mpath
+sdj           8:144  0   10G  0 disk
+└─db2tieb   253:3    0   10G  0 mpath
+sdk           8:160  0   10G  0 disk
+└─db2shared 253:2    0   10G  0 mpath
+sdl           8:176  0   10G  0 disk
+└─db2shared 253:2    0   10G  0 mpath
+sdm           8:192  0  2.4T  0 disk
+└─db2data1  253:1    0  2.4T  0 mpath
+sdn           8:208  0   10G  0 disk
+└─db2tieb   253:3    0   10G  0 mpath
+ls -ls /dev/mapper
+total 0
+0 crw------- 1 root root 10, 236 Sep 18 05:32 control
+0 lrwxrwxrwx 1 root root       7 Sep 18 05:34 db2data1 -> ../dm-1
+0 lrwxrwxrwx 1 root root       7 Sep 18 05:34 db2log1 -> ../dm-0
+0 lrwxrwxrwx 1 root root       7 Sep 18 05:34 db2shared -> ../dm-2
+0 lrwxrwxrwx 1 root root       7 Sep 18 05:34 db2tieb -> ../dm-3
+uname -r
+3.10.0-514.el7.x86_64
+df
+Filesystem     1K-blocks    Used Available Use% Mounted on
+/dev/sda2       33025276 7681496  25343780  24% /
+devtmpfs         7166608       0   7166608   0% /dev
+tmpfs            7176232       0   7176232   0% /dev/shm
+tmpfs            7176232    8572   7167660   1% /run
+tmpfs            7176232       0   7176232   0% /sys/fs/cgroup
+/dev/sda1         508580   94788    413792  19% /boot
+/dev/sdb1       28767204 2142240  25140628   8% /mnt/resource
+tmpfs            1435248       0   1435248   0% /run/user/1000
+
+cat > /etc/multipath.conf <<EOF2
+defaults {
+    user_friendly_names no
+    bindings_file /etc/multipath/bindings4db2
+    max_fds max
+    flush_on_last_del yes
+    queue_without_daemon no
+    dev_loss_tmo infinity
+    fast_io_fail_tmo 5
+}
+blacklist {
+    wwid "SAdaptec*"
+    devnode "^hd[a-z]"
+    devnode "^(ram|raw|loop|fd|md|dm-|sr|scd|st)[0-9]*"
+    devnode "^sda[0-9]*"
+    devnode "^sdb[0-9]*"
+    devnode "^sdc[0-9]*"
+    devnode "^cciss.*"
+}
+multipaths {
+    multipath {
+        wwid  360014054a5e880a1f8344498ee1fe413
+        alias db2data1
+    }
+    multipath {
+        wwid  3600140598441a52f7ab43198a2062e11
+        alias db2log1
+    }
+    multipath {
+        wwid  3600140546756d056b8541018dda83128
+        alias db2shared
+    }
+    multipath {
+        wwid  36001405ee2a1af8c7d14e74bbbf644a5
+        alias db2tieb
+    }
+}
+EOF2
+
+modprobe dm-multipath
+systemctl start multipathd
+chkconfig multipathd on
+Note: Forwarding request to 'systemctl enable multipathd.service'.
+
+iscsiadm -m discovery -t sendtargets -p 192.168.1.10
+192.168.1.10:3260,1 iqn.2016-12.org.gluster-block:4a5e880a-1f83-4449-8ee1-fe413f396395
+192.168.1.11:3260,2 iqn.2016-12.org.gluster-block:4a5e880a-1f83-4449-8ee1-fe413f396395
+192.168.1.12:3260,3 iqn.2016-12.org.gluster-block:4a5e880a-1f83-4449-8ee1-fe413f396395
+192.168.1.10:3260,1 iqn.2016-12.org.gluster-block:46756d05-6b85-4101-8dda-83128a13b707
+192.168.1.11:3260,2 iqn.2016-12.org.gluster-block:46756d05-6b85-4101-8dda-83128a13b707
+192.168.1.12:3260,3 iqn.2016-12.org.gluster-block:46756d05-6b85-4101-8dda-83128a13b707
+192.168.1.10:3260,1 iqn.2016-12.org.gluster-block:98441a52-f7ab-4319-8a20-62e11e819e7a
+192.168.1.11:3260,2 iqn.2016-12.org.gluster-block:98441a52-f7ab-4319-8a20-62e11e819e7a
+192.168.1.12:3260,3 iqn.2016-12.org.gluster-block:98441a52-f7ab-4319-8a20-62e11e819e7a
+192.168.1.10:3260,1 iqn.2016-12.org.gluster-block:ee2a1af8-c7d1-4e74-bbbf-644a5678bedd
+192.168.1.11:3260,2 iqn.2016-12.org.gluster-block:ee2a1af8-c7d1-4e74-bbbf-644a5678bedd
+192.168.1.12:3260,3 iqn.2016-12.org.gluster-block:ee2a1af8-c7d1-4e74-bbbf-644a5678bedd
+iscsiadm -m node -L automatic
+Logging in to [iface: default, target: iqn.2016-12.org.gluster-block:4a5e880a-1f83-4449-8ee1-fe413f396395, portal: 192.168.1.10,3260] (multiple)
+Logging in to [iface: default, target: iqn.2016-12.org.gluster-block:4a5e880a-1f83-4449-8ee1-fe413f396395, portal: 192.168.1.11,3260] (multiple)
+Logging in to [iface: default, target: iqn.2016-12.org.gluster-block:4a5e880a-1f83-4449-8ee1-fe413f396395, portal: 192.168.1.12,3260] (multiple)
+Logging in to [iface: default, target: iqn.2016-12.org.gluster-block:46756d05-6b85-4101-8dda-83128a13b707, portal: 192.168.1.10,3260] (multiple)
+Logging in to [iface: default, target: iqn.2016-12.org.gluster-block:46756d05-6b85-4101-8dda-83128a13b707, portal: 192.168.1.11,3260] (multiple)
+Logging in to [iface: default, target: iqn.2016-12.org.gluster-block:46756d05-6b85-4101-8dda-83128a13b707, portal: 192.168.1.12,3260] (multiple)
+Logging in to [iface: default, target: iqn.2016-12.org.gluster-block:98441a52-f7ab-4319-8a20-62e11e819e7a, portal: 192.168.1.10,3260] (multiple)
+Logging in to [iface: default, target: iqn.2016-12.org.gluster-block:98441a52-f7ab-4319-8a20-62e11e819e7a, portal: 192.168.1.11,3260] (multiple)
+Logging in to [iface: default, target: iqn.2016-12.org.gluster-block:98441a52-f7ab-4319-8a20-62e11e819e7a, portal: 192.168.1.12,3260] (multiple)
+Logging in to [iface: default, target: iqn.2016-12.org.gluster-block:ee2a1af8-c7d1-4e74-bbbf-644a5678bedd, portal: 192.168.1.10,3260] (multiple)
+Logging in to [iface: default, target: iqn.2016-12.org.gluster-block:ee2a1af8-c7d1-4e74-bbbf-644a5678bedd, portal: 192.168.1.11,3260] (multiple)
+Logging in to [iface: default, target: iqn.2016-12.org.gluster-block:ee2a1af8-c7d1-4e74-bbbf-644a5678bedd, portal: 192.168.1.12,3260] (multiple)
+Login to [iface: default, target: iqn.2016-12.org.gluster-block:4a5e880a-1f83-4449-8ee1-fe413f396395, portal: 192.168.1.10,3260] successful.
+Login to [iface: default, target: iqn.2016-12.org.gluster-block:4a5e880a-1f83-4449-8ee1-fe413f396395, portal: 192.168.1.11,3260] successful.
+Login to [iface: default, target: iqn.2016-12.org.gluster-block:4a5e880a-1f83-4449-8ee1-fe413f396395, portal: 192.168.1.12,3260] successful.
+Login to [iface: default, target: iqn.2016-12.org.gluster-block:46756d05-6b85-4101-8dda-83128a13b707, portal: 192.168.1.10,3260] successful.
+Login to [iface: default, target: iqn.2016-12.org.gluster-block:46756d05-6b85-4101-8dda-83128a13b707, portal: 192.168.1.11,3260] successful.
+Login to [iface: default, target: iqn.2016-12.org.gluster-block:46756d05-6b85-4101-8dda-83128a13b707, portal: 192.168.1.12,3260] successful.
+Login to [iface: default, target: iqn.2016-12.org.gluster-block:98441a52-f7ab-4319-8a20-62e11e819e7a, portal: 192.168.1.10,3260] successful.
+Login to [iface: default, target: iqn.2016-12.org.gluster-block:98441a52-f7ab-4319-8a20-62e11e819e7a, portal: 192.168.1.11,3260] successful.
+Login to [iface: default, target: iqn.2016-12.org.gluster-block:98441a52-f7ab-4319-8a20-62e11e819e7a, portal: 192.168.1.12,3260] successful.
+Login to [iface: default, target: iqn.2016-12.org.gluster-block:ee2a1af8-c7d1-4e74-bbbf-644a5678bedd, portal: 192.168.1.10,3260] successful.
+Login to [iface: default, target: iqn.2016-12.org.gluster-block:ee2a1af8-c7d1-4e74-bbbf-644a5678bedd, portal: 192.168.1.11,3260] successful.
+Login to [iface: default, target: iqn.2016-12.org.gluster-block:ee2a1af8-c7d1-4e74-bbbf-644a5678bedd, portal: 192.168.1.12,3260] successful.
+iscsiadm -m session
+tcp: [1] 192.168.1.10:3260,1 iqn.2016-12.org.gluster-block:4a5e880a-1f83-4449-8ee1-fe413f396395 (non-flash)
+tcp: [10] 192.168.1.12:3260,3 iqn.2016-12.org.gluster-block:46756d05-6b85-4101-8dda-83128a13b707 (non-flash)
+tcp: [11] 192.168.1.10:3260,1 iqn.2016-12.org.gluster-block:98441a52-f7ab-4319-8a20-62e11e819e7a (non-flash)
+tcp: [12] 192.168.1.12:3260,3 iqn.2016-12.org.gluster-block:ee2a1af8-c7d1-4e74-bbbf-644a5678bedd (non-flash)
+tcp: [2] 192.168.1.10:3260,1 iqn.2016-12.org.gluster-block:46756d05-6b85-4101-8dda-83128a13b707 (non-flash)
+tcp: [3] 192.168.1.11:3260,2 iqn.2016-12.org.gluster-block:46756d05-6b85-4101-8dda-83128a13b707 (non-flash)
+tcp: [4] 192.168.1.11:3260,2 iqn.2016-12.org.gluster-block:98441a52-f7ab-4319-8a20-62e11e819e7a (non-flash)
+tcp: [5] 192.168.1.12:3260,3 iqn.2016-12.org.gluster-block:98441a52-f7ab-4319-8a20-62e11e819e7a (non-flash)
+tcp: [6] 192.168.1.10:3260,1 iqn.2016-12.org.gluster-block:ee2a1af8-c7d1-4e74-bbbf-644a5678bedd (non-flash)
+tcp: [7] 192.168.1.11:3260,2 iqn.2016-12.org.gluster-block:ee2a1af8-c7d1-4e74-bbbf-644a5678bedd (non-flash)
+tcp: [8] 192.168.1.11:3260,2 iqn.2016-12.org.gluster-block:4a5e880a-1f83-4449-8ee1-fe413f396395 (non-flash)
+tcp: [9] 192.168.1.12:3260,3 iqn.2016-12.org.gluster-block:4a5e880a-1f83-4449-8ee1-fe413f396395 (non-flash)
+multipath -l
+db2data1 (360014054a5e880a1f8344498ee1fe413) dm-0 LIO-ORG ,TCMU device
+size=2.4T features='0' hwhandler='0' wp=rw
+`-+- policy='service-time 0' prio=0 status=active
+  `- 6:0:0:0  sdd 8:48  active undef unknown
+sleep 5s
+lsblk
+NAME        MAJ:MIN RM  SIZE RO TYPE  MOUNTPOINT
+fd0           2:0    1    4K  0 disk
+sda           8:0    0   32G  0 disk
+├─sda1        8:1    0  500M  0 part  /boot
+└─sda2        8:2    0 31.5G  0 part  /
+sdb           8:16   0   28G  0 disk
+└─sdb1        8:17   0   28G  0 part  /mnt/resource
+sdc           8:32   0   10G  0 disk
+sdd           8:48   0  2.4T  0 disk
+└─db2data1  253:0    0  2.4T  0 mpath
+sde           8:64   0  2.4T  0 disk
+└─db2data1  253:0    0  2.4T  0 mpath
+sdf           8:80   0  500G  0 disk
+└─db2log1   253:2    0  500G  0 mpath
+sdg           8:96   0  500G  0 disk
+└─db2log1   253:2    0  500G  0 mpath
+sdh           8:112  0  500G  0 disk
+└─db2log1   253:2    0  500G  0 mpath
+sdi           8:128  0   10G  0 disk
+└─db2shared 253:1    0   10G  0 mpath
+sdj           8:144  0   10G  0 disk
+└─db2tieb   253:3    0   10G  0 mpath
+sdk           8:160  0   10G  0 disk
+└─db2shared 253:1    0   10G  0 mpath
+sdl           8:176  0   10G  0 disk
+└─db2tieb   253:3    0   10G  0 mpath
+sdm           8:192  0  2.4T  0 disk
+└─db2data1  253:0    0  2.4T  0 mpath
+sdn           8:208  0   10G  0 disk
+└─db2tieb   253:3    0   10G  0 mpath
+ls -ls /dev/mapper
+total 0
+0 crw------- 1 root root 10, 236 Sep 18 05:33 control
+0 lrwxrwxrwx 1 root root       7 Sep 18 05:34 db2data1 -> ../dm-0
+0 lrwxrwxrwx 1 root root       7 Sep 18 05:34 db2log1 -> ../dm-2
+0 lrwxrwxrwx 1 root root       7 Sep 18 05:34 db2shared -> ../dm-1
+0 lrwxrwxrwx 1 root root       7 Sep 18 05:34 db2tieb -> ../dm-3
+
+scp /tmp/fromd0_root.sh 192.168.0.20:/tmp/
+
+cat > /tmp/tmpcmd003.sh <<EOF
+sudo -n -u root bash -c "bash -v /tmp/fromd0_root.sh \"$nbDb2MemberVms\" \"$nbDb2CfVms\""
+EOF
+
+cat /tmp/tmpcmd003.sh
+sudo -n -u root bash -c "bash -v /tmp/fromd0_root.sh \"2\" \"2\""
+scp /tmp/tmpcmd003.sh 192.168.0.20:/tmp/
+ssh 192.168.0.20 bash /tmp/tmpcmd003.sh
+#!/bin/bash
+
+nbDb2MemberVms=$1
+nbDb2CfVms=$2
+
+# write a response file
+
+cat > /root/db2server.rsp <<EOF
+*-----------------------------------------------------
+* Generated response file
+* see fromd0_root.sh script
+*-----------------------------------------------------
+*  Product Installation
+LIC_AGREEMENT       = ACCEPT
+PROD       = DB2_SERVER_EDITION
+FILE       = /data1/db2
+INSTALL_TYPE       = CUSTOM
+COMP       = TSAMP
+COMP       = INFORMIX_DATA_SOURCE_SUPPORT
+COMP       = IINR_APPLICATIONS_WRAPPER
+COMP       = SQL_PROCEDURES
+COMP       = ORACLE_DATA_SOURCE_SUPPORT
+COMP       = ODBC_DATA_SOURCE_SUPPORT
+COMP       = IINR_SCIENTIFIC_WRAPPER
+COMP       = INSTANCE_SETUP_SUPPORT
+COMP       = TERADATA_DATA_SOURCE_SUPPORT
+COMP       = LDAP_EXPLOITATION
+COMP       = APPLICATION_DEVELOPMENT_TOOLS
+COMP       = FED_DATA_SOURCE_SUPPORT
+COMP       = CONNECT_SUPPORT
+COMP       = GUARDIUM_INST_MNGR_CLIENT
+COMP       = DB2_UPDATE_SERVICE
+COMP       = JDBC_DATA_SOURCE_SUPPORT
+COMP       = IINR_STRUCTURED_FILES_WRAPPER
+COMP       = BASE_DB2_ENGINE
+COMP       = REPL_CLIENT
+COMP       = TEXT_SEARCH
+COMP       = JDK
+COMP       = DB2_SAMPLE_DATABASE
+COMP       = DB2_DATA_SOURCE_SUPPORT
+COMP       = JAVA_SUPPORT
+COMP       = SYBASE_DATA_SOURCE_SUPPORT
+COMP       = GPFS
+COMP       = SQL_SERVER_DATA_SOURCE_SUPPORT
+COMP       = FIRST_STEPS
+COMP       = PURESCALE
+COMP       = SPATIAL_EXTENDER_SERVER_SUPPORT
+COMP       = BASE_CLIENT
+COMP       = ACS
+COMP       = COMMUNICATION_SUPPORT_TCPIP
+COMP       = SPATIAL_EXTENDER_CLIENT_SUPPORT
+* ----------------------------------------------
+*  Instance properties
+* ----------------------------------------------
+INSTANCE       = inst1
+EOF
+
+for (( i=0; i<$nbDb2MemberVms; i++ ))
+do
+    j=$(($i+1))
+    cat >> /root/db2server.rsp <<EOF
+inst1.MEMBER       = host$j
+EOF
+done
+
+CfPrimary=$(($j+1))
+CfSecondary=$(($j+2))
+
+cat >> /root/db2server.rsp <<EOF
+inst1.PREFERRED_PRIMARY_CF       = host${CfPrimary}
+inst1.PREFERRED_SECONDARY_CF       = host${CfSecondary}
+inst1.TYPE       = dsf
+*  Instance-owning user
+inst1.NAME       = db2sdin1
+inst1.UID       = 1001
+inst1.GROUP_NAME       = db2iadm1
+inst1.HOME_DIRECTORY       = /home/db2sdin1
+inst1.START_DURING_INSTALL       = YES
+*  Fenced user
+inst1.FENCED_USERNAME       = db2sdfe1
+inst1.FENCED_UID       = 1002
+inst1.FENCED_GROUP_NAME       = db2fadm1
+inst1.FENCED_HOME_DIRECTORY       = /home/db2sdfe1
+*-----------------------------------------------
+*  Installed Languages
+*-----------------------------------------------
+LANG       = EN
+*-----------------------------------------------
+*  Host Information
+*-----------------------------------------------
+EOF
+
+for (( i=0; i<$nbDb2MemberVms; i++ ))
+do
+    j=$(($i+1))
+    cat >> /root/db2server.rsp <<EOF
+HOST       = host$j
+host$j.HOSTNAME       = d$i
+host$j.CLUSTER_INTERCONNECT_NETNAME       = d${i}-eth2
+EOF
+done
+
+for (( i=0; i<$nbDb2CfVms; i++ ))
+do
+    j=$(($nbDb2MemberVms+1+$i))
+    cat >> /root/db2server.rsp <<EOF
+HOST       = host$j
+host$j.HOSTNAME       = cf$i
+host$j.CLUSTER_INTERCONNECT_NETNAME       = cf${i}-eth2
+EOF
+done
+
+# see <http://www-01.ibm.com/support/docview.wss?uid=swg21969333>
+
+devdb2data1=`ls -ls /dev/mapper | grep db2data1 | awk '{sub(/\.\./,"/dev"); print $12}'`
+ls -ls /dev/mapper | grep db2data1 | awk '{sub(/\.\./,"/dev"); print $12}'
+devdb2log1=`ls -ls /dev/mapper | grep db2log1 | awk '{sub(/\.\./,"/dev"); print $12}'`
+ls -ls /dev/mapper | grep db2log1 | awk '{sub(/\.\./,"/dev"); print $12}'
+devdb2shared=`ls -ls /dev/mapper | grep db2shared | awk '{sub(/\.\./,"/dev"); print $12}'`
+ls -ls /dev/mapper | grep db2shared | awk '{sub(/\.\./,"/dev"); print $12}'
+devdb2tieb=`ls -ls /dev/mapper | grep db2tieb | awk '{sub(/\.\./,"/dev"); print $12}'`
+ls -ls /dev/mapper | grep db2tieb | awk '{sub(/\.\./,"/dev"); print $12}'
+
+cat >> /root/db2server.rsp <<EOF
+
+
+* ----------------------------------------------
+*  Shared file system settings
+* ----------------------------------------------
+INSTANCE_SHARED_DEVICE_PATH       = $devdb2shared
+INSTANCE_SHARED_MOUNT       = /db2sd_1804a
+DATA_SHARED_MOUNT       = /db2fs/datafs1
+LOG_SHARED_MOUNT       = /db2fs/logfs1
+DATA_SHARED_DEVICE_PATH       = $devdb2data1
+LOG_SHARED_DEVICE_PATH       = $devdb2log1
+
+
+* ----------------------------------------------
+*  Tiebreaker settings
+* ----------------------------------------------
+DB2_CLUSTER_SERVICES_TIEBREAKER_DEVICE_PATH       = $devdb2tieb
+EOF
+
+tentativenum=001
+/data2/db2bits/server_t/db2setup -r /root/db2server.rsp -l /tmp/db2setup_${tentativenum}.log -t /tmp/db2setup_${tentativenum}.trc
+DBI1191I  db2setup is installing and configuring DB2 according to the
+      response file provided. Please wait.
+
+
+DBI20072W  The DB2 cluster services tiebreaker disk validation failed. The
+tiebreaker specified has not been configured.
+
+The execution completed with warnings.
+
+For more information see the DB2 installation log at "/tmp/db2setup_001.log".
+EnableAcceleratedNetworking    EnableIpForwarding    Location    MacAddress         Name           Primary    ProvisioningState    ResourceGroup    ResourceGuid
+-----------------------------  --------------------  ----------  -----------------  -------------  ---------  -------------------  ---------------  ------------------------------------
+True                           False                 westeurope  00-0D-3A-44-DC-48  cf0_db2be      False      Succeeded            a_180918a        57224a92-82f6-435a-8aec-424eaa3881fb
+True                           False                 westeurope  00-0D-3A-44-D3-34  cf0_gfsfe      False      Succeeded            a_180918a        a1565acc-de41-4d63-9d55-de425fe7982d
+True                           False                 westeurope  00-0D-3A-44-DD-B6  cf0_main       True       Succeeded            a_180918a        823e47e0-fa4b-4fc9-bd54-2a3a0b834dfb
+True                           False                 westeurope  00-0D-3A-44-D2-23  cf1_db2be      False      Succeeded            a_180918a        b14dee21-81bd-40ff-8c53-03e7204fdd7c
+True                           False                 westeurope  00-0D-3A-44-D7-E3  cf1_gfsfe      False      Succeeded            a_180918a        5c38075f-da06-4715-8f1a-e60aa2bce9d4
+True                           False                 westeurope  00-0D-3A-44-D4-5A  cf1_main       True       Succeeded            a_180918a        721d1a0f-68aa-40bb-b2ab-c61da8eb038c
+True                           False                 westeurope  00-0D-3A-44-D0-F8  d0_db2be       False      Succeeded            a_180918a        cf870239-907a-4a23-87f0-f9351858995e
+True                           False                 westeurope  00-0D-3A-44-D0-94  d0_db2fe       False      Succeeded            a_180918a        b9957c66-d365-4c31-9932-b161cd275915
+True                           False                 westeurope  00-0D-3A-44-D3-10  d0_gfsfe       False      Succeeded            a_180918a        4a82201f-ad36-43c1-9e26-c50e1d2012b3
+True                           False                 westeurope  00-0D-3A-44-D8-DA  d0_main        True       Succeeded            a_180918a        11ddbb53-7416-4f86-8637-fa7aa682b924
+True                           False                 westeurope  00-0D-3A-44-D0-C8  d1_db2be       False      Succeeded            a_180918a        42034ced-39bc-4295-9d49-cb96df5072a6
+True                           False                 westeurope  00-0D-3A-44-D3-92  d1_db2fe       False      Succeeded            a_180918a        22f11c40-e8be-441c-b828-ab8717a56f80
+True                           False                 westeurope  00-0D-3A-44-D5-E0  d1_gfsfe       False      Succeeded            a_180918a        d23158be-877f-4edd-bd7e-421300ec9f8d
+True                           False                 westeurope  00-0D-3A-44-DD-D2  d1_main        True       Succeeded            a_180918a        c1f7ff37-f7d0-42c9-92aa-2eb437ff8ca4
+True                           False                 westeurope  00-0D-3A-44-D2-EC  g0_gfsbe       False      Succeeded            a_180918a        0e273332-1759-410c-8d2f-3cd3c3439792
+True                           False                 westeurope  00-0D-3A-44-DA-A5  g0_gfsfe       False      Succeeded            a_180918a        6a3d11e1-f93e-4957-b40a-77b1e87df59c
+True                           False                 westeurope  00-0D-3A-44-D8-53  g0_main        True       Succeeded            a_180918a        3979497d-c099-4611-9295-1d85884f8c62
+True                           False                 westeurope  00-0D-3A-44-D6-5C  g1_gfsbe       False      Succeeded            a_180918a        6adc4607-2397-4f4f-90d0-d580db81c797
+True                           False                 westeurope  00-0D-3A-44-D6-4F  g1_gfsfe       False      Succeeded            a_180918a        f3af8128-21ed-43ba-8e6c-9867e896fc10
+True                           False                 westeurope  00-0D-3A-44-D4-48  g1_main        True       Succeeded            a_180918a        042500ca-570d-4738-a5cc-6d248c6468f2
+True                           False                 westeurope  00-0D-3A-44-DA-07  g2_gfsbe       False      Succeeded            a_180918a        b019b033-d4cd-4e49-b3d3-af3cd01f7712
+True                           False                 westeurope  00-0D-3A-44-D4-6D  g2_gfsfe       False      Succeeded            a_180918a        2b2c8109-0f07-4f59-9046-18f3b4e41b5f
+True                           False                 westeurope  00-0D-3A-44-D6-5B  g2_main        True       Succeeded            a_180918a        789c7c01-7f98-4ea8-b3c1-d0a5781a5c43
+True                           False                 westeurope  00-0D-3A-44-DF-74  jumpbox0_main  True       Succeeded            a_180918a        93ced1e0-70d6-4fc5-9f1a-a2dc639e992f
+True                           False                 westeurope  00-0D-3A-44-D0-8C  wcli0_db2fe    False      Succeeded            a_180918a        99d1305c-6fc8-4ebe-8e26-ade57fb7bf2f
+True                           False                 westeurope  00-0D-3A-44-D0-9C  wcli0_main     True       Succeeded            a_180918a        b6de738d-6b12-4c6b-aee0-9f0fe6683676
+True                           False                 westeurope  00-0D-3A-44-DA-DE  witn0_db2be    False      Succeeded            a_180918a        c4ec4f8e-2483-4d92-a440-141038fd2e06
+True                           False                 westeurope  00-0D-3A-44-D0-35  witn0_db2fe    False      Succeeded            a_180918a        8da8ed5c-b70e-42c6-a7bc-7d7c1c164ef8
+True                           False                 westeurope  00-0D-3A-44-DE-E5  witn0_gfsfe    False      Succeeded            a_180918a        d4dfdf2b-9e58-4642-9b26-2fb43ffde218
+True                           False                 westeurope  00-0D-3A-44-DA-B8  witn0_main     True       Succeeded            a_180918a        c0937305-5884-42fe-9a46-29141f574660
+myuser@mymachine:/mnt/c/dev/GitHub/benjguin/db2OnAzure/deployment$

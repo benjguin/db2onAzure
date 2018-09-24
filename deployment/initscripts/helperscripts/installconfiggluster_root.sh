@@ -14,7 +14,7 @@ cat >> /etc/hosts <<EOF
 EOF
 
 #Install stuff
-yum update -y
+yum update -y --exclude=WALinuxAgent # cf https://github.com/Azure/WALinuxAgent/issues/178
 cat > /etc/yum.repos.d/Gluster.repo <<'EOF'
 [gluster312]
 name=Gluster 3.12

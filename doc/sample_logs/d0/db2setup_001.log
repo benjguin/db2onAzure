@@ -1,0 +1,370 @@
+
+DB2 Setup log file started at:  Tue Sep 18 05:34:46 AM 2018 UTC
+============================================================
+
+Operating system information: Linux 3.10.0-514.el7.x86_64.#1 SMP Wed Oct 19 11:24:13 EDT 2016 x86_64 
+WARNING: DBI20167W  The DB2 pureScale instance was set to use the TCP/IP network protocol because the network is not configured for the RDMA network protocol.
+
+WARNING: DBI20072W  The DB2 cluster services tiebreaker disk validation failed.
+The tiebreaker specified has not been configured.
+
+WARNING: DBI20072W  The DB2 cluster services tiebreaker disk validation failed. The
+tiebreaker specified has not been configured.
+
+                                        
+Product to install:                     	DB2 Server Edition 
+Installation type:                      	Custom 
+                                        
+Previously Installed Components:        
+                                        
+Components to be installed:             
+    Base client support                 	
+    Java support                        	
+    SQL procedures                      	
+    Base server support                 	
+    DB2 data source support             	
+    ODBC data source support            	
+    Teradata data source support        	
+    Spatial Extender server support     	
+    Scientific Data Sources             	
+    JDBC data source support            	
+    IBM Software Development Kit (SDK) for Java(TM) 	
+    DB2 LDAP support                    	
+    DB2 Instance Setup wizard           	
+    Structured file data sources        	
+    Integrated Flash Copy Support       	
+    General Parallel File System (GPFS) 	
+    Oracle data source support          	
+    Connect support                     	
+    Application data sources            	
+    Spatial Extender client             	
+    SQL Server data source support      	
+    Communication support - TCP/IP      	
+    Tivoli SA MP                        	
+    Base application development tools  	
+    DB2 Update Service                  	
+    Replication tools                   	
+    Sample database source              	
+    DB2 Text Search                     	
+    Sybase data source support          	
+    Informix data source support        	
+    Federated Data Access Support       	
+    IBM DB2 pureScale Feature           	
+    First Steps                         	
+    Guardium Installation Manager Client 	
+                                        
+Languages:                              
+    English                             	
+        All Products                    	
+                                        
+Target directory:                       	/data1/db2
+                                        
+Maximum space required on each host:    	3300 MB
+Install IBM Tivoli System Automation for Multiplatforms (Tivoli SA MP): 	Yes 
+                                        
+DB2 cluster services:                   
+    Mount point:                        	/db2sd_1804a
+    DB2 cluster file system device path: 	/dev/dm-1
+                                        
+New instances:                          
+    Instance name:                      	db2sdin1
+        FCM port range:                 	60000-60005
+        CF port:                        	56001
+        CF Management port:             	56000
+        TCP/IP configuration:           	
+            Service name:               	db2c_db2sdin1
+            Port number:                	50000
+        Instance user information:      	
+            User name:                  	db2sdin1
+            UID:                        	1001
+            Group name:                 	db2iadm1
+            GID:                        	341
+            Home directory:             	/home/db2sdin1
+        Fenced user information:        	
+            User name:                  	db2sdfe1
+            UID:                        	1002
+            Group name:                 	db2fadm1
+            GID:                        	342
+            Home directory:             	/home/db2sdfe1
+                                        
+Cluster caching facilities:             
+    Preferred primary cluster caching facility: 	cf0
+    Preferred secondary cluster caching facility: 	cf1
+DB2 members:                            
+    d0                                  	
+    d1                                  	
+                                        
+                                        
+New Host List:                          
+    Host                                	Cluster Interconnect Netname 
+    d0                                  	d0-eth2
+    d1                                  	d1-eth2
+    cf0                                 	cf0-eth2
+    cf1                                 	cf1-eth2
+                                        
+                                        
+
+Checking license agreement acceptance :.......Success 
+Installing: BASE_CLIENT_R
+
+Installing: DB2_PRODUCT_MESSAGES_EN
+
+Installing: BASE_CLIENT
+
+Installing: JAVA_RUNTIME_SUPPORT
+
+Installing: DB2_JAVA_HELP_EN
+
+Installing: BASE_DB2_ENGINE_R
+
+Installing: GSK
+
+Installing: JAVA_SUPPORT
+
+Installing: SQL_PROCEDURES
+
+Installing: ICU_SUP
+
+Installing: JAVA_COMMON_FILES
+
+Installing: BASE_DB2_ENGINE
+
+Installing: DB2_CONTROL_CENTER_HELP_EN
+
+Installing: RELATIONAL_WRAPPERS_COMMON
+
+Installing: DB2_DATA_SOURCE_SUPPORT
+
+Installing: ODBC_DATA_SOURCE_SUPPORT
+
+Installing: TERADATA_DATA_SOURCE_SUPPORT
+
+Installing: SPATIAL_EXTENDER_SERVER_SUPPORT
+
+Installing: IINR_SCIENTIFIC_WRAPPER
+
+Installing: JDBC_DATA_SOURCE_SUPPORT
+
+Installing: JDK
+
+Installing: LDAP_EXPLOITATION
+
+Installing: INSTANCE_SETUP_SUPPORT
+
+Installing: IINR_STRUCTURED_FILES_WRAPPER
+
+Installing: ACS
+
+Installing: GPFS
+
+Installing: ORACLE_DATA_SOURCE_SUPPORT
+
+Installing: CONNECT_SUPPORT
+
+Installing: IINR_APPLICATIONS_WRAPPER
+
+Installing: SPATIAL_EXTENDER_CLIENT_SUPPORT
+
+Installing: SQL_SERVER_DATA_SOURCE_SUPPORT
+
+Installing: COMMUNICATION_SUPPORT_TCPIP
+
+Installing: TSAMP
+
+Installing: APPLICATION_DEVELOPMENT_TOOLS
+
+Installing: DB2_UPDATE_SERVICE
+
+Installing: DATABASE_PARTITIONING_SUPPORT
+
+Installing: EDB
+
+Installing: REPL_CLIENT
+
+Installing: CF
+
+Installing: DB2_SAMPLE_DATABASE
+
+Installing: ITLM
+
+Installing: TEXT_SEARCH
+
+Installing: CLPPLUS
+
+Installing: SYBASE_DATA_SOURCE_SUPPORT
+
+Installing: INFORMIX_DATA_SOURCE_SUPPORT
+
+Installing: FED_DATA_SOURCE_SUPPORT
+
+Installing: PURESCALE
+
+Installing: FIRST_STEPS
+
+Installing: ESE_PRODUCT_SIGNATURE
+
+Installing: GUARDIUM_INST_MNGR_CLIENT
+
+Binary installation succeeded on the following hosts: "d1, cf0, cf1".
+
+Installing DB2 file sets :.......Success 
+DBI1514I  The DB2 High Availability (HA) scripts for the IBM Tivoli
+      System Automation for Multiplatforms (SA MP) were successfully
+      installed.
+
+Explanation: 
+
+You need DB2 HA scripts to use SA MP with the DB2 HA feature.
+
+These DB2 HA scripts are located at /usr/sbin/rsct/sapolicies/db2. The
+database product installer detects whether these DB2 HA scripts need to
+be installed or updated.
+
+User response: 
+
+No action is required.
+
+
+Installing or updating DB2 HA scripts for IBM Tivoli System Automation for Multiplatforms (Tivoli SA MP) :.......Success 
+Installing or updating DB2 Cluster Scripts for IBM General Parallel File System (GPFS) :.......Success 
+Installing or updating DB2 SSH Utilities :.......Success 
+Compiling GPL :.......Success 
+Executing control tasks :.......Success 
+Updating global registry :.......Success 
+Updating the db2ls and db2greg link :.......Success 
+Registering DB2 licenses :.......Success 
+Setting default global profile registry variables :.......Success 
+Register NTP :.......Success 
+Initializing instance list :.......Success 
+Initiating the remote host list :.......Success 
+Creation of the RSCT peer domain, "db2domain_20180918054729", succeeded on the
+host "d0".
+
+Creation of the IBM General Parallel File System (GPFS) cluster,
+"db2cluster_20180918054748.d0", succeeded on host "d0".
+
+Creation of the IBM General Parallel File System (GPFS) file system succeeded
+at mount point "/db2sd_1804a".
+
+Extension of the RSCT peer domain, "db2domain_20180918054729", succeeded on the
+following hosts: "d1, cf0, cf1".
+
+Extension of the IBM General Parallel File System (GPFS) cluster succeeded on
+the following hosts "d1, cf0, cf1".
+
+ 
+ROLLING UPDATE STATUS:  Disk Value                                         Memory Value                                      
+
+   Record Type        = INSTANCE 
+   ID                 = 0 
+   Code Level         = V:11 R:1 M:3 F:3 I:0 SB:0 (0x0B01030300000000)     Not Applicable
+   Architecture Level = V:11 R:1 M:3 F:3 I:0 SB:0 (0x0B01030300000000)     Not Applicable
+   State              = [NONE] 
+   Last updated       = 2018/09/18:06:03:23 
+ 
+ 
+Memory values are not available because an attachment to the instance on member 0 cannot be established.
+
+   Record Type        = MEMBER 
+   ID                 = 0 
+   Code Level         = V:11 R:1 M:3 F:3 I:0 SB:0 (0x0B01030300000000)     Memory Value Not Available
+   CECL               = V:11 R:1 M:3 F:3 I:0 SB:0 (0x0B01030300000000)     Memory Value Not Available
+   Architecture Level = V:11 R:1 M:3 F:3 I:0 SB:0 (0x0B01030300000000)     Memory Value Not Available
+   CEAL               = V:11 R:1 M:3 F:3 I:0 SB:0 (0x0B01030300000000)     Memory Value Not Available
+   Section Level      = V:11 R:1 M:3 F:3 I:0 SB:0 (0x0B01030300000000)     Memory Value Not Available
+   Target Code Level  = V:11 R:1 M:3 F:3 I:0 SB:0 (0x0B01030300000000)     Not Applicable
+   State              = [NONE] 
+   Last updated       = 2018/09/18:06:03:10 
+ 
+d0: db2pd -ruStatus -localhost ... completed ok
+ 
+Memory values are not available because an attachment to the instance on member 1 cannot be established.
+
+   Record Type        = MEMBER 
+   ID                 = 1 
+   Code Level         = V:11 R:1 M:3 F:3 I:0 SB:0 (0x0B01030300000000)     Memory Value Not Available
+   CECL               = V:11 R:1 M:3 F:3 I:0 SB:0 (0x0B01030300000000)     Memory Value Not Available
+   Architecture Level = V:11 R:1 M:3 F:3 I:0 SB:0 (0x0B01030300000000)     Memory Value Not Available
+   CEAL               = V:11 R:1 M:3 F:3 I:0 SB:0 (0x0B01030300000000)     Memory Value Not Available
+   Section Level      = V:11 R:1 M:3 F:3 I:0 SB:0 (0x0B01030300000000)     Memory Value Not Available
+   Target Code Level  = V:11 R:1 M:3 F:3 I:0 SB:0 (0x0B01030300000000)     Not Applicable
+   State              = [NONE] 
+   Last updated       = 2018/09/18:06:03:10 
+ 
+d1: db2pd -ruStatus -localhost ... completed ok
+
+   Record Type        = CF 
+   ID                 = 128 
+   Code Level         = V:11 R:1 M:3 F:3 I:0 SB:0 (0x0B01030300000000)     Not Applicable
+   Architecture Level = V:11 R:1 M:3 F:3 I:0 SB:0 (0x0B01030300000000)     Not Applicable
+   Target Code Level  = V:11 R:1 M:3 F:3 I:0 SB:0 (0x0B01030300000000)     Not Applicable
+   State              = [NONE] 
+   Last updated       = 2018/09/18:06:03:11 
+ 
+   Record Type        = CF 
+   ID                 = 129 
+   Code Level         = V:11 R:1 M:3 F:3 I:0 SB:0 (0x0B01030300000000)     Not Applicable
+   Architecture Level = V:11 R:1 M:3 F:3 I:0 SB:0 (0x0B01030300000000)     Not Applicable
+   Target Code Level  = V:11 R:1 M:3 F:3 I:0 SB:0 (0x0B01030300000000)     Not Applicable
+   State              = [NONE] 
+   Last updated       = 2018/09/18:06:03:11 
+ 
+Configuration of instance "db2sdin1" succeeded on hosts "d0, cf0, cf1, d1"
+
+The instance "db2sdin1" has been created successfully.
+
+WARNING: DBI20167W  The DB2 pureScale instance was set to use the TCP/IP network protocol because the network is not configured for the RDMA network protocol.
+
+The value "SVCENAME=db2c_db2sdin1" was set in the DBM CFG file for the
+"db2sdin1" instance.
+
+The value "DB2AUTOSTART=NO" was set in the Profile Registry for the "db2sdin1"
+instance.
+
+The shared file system cluster option 'usePersistentReserve' has not been set to the optimal value of 'yes'.  See the DB2 Information Center for more details.
+Configuring DB2 instances :.......Success 
+Registering DB2 Update Service :.......Success 
+Updating global profile registry :.......Success 
+
+Post-installation instructions 
+-------------------------------
+
+Required steps: 
+The network monitor configuration file for the DB2 pureScale instance has been updated on each host to include the IP address of the hosts gateway. The configuration file /var/ct/cfg/netmon.cf was updated on the following hosts: "d0  d1 cf0 cf1". This file must be modified in the event of future changes to the hosts gateway IP address. Failing to configure /var/ct/cfg/netmon.cf correctly with a valid pingable gateway IP address will result in failures during instance startup.  For more details see sections "Setting up the netmon.cf file on a TCP/IP network" or "Setting up the netmon.cf file on a RoCE network" in the DB2 Information Center  based on the choice of your host network. 
+
+Clients can connect to the DB2 pureScale instance "db2sdin1" through any DB2 member using the host name and the port number "50000". Record this information for future reference. 
+
+Start using the DB2 product using a valid user ID such as the DB2 instance owner's ID "db2sdin1". 
+
+Optional steps: 
+The default database path in the database manager configuration (DFTDBPATH) is set to "/db2sd_1804a".   This is also the path to the instance shared directory in a shared file system.  DFTDBPATH can be updated to a new shared file system created using the db2cluster command (for example, db2cluster -cfs -create -filesystem fs-name).  For details on creating a shared file system, see the db2cluster command in the DB2 Information Center. 
+
+Refer to "What's new" https://www-01.ibm.com/support/knowledgecenter/SSEPGG_11.1.0/com.ibm.db2.luw.wn.doc/doc/r0051514.html in the DB2 Information Center to learn about the new functions for DB2 V11.1. 
+
+Open First Steps by running "db2fs" using a valid user ID such as the DB2 instance owner's ID. You will need to have DISPLAY set and a supported web browser in the path of this user ID. 
+
+Ensure that you have the correct license entitlements for DB2 products and features installed on this machine. Each DB2 product or feature comes with a license certificate file (also referred to as a license key) that is distributed on an Activation CD, which also includes instructions for applying the license file. If you purchased a base DB2 product, as well as, separately priced features, you might need to install more than one license certificate. The Activation CD for your product or feature can be downloaded from Passport Advantage if it is not part of the physical media pack you received from IBM. For more information about licensing, search the Information Center (https://www-01.ibm.com/support/knowledgecenter/SSEPGG_11.1.0/com.ibm.db2.luw.kc.doc/welcome.html) using terms such as "license compliance", "licensing" or "db2licm". 
+
+To use your DB2 database product, you must have a valid license. For information about obtaining and applying DB2 license files, see http://www-01.ibm.com/support/knowledgecenter/SSEPGG_11.1.0/com.ibm.db2.luw.qb.server.doc/doc/c0061199.html. 
+
+
+
+Host Summary 
+------------------
+
+Host Name: d1
+Install Status: successful 
+Detailed Log Location: /tmp/db2log.4415/d1
+
+Host Name: cf0
+Install Status: successful 
+Detailed Log Location: /tmp/db2log.4415/cf0
+
+Host Name: cf1
+Install Status: successful 
+Detailed Log Location: /tmp/db2log.4415/cf1
+
+
+DB2 Setup log file finished at:  Tue Sep 18 06:04:58 AM 2018 UTC
+============================================================
+

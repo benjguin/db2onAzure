@@ -166,6 +166,6 @@ if [ `echo "$acceleratedNetworkingOnDB2" | awk '{print tolower($0)}'` == "true" 
 then
     mkdir /tmp/lis
     cd /tmp/lis
-    curl -o lis-rpms-4.2.4-2.tar.gz "$lisbits"
-    tar xvf lis-rpms-4.2.4-2.tar.gz
+    curl -o lis-rpms-4.2.x.tar.gz "$lisbits"
+    tar xvf lis-rpms-4.2.x.tar.gz
 fi
