@@ -12,3 +12,4 @@ Here are the steps you may want to follow:
 Additional documentation include:
 - [Knowledge Base](KB.md)
 - The `sample_logs` contain example of logs
+- [Azure Stack](stack.md)

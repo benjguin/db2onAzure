@@ -28,7 +28,11 @@ or (other example)
 ssh -L 127.0.0.1:3391:192.168.0.40:3389 rhel@$jumpbox
 ```
 
-then connect trhu RDP to 127.0.0.1:3391
+then connect thru RDP to 127.0.0.1:3391
+
+Here is a picture on how the ssh tunnel works in that case:
+
+![](img/ssh002.png)
 
 ## Connect to DB2 pureScale cluster
 
