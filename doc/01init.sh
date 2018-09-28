@@ -44,7 +44,7 @@ fi
 githubRepoCloneUrl=git@github.com:benjguin/db2onAzure.git
 
 # raw path on GitHub where the ARM templates and scripts will download other ARM templates and scripts
-gitrawurl='https://raw.githubusercontent.com/benjguin/db2onAzure/doc1/'
+gitrawurl='https://raw.githubusercontent.com/benjguin/db2onAzure/master/'
 
 # Azure resource group where the Db2 setup will be deployed 
 rg="a_${dateid}"
