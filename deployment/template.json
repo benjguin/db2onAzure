@@ -1013,7 +1013,7 @@
                     "dataDisks": []
                 },
                 "osProfile": {
-                    "computerName": "witn0",
+                    "computerName": "wcli0",
                     "adminUsername": "adwin",
                     "adminPassword": "[parameters('adwinPassword')]",
                     "windowsConfiguration": {
