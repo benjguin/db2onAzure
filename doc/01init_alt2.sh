@@ -49,7 +49,11 @@ db2bits="https://${stor1}.blob.core.windows.net/setup/${db2bitsfilename}?${db2bi
 githubRepoCloneUrl=git@github.com:benjguin/db2onAzure.git
 
 # raw path on GitHub where the ARM templates and scripts will download other ARM templates and scripts
+<<<<<<< HEAD
 gitrawurl='https://raw.githubusercontent.com/benjguin/db2onAzure/master/'
+=======
+gitrawurl='https://raw.githubusercontent.com/benjguin/db2onAzure/doc1/'
+>>>>>>> 0ef6ada6ce4a5a48b2de3c93adbcb0f9f1afeb2e
 
 # Azure resource group where the Db2 setup will be deployed 
 rg="a_${dateid}"
