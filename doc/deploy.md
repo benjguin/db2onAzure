@@ -1,6 +1,6 @@
 # Deploy
 
-The [deployment script](../deployment/deploy.sh) needs a number of variables we have to prepare. 
+The [deployment script](../deployment/deploy.sh) needs a number of variables we have to prepare and these variables should already be defined in the 01init.sh file. After sourcing the init file below, the deployment script will use the variables from that file.
 Here is the list (excerpt from the usage part of the script):
 - subscription (-s): Azure subscription name"
 - resourceGroupName (-g): Azure resource group name"
