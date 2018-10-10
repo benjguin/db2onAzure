@@ -29,7 +29,7 @@ source 01init.sh
 ## Run the deployment script
 
 ```bash
-cd $localGitFolderpath/db2OnAzure/deployment
+cd $localGitFolderpath/db2onAzure/deployment
 date
 ./deploy.sh -s "$subscription" -g "$rg" -l "$location" -n "$deploymentName" -k "$pubKeyPath" -p "$adwinPassword" -d "$db2bits" -u "$gitrawurl" -j "$jumpboxPublicName" -t "$tempLocalFolder" -a "$acceleratedNetworkingOnGlusterfs" -c "$acceleratedNetworkingOnDB2" -e "$acceleratedNetworkingOnOthers" -b "$lisbits" -y $nbDb2MemberVms
 ```
