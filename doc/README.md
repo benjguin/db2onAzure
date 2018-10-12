@@ -10,6 +10,7 @@ Here are the steps you may want to follow:
 - [Check the setup and troubleshoot](check.md)
 - [Use the deployment](use.md)
 - [Roadmap, Possible enhancements, Ideas](roadmap.md)
+- [Set up a load test to test the deployment and monitoring](loadtest.md)
 
 Additional documentation include:
 - [Knowledge Base](KB.md)
