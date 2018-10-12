@@ -2,14 +2,14 @@
 
 In this guide, we will set up Apache JMeter to facilitate load testing on the environment
 
-![JMeter Logo](JMeter Logo.PNG)
+![JMeter Logo](img/jmeter-logo.png)
 
-From the JMeter website:
+From the [JMeter website](http://jmeter.apache.org/):
 > The Apache JMeter™ application is open source software, a 100% pure Java application designed to load test functional behavior and measure performance. It was originally designed for testing Web Applications but has since expanded to other test functions. 
 
 This is what the final test that we are trying to build will look like:
 
-![JMeter screen](JMeter Screen.PNG)
+![JMeter screen](img/jmeter-screen.png)
 
 
 ## Connect to the windows client machine
@@ -118,7 +118,7 @@ then use RDP to connect to 127.0.0.1:3390 and log in
 
     Your test tree should look like this:
     
-    ![JMeter test tree](JMeter Tree.PNG)
+    ![JMeter test tree](img/jmeter-tree.png)
 
     Now let's run our test!
     
