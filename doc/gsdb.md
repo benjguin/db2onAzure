@@ -24,7 +24,7 @@ $ ssh rhel@$jumpbox
 
 ## Make the bits work on DB2 pureScale 
 
-Edit `GOSALES_CREATE_TS.sh` in Vi to avoid error: 
+Edit `GOSALES_CREATE_TS.sh` in vi to avoid error: 
 
 ```bash
 SQL1419N  The statement, clause, command, API, or function is not supported in a DB2 pureScale environment. Reason code = "1".  SQLSTATE=56038
