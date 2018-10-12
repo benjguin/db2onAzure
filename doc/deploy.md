@@ -1,6 +1,6 @@
 # Deploy
 
-The [deployment script](../deployment/deploy.sh) needs a number of variables we have to prepare. 
+The [deployment script](../deployment/deploy.sh) needs a number of variables we have to prepare and these variables should already be defined in the 01init.sh file. After sourcing the init file below, the deployment script will use the variables from that file.
 Here is the list (excerpt from the usage part of the script):
 - subscription (-s): Azure subscription name"
 - resourceGroupName (-g): Azure resource group name"
@@ -29,7 +29,7 @@ source 01init.sh
 ## Run the deployment script
 
 ```bash
-cd $localGitFolderpath/db2OnAzure/deployment
+cd $localGitFolderpath/db2onAzure/deployment
 date
 ./deploy.sh -s "$subscription" -g "$rg" -l "$location" -n "$deploymentName" -k "$pubKeyPath" -p "$adwinPassword" -d "$db2bits" -u "$gitrawurl" -j "$jumpboxPublicName" -t "$tempLocalFolder" -a "$acceleratedNetworkingOnGlusterfs" -c "$acceleratedNetworkingOnDB2" -e "$acceleratedNetworkingOnOthers" -b "$lisbits" -y $nbDb2MemberVms
 ```

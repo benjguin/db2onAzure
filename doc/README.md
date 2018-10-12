@@ -6,6 +6,7 @@ Here are the steps you may want to follow:
 - [Prepare the bits](bits.md)
 - [Deploy](deploy.md)
 - [Add monitoring](monitoring.md) (optional)
+- [Add database](gsdb.md) (optional)
 - [Check the setup and troubleshoot](check.md)
 - [Use the deployment](use.md)
 - [Roadmap, Possible enhancements, Ideas](roadmap.md)
