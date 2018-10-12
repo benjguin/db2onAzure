@@ -1,8 +1,18 @@
 # Set up JMeter to do load testing on the windows client machine
 
-Connect to the windows client machine
+In this guide, we will set up Apache JMeter to facilitate load testing on the environment
 
-## How to connect
+![JMeter Logo](JMeter Logo.PNG)
+
+From the JMeter website:
+> The Apache JMeter™ application is open source software, a 100% pure Java application designed to load test functional behavior and measure performance. It was originally designed for testing Web Applications but has since expanded to other test functions. 
+
+This is what the final test that we are trying to build will look like:
+
+![JMeter screen](JMeter Screen.PNG)
+
+
+## Connect to the windows client machine
 First let's init the variables!
 
 `source 01init.sh`
@@ -52,6 +62,7 @@ then use RDP to connect to 127.0.0.1:3390 and log in
     
     | Field | Value |
     | ----------- | ----------- |
+    | Name | Thread Group - Load Test 1 |
     | Number of threads (users) | 50 |
     | Ramp-Up Period (in seconds) | 1 | 
     | Loop Count | 1000 |
@@ -67,6 +78,7 @@ then use RDP to connect to 127.0.0.1:3390 and log in
 
     | Field | Value |
     | ------ | ----- |
+    | Name | JDBC Connection Configuration - myDB |
     | Variable name for created Pool | myDB |
     | Validation Query | select 1 from sysibm.sysdummy1 |
     | Database URL | jdbc:db2://192.168.0.20:50000/my-db-name |
@@ -85,6 +97,7 @@ then use RDP to connect to 127.0.0.1:3390 and log in
     
     | Field | Value |
     | ------ | ----- |
+    | Name | JDBC Request - Test Query 1 |
     | Variable name of Pool declared in JDBC Connection Configuration | myDB |
     | SQL Query | select * from mytablename |
 
@@ -103,6 +116,12 @@ then use RDP to connect to 127.0.0.1:3390 and log in
 
 10. **Run the test**
 
+    Your test tree should look like this:
+    
+    ![JMeter test tree](JMeter Tree.PNG)
+
+    Now let's run our test!
+    
     Click on the *Start* icon on the toolbar or press `Ctrl-R`
 
     The test runs - as it executes, you can see the threads increment on the right side of the toolbar.
